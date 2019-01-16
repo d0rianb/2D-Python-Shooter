@@ -11,13 +11,19 @@ class Env:
         self.shoots = []
         self.viewArea = { 'x': 0, 'y': 0, 'width': self.width, 'height': self.height }
 
+    def manageShoots(self):
+        for shoot in self.shoots:
+            if shoot.x < 0 or shoot.x > self.width or shoot.y < 0 or shoot.y > self.height:
+                self.shoots.remove(shoot)
+            else:
+                shoot.update()
+
 
     def update(self):
         self.canvas.delete('all')
         for player in self.players:
             player.update()
-        for shoot in self.shoots:
-            shoot.update()
+        self.manageShoots()
         self.render()
         self.fen.after(1000//self.framerate, self.update)
 

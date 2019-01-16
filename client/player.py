@@ -4,12 +4,14 @@ import keyboard
 from tir import Tir
 
 class Player:
-    def __init__(self, x, y, env):
+    def __init__(self,id, x, y, env, name="Invité"):
+        self.id = id
         self.x = x
         self.y = y
         self.env = env
+        self.name = name
         self.size = 20
-        self.dir = 0 # degré °
+        self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = random.choice(['red', 'green', 'cyan', 'magenta'])
         self.speed = 5
@@ -25,8 +27,7 @@ class Player:
         self.mouse['x'], self.mouse['y'] = event.x, event.y
 
     def detect_keypress(self):
-        x = 0
-        y = 0
+        x, y = 0, 0
         if keyboard.is_pressed('z') or keyboard.is_pressed('up'):
             y = -1
         if keyboard.is_pressed('s') or keyboard.is_pressed('down'):
@@ -40,9 +41,12 @@ class Player:
     def move(self, x, y):
         self.x += x*self.speed
         self.y += y*self.speed
+        if self.x - self.size/2 <= 0:                 self.x = self.size/2
+        elif self.x + self.size/2 >= self.env.width:  self.x = self.env.width - self.size/2
+        if self.y - self.size/2 <= 0:                 self.y = self.size/2
+        elif self.y + self.size/2 >= self.env.height: self.y = self.env.height - self.size/2
 
     def dash(self, *args):
-        print('dash')
         for i in range(15):
             self.move(math.cos(self.dir), math.sin(self.dir))
 

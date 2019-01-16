@@ -7,7 +7,7 @@ class Tir:
         self.y = y
         self.dir = dir
         self.damage = 10
-        self.speed = 10
+        self.speed = 15
         self.size = 12
         self.from_player = from_player
 
