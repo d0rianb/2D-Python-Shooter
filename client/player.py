@@ -14,7 +14,7 @@ class Player:
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = random.choice(['red', 'green', 'cyan', 'magenta'])
-        self.speed = 5
+        self.speed = 5 * 60/self.env.framerate
         self.health = 100
         self.ammo = 10
         self.env.players.append(self)

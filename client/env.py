@@ -6,7 +6,7 @@ class Env:
         self.canvas = canvas
         self.width = width
         self.height = height
-        self.framerate = 60
+        self.framerate = 30
         self.players = []
         self.shoots = []
         self.viewArea = { 'x': 0, 'y': 0, 'width': self.width, 'height': self.height }
