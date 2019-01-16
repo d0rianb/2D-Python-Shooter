@@ -27,13 +27,13 @@ class Player:
     def detect_keypress(self):
         x = 0
         y = 0
-        if keyboard.is_pressed('z'):
+        if keyboard.is_pressed('z') or keyboard.is_pressed('up'):
             y = -1
-        if keyboard.is_pressed('s'):
+        if keyboard.is_pressed('s') or keyboard.is_pressed('down'):
             y = 1
-        if keyboard.is_pressed('d'):
+        if keyboard.is_pressed('d') or keyboard.is_pressed('right'):
             x = 1
-        if keyboard.is_pressed('q'):
+        if keyboard.is_pressed('q') or keyboard.is_pressed('left'):
             x = -1
         self.move(x, y)
 
