@@ -13,3 +13,9 @@
 - **Tirer** : Clic Droit
 - **Dash** : Majuscule gauche
 - **Recharger** : R
+
+## To-Do
+- Health regain
+- Collision detection
+- Camera movement
+- Server
