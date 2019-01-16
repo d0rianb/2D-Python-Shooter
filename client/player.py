@@ -51,7 +51,14 @@ class Player:
             self.move(math.cos(self.dir), math.sin(self.dir))
 
     def shoot(self, event):
-        self.env.shoots.append(Tir(len(self.env.shoots), self.x, self.y, self.dir, self))
+        if self.ammo >= 0:
+            self.env.shoots.append(Tir(len(self.env.shoots), self.x, self.y, self.dir, self))
+        else:
+            self.reload()
+
+    def reload(self):
+        # Timeout
+        pass
 
     def update(self):
         deltaX = self.mouse['x'] - self.x if (self.x != self.mouse['x']) else 1
@@ -62,3 +69,4 @@ class Player:
     def render(self, canvas):
         canvas.create_oval(self.x - self.size/2, self.y - self.size/2, self.x+self.size/2, self.y+self.size/2, fill=self.color, outline=self.color)
         canvas.create_line(self.x + math.cos(self.dir)*12, self.y + math.sin(self.dir)*12, self.x + math.cos(self.dir)*20, self.y + math.sin(self.dir)*20)
+        canvas.create_text(self.x - len(self.name) / 2, self.y - 20, text=self.name, fill='#787878')
