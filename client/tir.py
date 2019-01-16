@@ -1,17 +1,22 @@
 import math
 
 class Tir:
-    def __init__(self, x, y, dir, damage, speed, from_):
+    def __init__(self, id, x, y, dir, from_player):
+        self.id = id
         self.x = x
         self.y = y
         self.dir = dir
-        self.damage = damage
-        self.speed = speed
-        self.from_ = from_
+        self.damage = 10
+        self.speed = 10
+        self.size = 12
+        self.from_player = from_player
 
     def update(self):
         self.x += math.cos(self.dir)*self.speed
         self.y += math.sin(self.dir)*self.speed
 
+    def destroy(self):
+        pass
+
     def render(self, canvas):
-        canvas.create_line(self.x, self.y, self.x + math.cos(self.dir)*12, self.y + math.sin(self.dir)*12)
+        canvas.create_line(self.x, self.y, self.x + math.cos(self.dir)*self.size, self.y + math.sin(self.dir)*self.size)
