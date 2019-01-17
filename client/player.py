@@ -5,7 +5,11 @@ from threading import Timer
 from tir import Tir
 
 class Player:
+<<<<<<< HEAD
     def __init__(self,id, x, y, env, name="Invité", own=False):
+=======
+    def __init__(self, id, x, y, env, name="Invité"):
+>>>>>>> remotes/origin/includes-map
         self.id = id
         self.x = x
         self.y = y

@@ -9,12 +9,17 @@ class Env:
         self.framerate = 30
         self.players = []
         self.shoots = []
+<<<<<<< HEAD
         self.viewArea = {
             'x': 0,
             'y': 0,
             'width': self.width,
             'height': self.height
         }
+=======
+        self.map = 0
+        self.viewArea = { 'x': 0, 'y': 0, 'width': self.width, 'height': self.height }
+>>>>>>> remotes/origin/includes-map
 
     def manageShoots(self):
         for shoot in self.shoots:
@@ -32,6 +37,7 @@ class Env:
         self.fen.after(1000//self.framerate, self.update)
 
     def render(self):
+        self.map.render(self.canvas)
         for player in self.players:
             if player.alive:
                 player.render()

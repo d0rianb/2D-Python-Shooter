@@ -6,7 +6,11 @@ import keyboard
 from player import Player
 from tir import Tir
 from env import Env
+<<<<<<< HEAD
 from interface import Interface
+=======
+from map import Map
+>>>>>>> remotes/origin/includes-map
 
 
 fen = tk.Tk()
@@ -17,9 +21,14 @@ canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC')
 
 if __name__ == '__main__':
     env = Env(fen, width, height, canvas)
+<<<<<<< HEAD
     dorian = Player(0, 100, 100, env, 'Dorian', own=True)
     test = Player(1, 300, 100, env, 'Test')
     interface = Interface(dorian, env)
+=======
+    map = Map(env, "map1.txt", "Test")
+    dorian = Player(0, 100, 100, env, 'Dorian')
+>>>>>>> remotes/origin/includes-map
     env.update()
     interface.update()
     fen.mainloop()
