@@ -1,4 +1,6 @@
-object 0 0 5 5
-rect 0 0 0 20 20
-rect 1 20 0 50 50
+object 0 Bord 0 0
+rect 0 0 0 100 1
+rect 1 100 0 -1 100
+rect 2 0 100 100 -1
+rect 3 0 0 1 100
 endObject

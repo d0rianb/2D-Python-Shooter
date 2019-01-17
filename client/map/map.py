@@ -33,4 +33,4 @@ class Map:
 
     def render(self):
         for key in self.objects:
-            self.objects[key].render(self.env.canvas)
+            self.objects[key].render(self.env)

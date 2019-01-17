@@ -12,9 +12,10 @@ from map.map import Map
 
 fen = tk.Tk()
 fen.title('2PQSTD')
-width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()//2
+fen.attributes("-topmost", True)
+width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()/2
 
-canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC')
+canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC', highlightthickness=0)
 
 if __name__ == '__main__':
     env = Env(fen, width, height, canvas)
@@ -24,7 +25,9 @@ if __name__ == '__main__':
     test = Player(1, 300, 100, env, 'Test')
 
     interface = Interface(dorian, env)
+
     env.update()
     interface.update()
+
     fen.mainloop()
     sys.exit(0)
