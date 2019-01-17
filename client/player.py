@@ -18,6 +18,7 @@ class Player:
         self.color = random.choice(['green', 'cyan', 'magenta'])
         self.speed = 5 * 60/self.env.framerate
         self.dash_length = 15
+        self.dash_left = 3
         self.health = 100
         self.ammo = 10
         self.alive = True
@@ -61,18 +62,24 @@ class Player:
         elif self.y + self.size/2 >= self.env.height: self.y = self.env.height - self.size/2
 
     def dash(self, *args):
-        for i in range(self.dash_length):
-            self.move(math.cos(self.dir), math.sin(self.dir))
-            self.render(dash=True)
+        if self.dash_left > 0:
+            for i in range(self.dash_length):
+                self.move(math.cos(self.dir), math.sin(self.dir))
+                self.render(dash=True)
+            self.dash_left -= 1
 
     def shoot(self, event):
-        if self.ammo >= 0:
+        if self.ammo > 0:
             self.env.shoots.append(Tir(len(self.env.shoots), self.x, self.y, self.dir, self))
+            self.ammo -= 1
         else:
             self.reload()
 
     def reload(self):
         pass # Timeout
+
+    def passif(self):
+        pass # dash regain and healt regain
 
     def dead(self):
         self.alive = False

@@ -1,7 +1,7 @@
 import tkinter as tk
 
 class Env:
-    def __init__(self,fen, width, height, canvas):
+    def __init__(self, fen, width, height, canvas):
         self.fen = fen
         self.canvas = canvas
         self.width = width
@@ -33,7 +33,8 @@ class Env:
 
     def render(self):
         for player in self.players:
-            player.render()
+            if player.alive:
+                player.render()
         for shoot in self.shoots:
             shoot.render(self.canvas)
         self.canvas.pack()

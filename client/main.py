@@ -6,6 +6,7 @@ import keyboard
 from player import Player
 from tir import Tir
 from env import Env
+from interface import Interface
 
 
 fen = tk.Tk()
@@ -18,6 +19,8 @@ if __name__ == '__main__':
     env = Env(fen, width, height, canvas)
     dorian = Player(0, 100, 100, env, 'Dorian', own=True)
     test = Player(1, 300, 100, env, 'Test')
+    interface = Interface(dorian, env)
     env.update()
+    interface.update()
     fen.mainloop()
     sys.exit(0)
