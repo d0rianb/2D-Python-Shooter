@@ -1,6 +1,7 @@
 import random
 import math
 import keyboard
+import time
 from tir import Tir
 
 class Player:
@@ -16,6 +17,7 @@ class Player:
         self.mouse = {'x': 0, 'y': 0}
         self.color = random.choice(['green', 'cyan', 'magenta'])
         self.speed = 5 * 60/self.env.framerate
+        self.dash_length = 15
         self.health = 100
         self.ammo = 10
         self.alive = True
@@ -59,8 +61,9 @@ class Player:
         elif self.y + self.size/2 >= self.env.height: self.y = self.env.height - self.size/2
 
     def dash(self, *args):
-        for i in range(15):
+        for i in range(self.dash_length):
             self.move(math.cos(self.dir), math.sin(self.dir))
+            self.render(dash=True)
 
     def shoot(self, event):
         if self.ammo >= 0:
@@ -82,7 +85,8 @@ class Player:
         if (self.own):
             self.detect_keypress()
 
-    def render(self, canvas):
-        canvas.create_oval(self.x - self.size, self.y - self.size, self.x+self.size, self.y+self.size, fill=self.color, width=0)
-        canvas.create_line(self.x + math.cos(self.dir)*12, self.y + math.sin(self.dir)*12, self.x + math.cos(self.dir)*20, self.y + math.sin(self.dir)*20)
-        canvas.create_text(self.x - len(self.name) / 2, self.y - 20, text=self.name, fill='#787878')
+    def render(self, dash=False):
+        self.env.canvas.create_oval(self.x - self.size, self.y - self.size, self.x+self.size, self.y+self.size, fill=self.color, width=0)
+        if not dash:
+            self.env.canvas.create_line(self.x + math.cos(self.dir)*12, self.y + math.sin(self.dir)*12, self.x + math.cos(self.dir)*20, self.y + math.sin(self.dir)*20)
+            self.env.canvas.create_text(self.x - len(self.name) / 2, self.y - 20, text=self.name, fill='#787878')

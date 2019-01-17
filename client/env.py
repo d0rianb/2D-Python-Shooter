@@ -33,7 +33,7 @@ class Env:
 
     def render(self):
         for player in self.players:
-            player.render(self.canvas)
+            player.render()
         for shoot in self.shoots:
             shoot.render(self.canvas)
         self.canvas.pack()
