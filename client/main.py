@@ -6,6 +6,7 @@ import keyboard
 from player import Player
 from tir import Tir
 from env import Env
+from map import Map
 
 
 fen = tk.Tk()
@@ -16,6 +17,7 @@ canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC')
 
 if __name__ == '__main__':
     env = Env(fen, width, height, canvas)
+    map = Map(env, "map1.txt", "Test")
     dorian = Player(0, 100, 100, env, 'Dorian')
     env.update()
     fen.mainloop()

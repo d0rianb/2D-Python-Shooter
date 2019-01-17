@@ -4,7 +4,7 @@ import keyboard
 from tir import Tir
 
 class Player:
-    def __init__(self,id, x, y, env, name="Invité"):
+    def __init__(self, id, x, y, env, name="Invité"):
         self.id = id
         self.x = x
         self.y = y
