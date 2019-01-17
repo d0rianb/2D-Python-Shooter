@@ -69,11 +69,12 @@ class Player:
                 self.move(math.cos(self.dir), math.sin(self.dir))
                 self.render(dash=True)
             self.dash_left -= 1
-            Timer(3, self.new_dash).start()
+            cooldown = Timer(3, self.new_dash)
+            cooldown.start()
 
     def new_dash(self):
-        if self.dash < 3:
-            self.dash += 1
+        if self.dash_left < 3:
+            self.dash_left += 1
 
     def shoot(self, event):
         if self.ammo > 0:
