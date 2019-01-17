@@ -17,5 +17,6 @@
 ## To-Do
 - Health regain
 - Collision detection
+- Map
 - Camera movement
 - Server
