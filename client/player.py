@@ -11,7 +11,7 @@ class Player:
         self.env = env
         self.name = name
         self.own = own  # Si le player est le joueur
-        self.size = 20
+        self.size = 10
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = random.choice(['green', 'cyan', 'magenta'])
@@ -43,9 +43,9 @@ class Player:
 
     def check_collide(self):
         for shoot in self.env.shoots:
-            if abs(self.x - shoot.x - math.cos(shoot.dir)*shoot.size) < self.size and abs(self.y - shoot.y - math.sin(shoot.dir)*shoot.size) and shoot.from_player != self:
+            dist = math.sqrt((self.x - shoot.head['x'])**2 + (self.y - shoot.head['y'])**2)
+            if dist <= self.size + 1 and shoot.from_player != self:
                 self.health -= shoot.damage
-                self.hit = not self.hit
                 self.env.shoots.remove(shoot)
         if self.health <= 0:
             self.dead()
@@ -69,8 +69,7 @@ class Player:
             self.reload()
 
     def reload(self):
-        # Timeout
-        pass
+        pass # Timeout
 
     def dead(self):
         self.alive = False
@@ -84,6 +83,6 @@ class Player:
             self.detect_keypress()
 
     def render(self, canvas):
-        canvas.create_oval(self.x - self.size/2, self.y - self.size/2, self.x+self.size/2, self.y+self.size/2, fill=self.color, outline=self.color)
+        canvas.create_oval(self.x - self.size, self.y - self.size, self.x+self.size, self.y+self.size, fill=self.color, width=0)
         canvas.create_line(self.x + math.cos(self.dir)*12, self.y + math.sin(self.dir)*12, self.x + math.cos(self.dir)*20, self.y + math.sin(self.dir)*20)
         canvas.create_text(self.x - len(self.name) / 2, self.y - 20, text=self.name, fill='#787878')

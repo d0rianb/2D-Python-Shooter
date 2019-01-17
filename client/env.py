@@ -9,7 +9,12 @@ class Env:
         self.framerate = 30
         self.players = []
         self.shoots = []
-        self.viewArea = { 'x': 0, 'y': 0, 'width': self.width, 'height': self.height }
+        self.viewArea = {
+            'x': 0,
+            'y': 0,
+            'width': self.width,
+            'height': self.height
+        }
 
     def manageShoots(self):
         for shoot in self.shoots:
@@ -17,7 +22,6 @@ class Env:
                 self.shoots.remove(shoot)
             else:
                 shoot.update()
-
 
     def update(self):
         self.canvas.delete('all')
