@@ -20,6 +20,7 @@ class Player:
         self.dash_length = 15
         self.dash_left = 3
         self.health = 100
+        self.max_ammo = 50
         self.ammo = 50
         self.alive = True
         self.env.players.append(self)
@@ -27,6 +28,7 @@ class Player:
         if self.own:
             self.env.fen.bind('<Motion>', self.mouse_move)
             self.env.fen.bind('<Button-1>', self.shoot)
+            self.env.fen.bind('<Key-r>', self.reload)
             keyboard.on_press_key(56, self.dash) # dash on shift
 
     def mouse_move(self, event):
@@ -67,6 +69,11 @@ class Player:
                 self.move(math.cos(self.dir), math.sin(self.dir))
                 self.render(dash=True)
             self.dash_left -= 1
+            Timer(3, self.new_dash).start()
+
+    def new_dash(self):
+        if self.dash < 3:
+            self.dash += 1
 
     def shoot(self, event):
         if self.ammo > 0:
@@ -75,11 +82,11 @@ class Player:
         else:
             self.reload()
 
-    def reload(self):
-        Timer(5, self.has_reload)
+    def reload(self, *arg):
+        Timer(1, self.has_reload).start()
 
     def has_reload(self):
-        self.ammo = 50
+        self.ammo = self.max_ammo
 
     def passif(self):
         pass # dash regain and healt regain
