@@ -16,6 +16,7 @@
 
 ## To-Do
 - Health regain
+- Add textures
 - Collision detection
 - Map
 - Camera movement

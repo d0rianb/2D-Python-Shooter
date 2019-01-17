@@ -1,3 +1,5 @@
+import tkinter.font as tkFont
+
 class Interface:
     def __init__(self, player, env):
         self.player = player
@@ -11,6 +13,7 @@ class Interface:
         self.padding = 18
         self.informations = {}
         self.fill = '#92959b'
+        self.font = tkFont.Font(family='Avenir Next', size=16, weight='normal')
 
     def update(self):
         self.informations = {
@@ -36,7 +39,8 @@ class Interface:
             self.canvas.create_text(x, y + index*self.padding,
                 text='{0}: {1}'.format(info, infos[info]),
                 anchor='w',
-                fill=self.fill)
+                fill=self.fill,
+                font=self.font)
 
     def render(self):
         for position in self.informations:

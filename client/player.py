@@ -1,7 +1,7 @@
 import random
 import math
 import keyboard
-import time
+from threading import Timer
 from tir import Tir
 
 class Player:
@@ -20,7 +20,7 @@ class Player:
         self.dash_length = 15
         self.dash_left = 3
         self.health = 100
-        self.ammo = 10
+        self.ammo = 50
         self.alive = True
         self.env.players.append(self)
 
@@ -76,7 +76,10 @@ class Player:
             self.reload()
 
     def reload(self):
-        pass # Timeout
+        Timer(5, self.has_reload)
+
+    def has_reload(self):
+        self.ammo = 50
 
     def passif(self):
         pass # dash regain and healt regain
