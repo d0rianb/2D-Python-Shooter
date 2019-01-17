@@ -4,24 +4,27 @@ import keyboard
 from tir import Tir
 
 class Player:
-    def __init__(self,id, x, y, env, name="Invité"):
+    def __init__(self,id, x, y, env, name="Invité", own=False):
         self.id = id
         self.x = x
         self.y = y
         self.env = env
         self.name = name
+        self.own = own  # Si le player est le joueur
         self.size = 20
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
-        self.color = random.choice(['red', 'green', 'cyan', 'magenta'])
+        self.color = random.choice(['green', 'cyan', 'magenta'])
         self.speed = 5 * 60/self.env.framerate
         self.health = 100
         self.ammo = 10
+        self.alive = True
         self.env.players.append(self)
 
-        self.env.fen.bind('<Motion>', self.mouse_move)
-        self.env.fen.bind('<Button-1>', self.shoot)
-        keyboard.on_press_key(56, self.dash) # dash on shift
+        if self.own:
+            self.env.fen.bind('<Motion>', self.mouse_move)
+            self.env.fen.bind('<Button-1>', self.shoot)
+            keyboard.on_press_key(56, self.dash) # dash on shift
 
     def mouse_move(self, event):
         self.mouse['x'], self.mouse['y'] = event.x, event.y
@@ -37,6 +40,15 @@ class Player:
         if keyboard.is_pressed('q') or keyboard.is_pressed('left'):
             x = -1
         self.move(x, y)
+
+    def check_collide(self):
+        for shoot in self.env.shoots:
+            if abs(self.x - shoot.x - math.cos(shoot.dir)*shoot.size) < self.size and abs(self.y - shoot.y - math.sin(shoot.dir)*shoot.size) and shoot.from_player != self:
+                self.health -= shoot.damage
+                self.hit = not self.hit
+                self.env.shoots.remove(shoot)
+        if self.health <= 0:
+            self.dead()
 
     def move(self, x, y):
         self.x += x*self.speed
@@ -60,11 +72,16 @@ class Player:
         # Timeout
         pass
 
+    def dead(self):
+        self.alive = False
+
     def update(self):
         deltaX = self.mouse['x'] - self.x if (self.x != self.mouse['x']) else 1
         deltaY = self.mouse['y'] - self.y
         self.dir = math.atan2(deltaY, deltaX)
-        self.detect_keypress()
+        self.check_collide()
+        if (self.own):
+            self.detect_keypress()
 
     def render(self, canvas):
         canvas.create_oval(self.x - self.size/2, self.y - self.size/2, self.x+self.size/2, self.y+self.size/2, fill=self.color, outline=self.color)
