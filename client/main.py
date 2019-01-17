@@ -1,5 +1,5 @@
 import tkinter as tk
-import sys
+import os, sys
 import math
 import random
 import keyboard
@@ -7,7 +7,7 @@ from player import Player
 from tir import Tir
 from env import Env
 from interface import Interface
-from map import Map
+from map.map import Map
 
 
 fen = tk.Tk()
@@ -19,8 +19,10 @@ canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC')
 if __name__ == '__main__':
     env = Env(fen, width, height, canvas)
     map = Map(env, 'map1.txt', 'Test')
+
     dorian = Player(0, 100, 100, env, 'Dorian', own=True)
     test = Player(1, 300, 100, env, 'Test')
+
     interface = Interface(dorian, env)
     env.update()
     interface.update()

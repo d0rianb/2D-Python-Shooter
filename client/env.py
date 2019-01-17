@@ -9,6 +9,7 @@ class Env:
         self.framerate = 30
         self.players = []
         self.shoots = []
+        self.map = {}
         self.viewArea = {
             'x': 0,
             'y': 0,
@@ -32,7 +33,7 @@ class Env:
         self.fen.after(1000//self.framerate, self.update)
 
     def render(self):
-        self.map.render(self.canvas)
+        self.map.render()
         for player in self.players:
             if player.alive:
                 player.render()

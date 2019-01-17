@@ -1,8 +1,9 @@
-from object import Object
+import os
+from map.object import Object
 
 
 class Map:
-    def __init__(self, env, file, name="Map1"):
+    def __init__(self, env, file, name='Map1'):
         self.env = env
         self.env.map = self
         self.name = name
@@ -10,7 +11,8 @@ class Map:
         self.file = file
 
         #open map file and put all lines in list
-        mapFile = open(file, "r")
+        dir = os.path.dirname(os.path.realpath(__file__))
+        mapFile = open(os.path.join(dir, file), "r")
         lines = []
         for line in mapFile.readlines():
             lines.append(line.strip("\n").split(" "))
@@ -29,6 +31,6 @@ class Map:
                 self.objects[currentId].addRect(l[1], l[2], l[3], l[4], l[5])
 
 
-    def render(self, canvas):
+    def render(self):
         for key in self.objects:
-            self.objects[key].render(canvas)
+            self.objects[key].render(self.env.canvas)
