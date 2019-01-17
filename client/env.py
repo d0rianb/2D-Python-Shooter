@@ -9,17 +9,12 @@ class Env:
         self.framerate = 30
         self.players = []
         self.shoots = []
-<<<<<<< HEAD
         self.viewArea = {
             'x': 0,
             'y': 0,
             'width': self.width,
             'height': self.height
         }
-=======
-        self.map = 0
-        self.viewArea = { 'x': 0, 'y': 0, 'width': self.width, 'height': self.height }
->>>>>>> remotes/origin/includes-map
 
     def manageShoots(self):
         for shoot in self.shoots:
