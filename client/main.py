@@ -17,7 +17,7 @@ width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()
 canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC', highlightthickness=0)
 
 if __name__ == '__main__':
-    env = Env(fen, width, height, canvas)
+    env = Env(fen, 2560, 1440, canvas)
     map = Map(env, 'map1.txt', 'Test')
 
     dorian = Player(0, 100, 100, env, 'Dorian', own=True)

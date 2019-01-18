@@ -11,9 +11,9 @@ class Rect:
         return self.x, self.y, int(self.width), int(self.height)
 
     def render(self, x, y, env):
-        real_ratio = abs(env.width/env.height - 16/9)
-        gridX = env.width/32
-        gridY = env.height/(18 + real_ratio)
+        real_ratio = abs(env.viewArea['width']/env.viewArea['height'] - 16/9)
+        gridX = env.viewArea['width']/32
+        gridY = env.viewArea['height']/(18 + real_ratio)
         env.canvas.create_rectangle((self.x + x)*gridX, (self.y + y)*gridY, (self.x + x + self.width)*gridX, (self.y + y + self.height)*gridY,
             fill = self.color,
             width=0)

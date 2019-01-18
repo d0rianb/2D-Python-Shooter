@@ -6,8 +6,8 @@ class Interface:
         self.env = env
         self.margin_x = 8
         self.margin_y = 20
-        self.width = env.width
-        self.height = env.height
+        self.width = env.viewArea['width']
+        self.height = env.viewArea['height']
         self.canvas = env.canvas
         self.refresh_rate = env.framerate
         self.padding = 20

@@ -14,8 +14,8 @@ class Env:
         self.viewArea = {
             'x': 0,
             'y': 0,
-            'width': self.width,
-            'height': self.height
+            'width': fen.winfo_screenwidth(),
+            'height': fen.winfo_screenheight()
         }
 
     def manageShoots(self):
