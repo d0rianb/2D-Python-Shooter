@@ -12,8 +12,7 @@ from map.map import Map
 
 fen = tk.Tk()
 fen.title('2PQSTD')
-fen.attributes("-topmost", True)
-width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()/2
+width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()
 
 canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC', highlightthickness=0)
 

@@ -1,6 +1,8 @@
+/* grid of 32x18 */
+/* id x y width height */
 object 0 Bord 0 0
-rect 0 0 0 100 1
-rect 1 100 0 -1 100
-rect 2 0 100 100 -1
-rect 3 0 0 1 100
+rect 0 0 0 32 1
+rect 1 32 0 -1 18
+rect 2 0 17 32 -1
+rect 3 0 0 1 18
 endObject

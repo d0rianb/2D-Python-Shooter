@@ -10,7 +10,7 @@ class Interface:
         self.height = env.height
         self.canvas = env.canvas
         self.refresh_rate = env.framerate
-        self.padding = 18
+        self.padding = 20
         self.informations = {}
         self.fill = '#92959b'
         self.font = tkFont.Font(family='Avenir Next', size=16, weight='normal')
@@ -46,5 +46,5 @@ class Interface:
         for position in self.informations:
             x, y = self.margin_x, self.margin_y
             if position == 'TopRight' or position == 'BottomRight': x = self.width - 120
-            if position == 'BottomRight': y = self.height - len(self.informations['BottomRight'])*self.padding
+            if position == 'BottomRight': y = self.height - 2.5*len(self.informations['BottomRight'])*self.padding
             self.parse(position, x, y)
