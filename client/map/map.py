@@ -23,7 +23,7 @@ class Map:
         for l in lines:
             if l[0] == "object" and len(l) >= 5:
                 inObject = True
-                self.objects[l[1]] = Object(l[1], l[2], l[3], l[4])
+                self.objects[l[1]] = Object(l[1], l[2], l[3], l[4], env)
                 currentId = l[1]
             elif l[0] == "endObject":
                 inObject = False

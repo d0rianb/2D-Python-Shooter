@@ -20,8 +20,9 @@ class Player:
         self.dash_length = 15
         self.dash_left = 3
         self.health = 100
-        self.max_ammo = 50
-        self.ammo = 50
+        self.max_ammo = 20 # Taille du chargeur
+        self.ammo = self.max_ammo # Munitions restantes
+        self.is_reloading = False
         self.alive = True
         self.env.players.append(self)
 
@@ -48,8 +49,9 @@ class Player:
 
     def check_collide(self):
         for shoot in self.env.shoots:
-            dist = math.sqrt((self.x - shoot.head['x'])**2 + (self.y - shoot.head['y'])**2)
-            if dist <= self.size + 1 and shoot.from_player != self:
+            dist_head = math.sqrt((self.x - shoot.head['x'])**2 + (self.y - shoot.head['y'])**2)
+            dist_tail = math.sqrt((self.x - shoot.x)**2 + (self.y - shoot.y)**2)
+            if (dist_head <= self.size + 1 or dist_tail <= self.size + 1) and shoot.from_player != self:
                 self.health -= shoot.damage
                 self.env.shoots.remove(shoot)
         if self.health <= 0:
@@ -58,6 +60,7 @@ class Player:
     def move(self, x, y):
         self.x += x*self.speed
         self.y += y*self.speed
+        ## Restreint le joueur à l'environnement
         if self.x - self.size/2 <= 0:                 self.x = self.size/2
         elif self.x + self.size/2 >= self.env.width:  self.x = self.env.width - self.size/2
         if self.y - self.size/2 <= 0:                 self.y = self.size/2
@@ -77,17 +80,20 @@ class Player:
             self.dash_left += 1
 
     def shoot(self, event):
-        if self.ammo > 0:
-            self.env.shoots.append(Tir(len(self.env.shoots), self.x, self.y, self.dir, self))
+        if self.ammo > 0 and not self.is_reloading:
+            tir = Tir(len(self.env.shoots), self.x, self.y, self.dir, self)
+            self.env.shoots.append(tir)
             self.ammo -= 1
         else:
             self.reload()
 
     def reload(self, *arg):
+        self.is_reloading = True
         Timer(1, self.has_reload).start()
 
     def has_reload(self):
         self.ammo = self.max_ammo
+        self.is_reloading = False
 
     def passif(self):
         pass # dash regain and healt regain
@@ -104,7 +110,8 @@ class Player:
             self.detect_keypress()
 
     def render(self, dash=False):
+        head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, self.health)
         self.env.canvas.create_oval(self.x - self.size, self.y - self.size, self.x+self.size, self.y+self.size, fill=self.color, width=0)
         if not dash:
             self.env.canvas.create_line(self.x + math.cos(self.dir)*12, self.y + math.sin(self.dir)*12, self.x + math.cos(self.dir)*20, self.y + math.sin(self.dir)*20)
-            self.env.canvas.create_text(self.x - len(self.name) / 2, self.y - 20, text=self.name, fill='#787878')
+            self.env.canvas.create_text(self.x - len(self.name) / 2, self.y - 20, text=head_text, fill='#787878')

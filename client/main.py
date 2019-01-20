@@ -21,7 +21,8 @@ if __name__ == '__main__':
     map = Map(env, 'map1.txt', 'Test')
 
     dorian = Player(0, 100, 100, env, 'Dorian', own=True)
-    test = Player(1, 300, 100, env, 'Test')
+    test1 = Player(1, 500, 150, env, 'Test1')
+    test2 = Player(1, 300, 400, env, 'Test2')
 
     interface = Interface(dorian, env)
 
