@@ -10,14 +10,14 @@ class Map:
         self.objects = {}
         self.file = file
 
-        #open map file and put all lines in list
+        # open map file and put all lines in list
         dir = os.path.dirname(os.path.realpath(__file__))
         mapFile = open(os.path.join(dir, file), "r")
         lines = []
         for line in mapFile.readlines():
             lines.append(line.strip("\n").split(" "))
 
-        #process lines and create objects
+        # process lines and create objects
         inObject = False
         currentId = 0
         for l in lines:

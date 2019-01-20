@@ -21,3 +21,4 @@
 - Map
 - Camera movement
 - Server
+- Chat In-Game

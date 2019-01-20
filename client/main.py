@@ -22,7 +22,9 @@ if __name__ == '__main__':
 
     dorian = Player(0, 100, 100, env, 'Dorian', own=True)
     test1 = Player(1, 500, 150, env, 'Test1')
-    test2 = Player(1, 300, 400, env, 'Test2')
+    test2 = Player(2, 300, 400, env, 'Test2')
+    for i in range (1, 5):
+        Player(2 + i, random.randint(0, width), random.randint(0, height), env, 'Test{}'.format(i))
 
     interface = Interface(dorian, env)
 
