@@ -62,22 +62,24 @@ class Player:
         self.y += y*self.speed
 
         ## Restreint le joueur à l'environnement
-        if self.x - self.size/2 <= 0:
-            self.x = self.size/2
-        elif self.x + self.size/2 >= self.env.width:
-            self.x = self.env.width - self.size/2
-        if self.y - self.size/2 <= 0:
-            self.y = self.size/2
-        elif self.y + self.size/2 >= self.env.height:
-            self.y = self.env.height - self.size/2
+        if self.x - self.size <= 0:
+            self.x = self.size
+        elif self.x + self.size >= self.env.width:
+            self.x = self.env.width - self.size
+        if self.y - self.size <= 0:
+            self.y = self.size
+        elif self.y + self.size >= self.env.height:
+            self.y = self.env.height - self.size
 
         ## Détecte les murs
         rects = self.env.map.rects
+        collide_wall = False
         for rect in rects:
-            if self.x >= rect.x and self.x <= rect.x2 and self.y >= rect.y and self.y <= rect.y2:
-                self.color = 'red'
-            else:
-                self.color = 'green'
+            if self.x + self.size >= rect.x and self.x - self.size <= rect.x2 and self.y + self.size >= rect.y and self.y - self.size <= rect.y2:
+                collide_wall = True
+                break
+
+        self.color = 'red' if collide_wall else 'green'
 
     def dash(self, *args):
         if self.dash_left > 0:
