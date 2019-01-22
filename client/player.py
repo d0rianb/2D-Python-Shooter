@@ -57,9 +57,28 @@ class Player:
         if self.health <= 0:
             self.dead()
 
+    def is_colliding_wall(self):
+        ## Détecte les murs
+        rects = self.env.map.rects
+        collide_wall = False
+        for rect in rects:
+            if self.x + self.size >= rect.x and self.x - self.size <= rect.x2 and self.y + self.size >= rect.y and self.y - self.size <= rect.y2:
+                collide_wall = True
+                break
+
+        self.color = 'red' if collide_wall else 'green'
+        return collide_wall
+
     def move(self, x, y):
+        old_x, old_y = self.x, self.y
+
         self.x += x*self.speed
+        if self.is_colliding_wall():
+            self.x = old_x
+
         self.y += y*self.speed
+        if self.is_colliding_wall():
+            self.y = old_y
 
         ## Restreint le joueur à l'environnement
         if self.x - self.size <= 0:
@@ -71,15 +90,7 @@ class Player:
         elif self.y + self.size >= self.env.height:
             self.y = self.env.height - self.size
 
-        ## Détecte les murs
-        rects = self.env.map.rects
-        collide_wall = False
-        for rect in rects:
-            if self.x + self.size >= rect.x and self.x - self.size <= rect.x2 and self.y + self.size >= rect.y and self.y - self.size <= rect.y2:
-                collide_wall = True
-                break
 
-        self.color = 'red' if collide_wall else 'green'
 
     def dash(self, *args):
         if self.dash_left > 0:
