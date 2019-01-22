@@ -47,7 +47,7 @@ class Player:
             x = -1
         self.move(x, y)
 
-    def check_collide(self):
+    def check_shoot_collide(self):
         for shoot in self.env.shoots:
             dist_head = math.sqrt((self.x - shoot.head['x'])**2 + (self.y - shoot.head['y'])**2)
             dist_tail = math.sqrt((self.x - shoot.x)**2 + (self.y - shoot.y)**2)
@@ -58,14 +58,11 @@ class Player:
             self.dead()
 
     def is_colliding_wall(self):
-        ## Détecte les murs
         rects = self.env.map.rects
         collide_wall = False
         for rect in rects:
             if self.x + self.size >= rect.x and self.x - self.size <= rect.x2 and self.y + self.size >= rect.y and self.y - self.size <= rect.y2:
                 collide_wall = True
-                break
-
         self.color = 'red' if collide_wall else 'green'
         return collide_wall
 
@@ -132,7 +129,7 @@ class Player:
         deltaY = self.mouse['y'] - self.y
         self.dir = math.atan2(deltaY, deltaX)
         if self.alive:
-            self.check_collide()
+            self.check_shoot_collide()
         if self.own:
             self.detect_keypress()
 

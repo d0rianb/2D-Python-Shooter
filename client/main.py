@@ -20,7 +20,7 @@ if __name__ == '__main__':
     env = Env(fen, width, height, canvas)
     map = Map(env, 'map1.txt', 'Test')
 
-    dorian = Player(0, 100, 100, env, 'Dorian', own=True)
+    dorian = Player(0, 50, 50, env, 'Dorian', own=True)
     test1 = Player(1, 500, 150, env, 'Test1')
     test2 = Player(2, 300, 400, env, 'Test2')
     for i in range (1, 5):
