@@ -60,11 +60,24 @@ class Player:
     def move(self, x, y):
         self.x += x*self.speed
         self.y += y*self.speed
+
         ## Restreint le joueur à l'environnement
-        if self.x - self.size/2 <= 0:                 self.x = self.size/2
-        elif self.x + self.size/2 >= self.env.width:  self.x = self.env.width - self.size/2
-        if self.y - self.size/2 <= 0:                 self.y = self.size/2
-        elif self.y + self.size/2 >= self.env.height: self.y = self.env.height - self.size/2
+        if self.x - self.size/2 <= 0:
+            self.x = self.size/2
+        elif self.x + self.size/2 >= self.env.width:
+            self.x = self.env.width - self.size/2
+        if self.y - self.size/2 <= 0:
+            self.y = self.size/2
+        elif self.y + self.size/2 >= self.env.height:
+            self.y = self.env.height - self.size/2
+
+        ## Détecte les murs
+        rects = self.env.map.rects
+        for rect in rects:
+            if self.x >= rect.x and self.x <= rect.x2 and self.y >= rect.y and self.y <= rect.y2:
+                self.color = 'red'
+            else:
+                self.color = 'green'
 
     def dash(self, *args):
         if self.dash_left > 0:
@@ -105,8 +118,9 @@ class Player:
         deltaX = self.mouse['x'] - self.x if (self.x != self.mouse['x']) else 1
         deltaY = self.mouse['y'] - self.y
         self.dir = math.atan2(deltaY, deltaX)
-        self.check_collide()
-        if (self.own):
+        if self.alive:
+            self.check_collide()
+        if self.own:
             self.detect_keypress()
 
     def render(self, dash=False):

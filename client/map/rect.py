@@ -1,26 +1,23 @@
 class Rect:
-    def __init__(self, id, x, y, width, height, env):
-        self.id = id
-        self.x = int(x)
-        self.y = int(y)
-        self.width = int(width)
-        self.height = int(height)
-        self.env = env
+    def __init__(self, id, x, y, width, height, map):
+        self.id = int(id)
+        self.relative_x = int(x)
+        self.relative_y = int(y)
+        self.relative_width = int(width)
+        self.relative_height = int(height)
+        self.map = map
+        real_ratio = abs(self.map.env.viewArea['width']/self.map.env.viewArea['height'] - 16/9)
+        gridX = self.map.env.viewArea['width']/32
+        gridY = self.map.env.viewArea['height']/(18 + real_ratio)
+
+        self.x = self.relative_x*gridX
+        self.y = self.relative_y*gridY
+        self.width = (self.relative_x + self.relative_width)*gridX
+        self.height = (self.relative_y + self.relative_height)*gridY
+        self.x2 = self.x + self.width
+        self.y2 = self.y + self.height
+
         self.color = '#757575'
 
-    def getDimensions(self):
-        return self.x, self.y, int(self.width), int(self.height)
-
-    def render(self, x, y):
-        real_ratio = abs(self.env.viewArea['width']/self.env.viewArea['height'] - 16/9)
-        gridX = self.env.viewArea['width']/32
-        gridY = self.env.viewArea['height']/(18 + real_ratio)
-        self.rendered = {
-            'x': (self.x + x)*gridX,
-            'y': (self.y + y)*gridY,
-            'width': (self.x + x + self.width)*gridX,
-            'height': (self.y + y + self.height)*gridY
-        }
-        self.env.canvas.create_rectangle(self.rendered['x'],self.rendered['y'], self.rendered['width'], self.rendered['height'],
-            fill = self.color,
-            width=0)
+    def render(self):
+        self.map.env.canvas.create_rectangle(self.x, self.y, self.width, self.height, fill = self.color, width=0)
