@@ -18,9 +18,11 @@ class Tir:
         y = self.head['y']
         for rect in map.rects:
             if x >= rect.x and x <= rect.x2 and y >= rect.y and y <= rect.y2: # Check for Head
-                self.env.shoots.remove(self)
+                if self in self.env.shoots:
+                    self.env.shoots.remove(self)
             elif self.x >= rect.x and self.x <= rect.x2 and self.y >= rect.y and self.y <= rect.y2: # Check for bottom
-                self.env.shoots.remove(self)
+                if self in self.env.shoots:
+                    self.env.shoots.remove(self)
 
 
     def update(self):
