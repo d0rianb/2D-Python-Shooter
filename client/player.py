@@ -88,7 +88,6 @@ class Player:
             self.y = self.env.height - self.size
 
 
-
     def dash(self, *args):
         if self.dash_left > 0:
             for i in range(self.dash_length):

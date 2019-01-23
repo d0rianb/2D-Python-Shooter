@@ -1,10 +1,14 @@
 /* grid of 32x18 */
 /* x y width height */
 
-object Mur
+object TopLeft
     rect 1 3 4 1
     rect 4 1 1 2
     rect 5 1 3 1
     rect 7 2 1 3
     rect 8 3 1 2
 endObject
+
+object 2TopLeft
+    rect 2 4 1 4
+    rect 1 8 2 1
