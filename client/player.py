@@ -4,6 +4,7 @@ import keyboard
 from threading import Timer
 from tir import Tir
 
+
 class Player:
     def __init__(self, id, x, y, env, name="Invité", own=False):
         self.id = id
@@ -16,12 +17,12 @@ class Player:
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = random.choice(['green', 'cyan', 'magenta'])
-        self.speed = 4.5 * 60/self.env.framerate
+        self.speed = 4.5 * 60 / self.env.framerate
         self.dash_length = 15
         self.dash_left = 3
         self.health = 100
-        self.max_ammo = 20 # Taille du chargeur
-        self.ammo = self.max_ammo # Munitions restantes
+        self.max_ammo = 20  # Taille du chargeur
+        self.ammo = self.max_ammo  # Munitions restantes
         self.is_reloading = False
         self.alive = True
         self.env.players.append(self)
@@ -30,7 +31,7 @@ class Player:
             self.env.fen.bind('<Motion>', self.mouse_move)
             self.env.fen.bind('<Button-1>', self.shoot)
             self.env.fen.bind('<Key-r>', self.reload)
-            keyboard.on_press_key(56, self.dash) # dash on shift
+            keyboard.on_press_key(56, self.dash)  # dash on shift
 
     def mouse_move(self, event):
         self.mouse['x'], self.mouse['y'] = event.x, event.y
@@ -69,15 +70,15 @@ class Player:
     def move(self, x, y):
         old_x, old_y = self.x, self.y
 
-        self.x += x*self.speed
+        self.x += x * self.speed
         if self.is_colliding_wall():
             self.x = old_x
 
-        self.y += y*self.speed
+        self.y += y * self.speed
         if self.is_colliding_wall():
             self.y = old_y
 
-        ## Restreint le joueur à l'environnement
+        # Restreint le joueur à l'environnement
         if self.x - self.size <= 0:
             self.x = self.size
         elif self.x + self.size >= self.env.width:
@@ -86,7 +87,6 @@ class Player:
             self.y = self.size
         elif self.y + self.size >= self.env.height:
             self.y = self.env.height - self.size
-
 
     def dash(self, *args):
         if self.dash_left > 0:
@@ -118,7 +118,7 @@ class Player:
         self.is_reloading = False
 
     def passif(self):
-        pass # dash regain and healt regain
+        pass  # dash regain and healt regain
 
     def dead(self):
         self.alive = False
@@ -134,7 +134,36 @@ class Player:
 
     def render(self, dash=False):
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, self.health)
-        self.env.canvas.create_oval(self.x - self.size, self.y - self.size, self.x+self.size, self.y+self.size, fill=self.color, width=0)
+        self.env.canvas.create_oval(self.x - self.size, self.y - self.size, self.x + self.size, self.y + self.size, fill=self.color, width=0)
         if not dash:
-            self.env.canvas.create_line(self.x + math.cos(self.dir)*12, self.y + math.sin(self.dir)*12, self.x + math.cos(self.dir)*20, self.y + math.sin(self.dir)*20)
+            self.env.canvas.create_line(self.x + math.cos(self.dir) * 12, self.y + math.sin(self.dir) * 12, self.x + math.cos(self.dir) * 20, self.y + math.sin(self.dir) * 20)
             self.env.canvas.create_text(self.x - len(self.name) / 2, self.y - 20, text=head_text, fill='#787878')
+
+
+class Target(Player):
+    def __init__(self, id, x, y, env):
+        super().__init__(id, x, y, env, name="Target", own=False)
+        self.id = id
+        self.x = x
+        self.y = y
+        self.name = 'Target ' + str(self.id)
+        self.own = False
+        self.speed = 2 * 60 / self.env.framerate
+        size = 200
+        self.time = 0
+        self.max_y = self.y + size / 2
+        self.min_y = self.y - size / 2
+        self.env = env
+
+    def update(self):
+        super().update()
+        super().move(0, -self.speed)
+        self.time += 1
+        print(self.time)
+        if (self.time == 60):
+            self.time = 0
+            self.speed *= -1
+            print('########### Change speed')
+
+    def render(self):
+        super().render()

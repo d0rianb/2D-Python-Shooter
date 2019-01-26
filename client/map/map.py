@@ -1,6 +1,7 @@
 import os
 from map.rect import Rect
 
+
 class Map:
     def __init__(self, env, file, name='Map1'):
         self.env = env
@@ -20,7 +21,7 @@ class Map:
 
         for line in lines:
             if line[0] == 'rect':
-                self.rects.append(Rect(len(self.rects)+1, line[1], line[2], line[3], line[4], self))
+                self.rects.append(Rect(len(self.rects) + 1, line[1], line[2], line[3], line[4], self))
 
     def render(self):
         for rect in self.rects:

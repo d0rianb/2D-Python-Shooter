@@ -1,12 +1,13 @@
 import tkinter as tk
 
+
 class Env:
     def __init__(self, fen, width, height, canvas):
         self.fen = fen
         self.canvas = canvas
         self.width = width
         self.height = height
-        self.ratio = width/height
+        self.ratio = width / height
         self.framerate = 30
         self.players = []
         self.shoots = []
@@ -31,7 +32,7 @@ class Env:
             player.update()
         self.manageShoots()
         self.render()
-        self.fen.after(1000//self.framerate, self.update)
+        self.fen.after(1000 // self.framerate, self.update)
 
     def render(self):
         self.map.render()
