@@ -1,6 +1,5 @@
 import tkinter.font as tkFont
 
-
 class Interface:
     def __init__(self, player, env):
         self.player = player
@@ -32,22 +31,20 @@ class Interface:
             }
         }
         self.render()
-        self.env.fen.after(1000 // self.refresh_rate, self.update)
+        self.env.fen.after(1000//self.refresh_rate, self.update)
 
     def parse(self, position, x, y):
         infos = self.informations[position]
         for (index, info) in enumerate(infos):
-            self.canvas.create_text(x, y + index * self.padding,
-                                    text='{0}: {1}'.format(info, infos[info]),
-                                    anchor='w',
-                                    fill=self.fill,
-                                    font=self.font)
+            self.canvas.create_text(x, y + index*self.padding,
+                text='{0}: {1}'.format(info, infos[info]),
+                anchor='w',
+                fill=self.fill,
+                font=self.font)
 
     def render(self):
         for position in self.informations:
             x, y = self.margin_x, self.margin_y
-            if position == 'TopRight' or position == 'BottomRight':
-                x = self.width - 120
-            if position == 'BottomRight':
-                y = self.height - 2.5 * len(self.informations['BottomRight']) * self.padding
+            if position == 'TopRight' or position == 'BottomRight': x = self.width - 120
+            if position == 'BottomRight': y = self.height - 2.5*len(self.informations['BottomRight'])*self.padding
             self.parse(position, x, y)

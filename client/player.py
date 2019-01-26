@@ -148,22 +148,20 @@ class Target(Player):
         self.y = y
         self.name = 'Target ' + str(self.id)
         self.own = False
-        self.speed = 2 * 60 / self.env.framerate
-        size = 200
-        self.time = 0
-        self.max_y = self.y + size / 2
-        self.min_y = self.y - size / 2
+        self.speed = 2 * 60/self.env.framerate
+        self.color = 'grey'
+        self.tick = 0
+        self.vy = 1
         self.env = env
 
     def update(self):
         super().update()
-        super().move(0, -self.speed)
-        self.time += 1
-        print(self.time)
-        if (self.time == 60):
-            self.time = 0
-            self.speed *= -1
-            print('########### Change speed')
+        if (self.tick == 60):
+            self.vy *= -1
+            self.tick = 0
+        self.tick += 1
+        super().move(0, self.vy)
+
 
     def render(self):
         super().render()
