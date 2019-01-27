@@ -1,5 +1,5 @@
 import math
-
+from render import RenderedObject
 
 class Tir:
     def __init__(self, id, x, y, dir, from_player):
@@ -34,5 +34,5 @@ class Tir:
         }
         self.checkWallCollide(self.env.map)
 
-    def render(self, canvas):
-        canvas.create_line(self.x, self.y, self.head['x'], self.head['y'])
+    def render(self):
+        self.env.rendering_stack.append(RenderedObject('line', self.x, self.y, x2=self.head['x'], y2=self.head['y']))
