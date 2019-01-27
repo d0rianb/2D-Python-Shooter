@@ -47,7 +47,6 @@ class Env:
         if self.tick % 10 ==0:
             # Update viewArea
             self.viewArea['width'], self.viewArea['height'], *offset = map(lambda val: int(val), re.split(r'[+x]', self.fen.geometry()))
-
             # Manage Framerate
             end_time = time.time()
             framerate = int(10 / (end_time - self.last_frame_timestamp))

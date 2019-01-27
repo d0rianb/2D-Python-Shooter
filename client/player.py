@@ -171,8 +171,8 @@ class Target(Player):
     def update(self):
         super().update()
         if (self.tick == self.interval):
-            self.vy *= 0#random_sign()
-            self.vx *= 0#random_sign()
+            self.vy *= random_sign()
+            self.vx *= random_sign()
             self.tick = 0
         self.tick += 1
         super().move(self.vx, self.vy)
