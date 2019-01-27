@@ -1,0 +1,11 @@
+{
+	"key_binding": {
+		"move_up": "z",
+		"move_down": "s",
+		"move_left": "q",
+		"move_up": "d",
+
+		"dash": "shift",
+		"primary_fire": "<Button-1>"
+	}
+}

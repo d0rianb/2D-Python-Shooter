@@ -1,5 +1,5 @@
 import tkinter as tk
-
+from renderedObject import RenderedObject
 
 class Env:
     def __init__(self, fen, width, height, canvas):
@@ -12,6 +12,8 @@ class Env:
         self.players = []
         self.shoots = []
         self.map = {}
+        self.debug = False
+        self.rendering_queue = []
         self.viewArea = {
             'x': 0,
             'y': 0,

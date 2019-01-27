@@ -12,7 +12,6 @@ from map.map import Map
 
 
 mode = 'PvE' # PvP
-debug = False
 
 fen = tk.Tk()
 fen.title('2PQSTD')
@@ -20,7 +19,7 @@ width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()
 
 canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC', highlightthickness=0)
 
-if __name__ == '__main__':
+def start_game(mode):
     env = Env(fen, width, height, canvas)
     map = Map(env, 'map1.txt', 'Test')
 
@@ -30,9 +29,10 @@ if __name__ == '__main__':
             Target(i, random.randint(0, width), random.randint(0, height), env)
 
     interface = Interface(dorian, env)
-
     env.update()
     interface.update()
 
+if __name__ == '__main__':
+    start_game(mode)
     fen.mainloop()
     sys.exit(0)

@@ -16,9 +16,10 @@ class Player:
         self.size = 10
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
-        self.color = random.choice(['green', 'cyan', 'magenta'])
+        self.color = '#0066ff' if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
         self.speed = 4.5 * 60 / self.env.framerate
-        self.dash_length = 15
+        self.dash_length = 20
+        self.dash_speed = 4 * 60 / self.env.framerate
         self.dash_left = 3
         self.health = 100
         self.max_ammo = 20  # Taille du chargeur
@@ -30,8 +31,8 @@ class Player:
         if self.own:
             self.env.fen.bind('<Motion>', self.mouse_move)
             self.env.fen.bind('<Button-1>', self.shoot)
-            self.env.fen.bind('<Key-r>', self.reload)
-            keyboard.on_press_key(56, self.dash)  # dash on shift
+            keyboard.on_press_key('r', self.reload)
+            keyboard.on_press_key(56, self.dash)  # dash on shift 56
 
     def mouse_move(self, event):
         self.mouse['x'], self.mouse['y'] = event.x, event.y
@@ -64,7 +65,8 @@ class Player:
         for rect in rects:
             if self.x + self.size >= rect.x and self.x - self.size <= rect.x2 and self.y + self.size >= rect.y and self.y - self.size <= rect.y2:
                 collide_wall = True
-        self.color = 'red' if collide_wall else 'green'
+        if self.env.debug:
+            self.color = 'red' if collide_wall else 'green'
         return collide_wall
 
     def move(self, x, y):
@@ -90,9 +92,12 @@ class Player:
 
     def dash(self, *args):
         if self.dash_left > 0:
+            old_speed = self.speed
+            self.speed = self.dash_speed
             for i in range(self.dash_length):
                 self.move(math.cos(self.dir), math.sin(self.dir))
                 self.render(dash=True)
+            self.speed = old_speed
             self.dash_left -= 1
             cooldown = Timer(3, self.new_dash)
             cooldown.start()
@@ -149,7 +154,7 @@ class Target(Player):
         self.name = 'Target ' + str(self.id)
         self.own = False
         self.speed = 2 * 60/self.env.framerate
-        self.color = 'grey'
+        self.color = '#AAA'
         self.tick = 0
         self.vy = 1
         self.env = env
