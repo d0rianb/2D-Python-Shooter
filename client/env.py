@@ -1,5 +1,6 @@
 import tkinter as tk
 import re
+import time
 from renderedObject import RenderedObject
 
 class Env:
@@ -9,8 +10,9 @@ class Env:
         self.width = width
         self.height = height
         self.ratio = width / height
-        self.framerate = 30
-        self.time = 0
+        self.max_framerate = 60
+        self.framerate = self.max_framerate
+        self.last_frame_timestamp = 0
         self.players = []
         self.shoots = []
         self.map = {}
@@ -37,7 +39,11 @@ class Env:
         self.manageShoots()
         self.render()
         self.viewArea['width'], self.viewArea['height'], *offset = map(lambda val: int(val), re.split(r'[+x]', self.fen.geometry())) # Update width&height
-        self.fen.after(1000 // self.framerate, self.update)
+        end_time = time.time()
+        framerate = int(1 / (end_time - self.last_frame_timestamp))
+        self.framerate = framerate if framerate != 0 and framerate <= self.max_framerate else self.max_framerate
+        self.last_frame_timestamp = end_time
+        self.fen.after(1000 // self.max_framerate, self.update)
 
     def render(self):
         self.map.render()

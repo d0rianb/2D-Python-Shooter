@@ -42,7 +42,7 @@ class Interface:
             },
             'BottomRight': {
                 'Health': self.player.health,
-                'Ammo': self.player.ammo if not self.player.is_reloading else 'Rechargement en cours',
+                'Ammo': self.player.ammo if not self.player.is_reloading else 'Rechargement',
                 'Dash': self.player.dash_left
             }
         }

@@ -12,16 +12,11 @@ from interface import Interface
 from map.map import Map
 
 GAME_NAME = '2PQSTD'
-GAME_IS_RUNNING = False
-
-mode = 'PvE' # ['PvE', 'PvP']
-
 
 def start_game(mode):
-    global GAME_IS_RUNNING
     fen = tk.Tk()
     fen.title(GAME_NAME)
-    width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()
+    width, height = fen.winfo_screenwidth(), 840#fen.winfo_screenheight()
 
     canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC', highlightthickness=0)
 
@@ -31,9 +26,8 @@ def start_game(mode):
     dorian = Player(0, 50, 50, env, 'Dorian', own=True)
     if mode == 'PvE':
         for i in range(1, 5):
-            Target(i, random.randint(0, width), random.randint(0, height), env)
+            Target(i, random.randint(150, width - 150), random.randint(150, height - 150), env)
 
-    GAME_IS_RUNNING = True
     interface = Interface(dorian, env)
     env.update()
     interface.update()
@@ -44,8 +38,9 @@ def splash_screen():
     global GAME_IS_RUNNING
     fen = tk.Tk()
     fen.title('Bievenue dans ' + GAME_NAME)
+    fen.attributes("-topmost", True)
     width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()
-    L, H = width / 2, height / 3
+    L, H = width / 3, height / 3
     X, Y = (width - L) / 2, (height - H)/2
     fen.geometry('%dx%d%+d%+d' % (L,H,X,Y))
     fen.resizable(width=False, height=False)
@@ -65,14 +60,14 @@ def splash_screen():
 
     title.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
     subtitle.place(relx=0.5, rely=0.2, anchor=tk.CENTER)
-    PvE_button.place(relx=0.35, rely=0.5, anchor=tk.W)
-    PvP_button.place(relx=0.65, rely=0.5, anchor=tk.E)
+    PvE_button.place(relx=0.3, rely=0.5, anchor=tk.W)
+    PvP_button.place(relx=0.7, rely=0.5, anchor=tk.E)
     fen.mainloop()
 
 def settings():
     pass
 
 if __name__ == '__main__':
-    #start_game(mode)
-    splash_screen()
+    start_game('PvE')
+    #splash_screen()
     sys.exit(0)

@@ -4,6 +4,11 @@ import keyboard
 from threading import Timer
 from tir import Tir
 
+def random_sign():
+    sign = 0
+    while sign == 0:
+        sign = random.randint(-1, 1)
+    return sign
 
 class Player:
     def __init__(self, id, x, y, env, name="Invité", own=False):
@@ -18,8 +23,8 @@ class Player:
         self.mouse = {'x': 0, 'y': 0}
         self.color = '#0066ff' if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
         self.speed = 4.5 * 60 / self.env.framerate
-        self.dash_length = 20
-        self.dash_speed = 4 * 60 / self.env.framerate
+        self.dash_length = 32
+        self.dash_speed = 5 * 60 / self.env.framerate
         self.dash_left = 3
         self.health = 100
         self.max_ammo = 20  # Taille du chargeur
@@ -115,8 +120,9 @@ class Player:
             self.reload()
 
     def reload(self, *arg):
-        self.is_reloading = True
-        Timer(1, self.has_reload).start()
+        if self.ammo < self.max_ammo:
+            self.is_reloading = True
+            Timer(1, self.has_reload).start()
 
     def has_reload(self):
         self.ammo = self.max_ammo
@@ -153,19 +159,22 @@ class Target(Player):
         self.y = y
         self.name = 'Target ' + str(self.id)
         self.own = False
-        self.speed = 2 * 60/self.env.framerate
+        self.speed = 1 * self.env.max_framerate/self.env.framerate
         self.color = '#AAA'
         self.tick = 0
-        self.vy = 1
+        self.vx = random_sign()
+        self.vy = random_sign()
+        self.interval = random.randint(20, 60)
         self.env = env
 
     def update(self):
         super().update()
-        if (self.tick == 60):
-            self.vy *= -1
+        if (self.tick == self.interval):
+            self.vy *= random_sign()
+            self.vx *= random_sign()
             self.tick = 0
         self.tick += 1
-        super().move(0, self.vy)
+        super().move(self.vx, self.vy)
 
 
     def render(self):
