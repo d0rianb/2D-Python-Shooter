@@ -25,12 +25,12 @@ class Interface:
         text = ''' Se déplacer : Z, Q, S, D (ou flèches directionnelles)\n Tirer : Clic Droit\n Dash : Majuscule gauche\n Recharger : R\n Restart Game: G (only local)\n Display Help : H '''
         self.env.rendering_stack.append(RenderedObject('text', self.env.width/2, 100, text=text, font=self.font, color=self.color, zIndex=10))
 
-    def parse(self, position, x, y):
+    def parse(self, position, x, y, anchor):
         infos = self.informations[position]
         for (index, info) in enumerate(infos):
             self.env.rendering_stack.append(RenderedObject('text', x, y + index*self.padding,
                 text='{0}: {1}'.format(info, infos[info]),
-                anchor='w',
+                anchor=anchor,
                 color=self.color,
                 font=self.font))
 
@@ -56,6 +56,10 @@ class Interface:
     def render(self):
         for position in self.informations:
             x, y = self.margin_x, self.margin_y
-            if position == 'TopRight' or position == 'BottomRight': x = self.width - 120
-            if position == 'BottomRight': y = self.height - 2.5*len(self.informations['BottomRight'])*self.padding
-            self.parse(position, x, y)
+            anchor = 'w'
+            if position == 'TopRight' or position == 'BottomRight':
+                x = self.width - self.margin_x
+                anchor = 'e'
+            if position == 'BottomRight':
+                y = self.height - 2.5*len(self.informations['BottomRight'])*self.padding
+            self.parse(position, x, y, anchor)

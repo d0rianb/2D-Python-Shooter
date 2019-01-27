@@ -28,7 +28,7 @@ def connect():
 def start_game(mode):
     fen = tk.Tk()
     fen.title(GAME_NAME)
-    width, height = fen.winfo_screenwidth(), 840#fen.winfo_screenheight()
+    width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()
 
     canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC', highlightthickness=0)
     fen.bind('<Key-g>', lambda *args: start_game('PvE'))
@@ -45,7 +45,6 @@ def start_game(mode):
 
     interface = Interface(dorian, env)
     env.update()
-    interface.update()
     fen.mainloop()
 
 
