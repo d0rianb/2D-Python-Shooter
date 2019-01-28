@@ -1,12 +1,8 @@
-<<<<<<< HEAD
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import math
-=======
-import math
 from render import RenderedObject
->>>>>>> Update the whole render system
 
 class Tir:
     def __init__(self, id, x, y, dir, from_player):
