@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 class Rect:
     def __init__(self, id, x, y, width, height, map):
         self.id = int(id)

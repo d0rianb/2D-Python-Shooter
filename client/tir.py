@@ -1,5 +1,7 @@
-import math
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+import math
 
 class Tir:
     def __init__(self, id, x, y, dir, from_player):
