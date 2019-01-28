@@ -38,7 +38,8 @@ class Player:
             self.env.fen.bind('<Motion>', self.mouse_move)
             self.env.fen.bind('<Button-1>', self.shoot)
             keyboard.on_press_key('r', self.reload)
-            keyboard.on_press_key(56, self.dash)  # dash on shift 56
+            keyboard.on_press_key(56, self.dash)   # dash on shift 56
+            keyboard.on_press_key('left', self.dash) # dash on windows
 
     def mouse_move(self, event):
         self.mouse['x'], self.mouse['y'] = event.x, event.y
