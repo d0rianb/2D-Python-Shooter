@@ -31,7 +31,11 @@ def start_game(mode):
     width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()
 
     canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC', highlightthickness=0)
-    fen.bind('<Key-g>', lambda *args: start_game('PvE'))
+    fen.bind('<Key-g>', lambda *args: restart(fen))
+
+    def restart(fen):
+        fen.destroy()
+        start_game('PvE')
 
     env = Env(fen, width, height, canvas)
     map = Map(env, 'map1.txt', 'Test')
