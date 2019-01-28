@@ -16,9 +16,14 @@ from interface import Interface
 from map.map import Map
 
 GAME_NAME = '2PQSTD'
+SERVER_HOST = 'localhost'
+SERVER_PORT = 12800
 
 def connect():
-    pass
+    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    connection.connect((SERVER_HOST, SERVER_PORT))
+    print("Connection on {}".format(SERVER_PORT))
+    connection.send(b"Test de message")
 
 def start_game(mode):
     fen = tk.Tk()
@@ -77,6 +82,6 @@ def settings():
     pass
 
 if __name__ == '__main__':
-    start_game('PvE')
-    #splash_screen()
+    #start_game('PvE')
+    splash_screen()
     sys.exit(0)
