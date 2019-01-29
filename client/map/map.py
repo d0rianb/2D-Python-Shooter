@@ -3,6 +3,7 @@
 
 import os
 from map.rect import Rect
+from render import RenderedObject
 
 
 class Map:
@@ -28,4 +29,4 @@ class Map:
 
     def render(self):
         for rect in self.rects:
-            rect.render()
+            self.env.rendering_stack.append(RenderedObject('rect', rect.x, rect.y, width=rect.width, height=rect.height, color=rect.color))
