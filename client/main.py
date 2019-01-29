@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import tkinter as tk
 import tkinter.font as tkFont
 import os
@@ -5,6 +8,7 @@ import sys
 import math
 import random
 import keyboard
+import socket
 from player import Player, Target
 from tir import Tir
 from env import Env
@@ -12,6 +16,9 @@ from interface import Interface
 from map.map import Map
 
 GAME_NAME = '2PQSTD'
+
+def connect():
+    pass
 
 def start_game(mode):
     fen = tk.Tk()
@@ -32,6 +39,8 @@ def start_game(mode):
     if mode == 'PvE':
         for i in range(1, 5):
             Target(i, random.randint(150, width - 150), random.randint(150, height - 150), env)
+    elif mode == 'PvP':
+        connect()
 
     interface = Interface(dorian, env)
     env.update()

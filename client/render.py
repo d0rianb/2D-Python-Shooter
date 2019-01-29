@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 class RenderedObject:
     def __init__(self, type, x, y, **kwargs):
         self.type = type # rect/text/oval/line
