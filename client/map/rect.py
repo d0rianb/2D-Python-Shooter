@@ -21,7 +21,3 @@ class Rect:
         self.y2 = self.y + self.height
 
         self.color = '#757575'
-
-    def render(self):
-        self.map.env.canvas.create_rectangle(
-            self.x, self.y, self.x2, self.y2, fill=self.color, width=0)
