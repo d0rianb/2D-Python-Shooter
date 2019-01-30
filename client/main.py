@@ -5,6 +5,7 @@ import tkinter as tk
 import tkinter.font as tkFont
 import os
 import sys
+import platform
 import math
 import random
 import keyboard
@@ -16,6 +17,7 @@ from interface import Interface
 from map.map import Map
 
 GAME_NAME = '2PQSTD'
+CLIENT_OS = 'Unknown'
 SERVER_HOST = 'localhost'
 SERVER_PORT = 12800
 
@@ -53,7 +55,6 @@ def start_game(mode):
 
 
 def splash_screen():
-    global GAME_IS_RUNNING
     fen = tk.Tk()
     fen.title('Bievenue dans ' + GAME_NAME)
     fen.attributes("-topmost", True)

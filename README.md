@@ -1,9 +1,11 @@
-# 2D-Python-Shooter
+# 2D Python Shooter
+
 ## Instalation
 
- - Mac :
+
+- Mac :
 	 - `sudo python3 main.py` (dans le dossier du jeu)
-- PC :
+- Windows :
     - Exécuter `main.py`
 
 ## Commandes
@@ -12,6 +14,7 @@
 - **Dash** : Majuscule gauche
 - **Recharger** : R
 - **Help** : H
+- **Dash Preview** : H
 
 ## To-Do
 - Health regain

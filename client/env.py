@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import tkinter as tk
+import sys
+import os
+import platform
 import re
 import time
 from render import RenderedObject
@@ -23,6 +26,8 @@ class Env:
         self.interface = None
         self.debug = False
         self.rendering_stack = []
+        self.platform = platform.system()
+        self.GAME_IS_RUNNING = True
         self.viewArea = {
             'x': 0,
             'y': 0,
@@ -36,6 +41,24 @@ class Env:
                 self.shoots.remove(shoot)
             else:
                 shoot.update()
+
+    def isMac(self):
+        return self.platform == 'Darwin'
+
+    def isWindows(self):
+        return self.platform == 'Windows'
+
+    def exit(self):
+        self.GAME_IS_RUNNING = False
+        self.fen.destroy()
+        # Disconnect from server
+        sys.exit(0)
+
+    def panic(self, *event):
+        print('Exit with panic')
+        if self.isMac():
+            os.system("open -a IDLE ./ressources/TP-Info.py")
+        self.exit()
 
     def update(self):
         self.tick += 1
@@ -57,8 +80,8 @@ class Env:
             self.last_frame_timestamp = end_time
 
         # Loop
-        self.fen.after(1000 // self.max_framerate, self.update)
-
+        if self.GAME_IS_RUNNING:
+            self.fen.after(1000 // self.max_framerate, self.update)
 
     def render(self):
         self.map.render()

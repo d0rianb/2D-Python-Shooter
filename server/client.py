@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import threading
-
-class Client(threading.Thread):
+class Client():
     def __init__(self, ip, port, client_socket, server):
-        threading.Thread.__init__(self)
         self.id = 0
         self.ip = ip
         self.port = port

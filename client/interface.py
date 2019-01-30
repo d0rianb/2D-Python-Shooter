@@ -22,7 +22,8 @@ class Interface:
         self.font = tkFont.Font(family='Avenir Next', size=16, weight='normal')
 
     def display_help(self, *args):
-        text = ''' Se déplacer : Z, Q, S, D (ou flèches directionnelles)\n Tirer : Clic Droit\n Dash : Majuscule gauche\n Recharger : R\n Restart Game: G (only local)\n Display Help : H '''
+        text = ' Se déplacer : Z, Q, S, D (ou flèches directionnelles)\n Tirer : Clic Droit\n Dash : Majuscule gauche\n' +
+                'Recharger : R\n Restart Game: G (only local)\n Toggle Dash Preview: A\n Display Help : H\n Panic : P '
         self.env.rendering_stack.append(RenderedObject('text', self.env.width/2, 100, text=text, font=self.font, color=self.color, zIndex=10))
 
     def parse(self, position, x, y, anchor):

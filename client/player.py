@@ -45,9 +45,12 @@ class Player:
             self.env.fen.bind('<Button-1>', self.shoot)
             self.env.fen.bind('<ButtonRelease-1>', self.stop_fire)
             keyboard.on_press_key('r', self.reload)
-            keyboard.on_press_key('e', self.toggle_dash_preview)
-            keyboard.on_press_key('shift', self.dash) # dash on windows
-            keyboard.on_press_key(56, self.dash)   # dash on shift 56
+            keyboard.on_press_key('p', self.env.panic)
+            keyboard.on_press_key('a', self.toggle_dash_preview)
+            if self.env.isMac():
+                keyboard.on_press_key(56, self.dash)   # dash on shift 56
+            elif self.env.isWindows():
+                keyboard.on_press_key('shift', self.dash) # dash on windows
 
     def mouse_move(self, event):
         self.mouse['x'], self.mouse['y'] = event.x, event.y
