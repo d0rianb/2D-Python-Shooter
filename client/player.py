@@ -22,13 +22,13 @@ class Player:
         self.env = env
         self.name = name
         self.own = own  # Si le player est le joueur
-        self.size = 10
+        self.size = 10  # Radius
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = '#0066ff' if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
-        self.speed = 4.5 * 60 / self.env.framerate
+        self.theorical_speed = 4.2
+        self.speed = self.theorical_speed * 60 / self.env.framerate  # real Value
         self.dash_length = 32
-        self.dash_speed = 5 * 60 / self.env.framerate
         self.dash_preview = False
         self.simul_dash = {'x': 0, 'y': 0}
         self.dash_left = 3
@@ -121,7 +121,7 @@ class Player:
     def simul_move(self, x, y):
         old_x, old_y = self.simul_dash['x'], self.simul_dash['y']
 
-        self.simul_dash['x'] += x * self.dash_speed
+        self.simul_dash['x'] += x * self.speed
         if self.simul_is_colliding_wall():
             self.simul_dash['x'] = old_x
 
@@ -141,12 +141,9 @@ class Player:
 
     def dash(self, *args):
         if self.dash_left > 0:
-            old_speed = self.speed
-            self.speed = self.dash_speed
             for i in range(self.dash_length):
                 self.move(math.cos(self.dir), math.sin(self.dir))
                 self.render(dash=True)
-            self.speed = old_speed
             self.dash_left -= 1
             cooldown = Timer(3, self.new_dash)
             cooldown.start()
@@ -200,6 +197,7 @@ class Player:
         deltaX = self.mouse['x'] - self.x if (self.x != self.mouse['x']) else 1
         deltaY = self.mouse['y'] - self.y
         self.dir = math.atan2(deltaY, deltaX)
+        self.speed = self.theorical_speed * 60 / self.env.framerate
         if self.dash_preview:
             self.update_dash_preview()
         if self.alive:
@@ -226,7 +224,7 @@ class Target(Player):
         self.y = y
         self.name = 'Target ' + str(self.id)
         self.own = False
-        self.speed = 1 * self.env.max_framerate/self.env.framerate
+        self.theorical_speed = 1.8
         self.color = '#AAA'
         self.tick = 0
         self.vx = random_sign()
