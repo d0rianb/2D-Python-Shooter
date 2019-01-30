@@ -28,6 +28,7 @@ class Env:
         self.rendering_stack = []
         self.platform = platform.system()
         self.GAME_IS_RUNNING = True
+        self.GAME_IS_FOCUS = True
         self.viewArea = {
             'x': 0,
             'y': 0,
@@ -55,12 +56,14 @@ class Env:
         sys.exit(0)
 
     def panic(self, *event):
-        print('Exit with panic')
-        if self.isMac():
-            os.system("open -a IDLE ./ressources/TP-Info.py")
-        self.exit()
+        if self.GAME_IS_FOCUS:
+            print('Exit with panic')
+            if self.isMac():
+                os.system("open -a IDLE ./ressources/TP-Info.py")
+            self.exit()
 
     def update(self):
+        self.GAME_IS_FOCUS = True if self.fen.focus_get() != None else False
         self.tick += 1
         for player in self.players:
             if player.alive:
