@@ -86,6 +86,6 @@ def settings():
     pass
 
 if __name__ == '__main__':
-    #start_game('PvE')
-    splash_screen()
+    start_game('PvE')
+    # splash_screen()
     sys.exit(0)

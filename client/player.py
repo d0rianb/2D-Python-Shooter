@@ -29,20 +29,25 @@ class Player:
         self.speed = 4.5 * 60 / self.env.framerate
         self.dash_length = 32
         self.dash_speed = 5 * 60 / self.env.framerate
+        self.dash_preview = False
+        self.simul_dash = {'x': 0, 'y': 0}
         self.dash_left = 3
         self.health = 100
         self.max_ammo = 20  # Taille du chargeur
         self.ammo = self.max_ammo  # Munitions restantes
         self.is_reloading = False
+        self.autofire = False
         self.alive = True
         self.env.players.append(self)
 
         if self.own:
             self.env.fen.bind('<Motion>', self.mouse_move)
             self.env.fen.bind('<Button-1>', self.shoot)
+            self.env.fen.bind('<ButtonRelease-1>', self.stop_fire)
             keyboard.on_press_key('r', self.reload)
-            keyboard.on_press_key(56, self.dash)   # dash on shift 56
+            keyboard.on_press_key('e', self.toggle_dash_preview)
             keyboard.on_press_key('shift', self.dash) # dash on windows
+            keyboard.on_press_key(56, self.dash)   # dash on shift 56
 
     def mouse_move(self, event):
         self.mouse['x'], self.mouse['y'] = event.x, event.y
@@ -79,6 +84,16 @@ class Player:
             self.color = 'red' if collide_wall else 'green'
         return collide_wall
 
+    def simul_is_colliding_wall(self):
+        rects = self.env.map.rects
+        collide_wall = False
+        for rect in rects:
+            if self.simul_dash['x'] + self.size >= rect.x and self.simul_dash['x'] - self.size <= rect.x2 and self.simul_dash['y'] + self.size >= rect.y and self.simul_dash['y'] - self.size <= rect.y2:
+                collide_wall = True
+        if self.env.debug:
+            self.color = 'red' if collide_wall else 'green'
+        return collide_wall
+
     def move(self, x, y):
         old_x, old_y = self.x, self.y
 
@@ -100,6 +115,27 @@ class Player:
         elif self.y + self.size >= self.env.height:
             self.y = self.env.height - self.size
 
+    def simul_move(self, x, y):
+        old_x, old_y = self.simul_dash['x'], self.simul_dash['y']
+
+        self.simul_dash['x'] += x * self.dash_speed
+        if self.simul_is_colliding_wall():
+            self.simul_dash['x'] = old_x
+
+        self.simul_dash['y'] += y * self.speed
+        if self.simul_is_colliding_wall():
+            self.simul_dash['y'] = old_y
+
+        # Restreint le joueur à l'environnement
+        if self.simul_dash['x'] - self.size <= 0:
+            self.simul_dash['x'] = self.size
+        elif self.simul_dash['x'] + self.size >= self.env.width:
+            self.simul_dash['x'] = self.env.width - self.size
+        if self.simul_dash['y'] - self.size <= 0:
+            self.simul_dash['y'] = self.size
+        elif self.simul_dash['y'] + self.size >= self.env.height:
+            self.simul_dash['y'] = self.env.height - self.size
+
     def dash(self, *args):
         if self.dash_left > 0:
             old_speed = self.speed
@@ -116,13 +152,29 @@ class Player:
         if self.dash_left < 3:
             self.dash_left += 1
 
-    def shoot(self, event):
+    def toggle_dash_preview(self, *event):
+        self.dash_preview = not self.dash_preview
+
+    def update_dash_preview(self):
+        self.simul_dash['x'], self.simul_dash['y'] = self.x, self.y
+        for i in range(self.dash_length):
+            self.simul_move(math.cos(self.dir), math.sin(self.dir))
+
+    def shoot(self, *event):
         if self.ammo > 0 and not self.is_reloading:
-            tir = Tir(len(self.env.shoots), self.x, self.y, self.dir, self)
-            self.env.shoots.append(tir)
-            self.ammo -= 1
+            if event:
+                self.autofire = True
+                self.shoot()
+            if self.autofire and not event:
+                tir = Tir(len(self.env.shoots), self.x, self.y, self.dir, self)
+                self.env.shoots.append(tir)
+                self.ammo -= 1
+                Timer(.2, self.shoot).start()
         else:
             self.reload()
+
+    def stop_fire(self, *event):
+        self.autofire = False
 
     def reload(self, *arg):
         if self.ammo < self.max_ammo:
@@ -132,6 +184,8 @@ class Player:
     def has_reload(self):
         self.ammo = self.max_ammo
         self.is_reloading = False
+        if self.autofire:
+            self.shoot()
 
     def passif(self):
         pass  # dash regain and healt regain
@@ -143,6 +197,8 @@ class Player:
         deltaX = self.mouse['x'] - self.x if (self.x != self.mouse['x']) else 1
         deltaY = self.mouse['y'] - self.y
         self.dir = math.atan2(deltaY, deltaX)
+        if self.dash_preview:
+            self.update_dash_preview()
         if self.alive:
             self.check_shoot_collide()
         if self.own:
@@ -154,6 +210,9 @@ class Player:
         if not dash:
             self.env.rendering_stack.append(RenderedObject('line', self.x + math.cos(self.dir) * 12, self.y + math.sin(self.dir) * 12, x2=self.x + math.cos(self.dir) * 20, y2=self.y + math.sin(self.dir) * 20, zIndex=2))
             self.env.rendering_stack.append(RenderedObject('text', self.x - len(self.name) / 2, self.y - 20, text=head_text, color='#787878', zIndex=3))
+            if self.dash_preview:
+                preview_size = self.size
+                self.env.rendering_stack.append(RenderedObject('oval', self.simul_dash['x'] - preview_size, self.simul_dash['y'] - preview_size, x2=self.simul_dash['x'] + preview_size, y2=self.simul_dash['y'] + preview_size, color='#ccc'))
 
 
 class Target(Player):
