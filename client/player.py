@@ -75,6 +75,14 @@ class Player:
             dist_tail = math.sqrt((self.x - shoot.x)**2 + (self.y - shoot.y)**2)
             if (dist_head <= self.size + 1 or dist_tail <= self.size + 1) and shoot.from_player != self:
                 self.health -= shoot.damage
+                if shoot.from_player.name in self.hit_by_player:
+                    self.hit_by_player[shoot.from_player.name] += shoot.damage
+                else:
+                    self.hit_by_player[shoot.from_player.name] = shoot.damage
+                if self.name in shoot.from_player.hit_player:
+                    shoot.from_player.hit_player[self.name] += shoot.damage
+                else:
+                    shoot.from_player.hit_player[self.name] = shoot.damage
                 self.env.shoots.remove(shoot)
         if self.health <= 0:
             self.dead()
@@ -194,6 +202,7 @@ class Player:
         pass  # dash regain and healt regain
 
     def dead(self):
+        print(self.hit_by_player)
         self.alive = False
 
     def update(self):
