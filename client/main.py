@@ -10,22 +10,27 @@ import math
 import random
 import keyboard
 import socket
+import json
+
 from player import Player, Target
 from tir import Tir
 from env import Env
 from interface import Interface
+from client import Client
 from map.map import Map
 
 GAME_NAME = '2PQSTD'
 CLIENT_OS = 'Unknown'
 SERVER_HOST = 'localhost'
-SERVER_PORT = 12800
+SERVER_PORT = 12801
 
-def connect():
+def connect(player):
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     connection.connect((SERVER_HOST, SERVER_PORT))
     print("Connection on {}".format(SERVER_PORT))
-    connection.send(b"Test de message")
+    client = Client(connection, player)
+    player.client = client
+    client.send_connection_info()
 
 def start_game(mode):
     fen = tk.Tk()
@@ -42,14 +47,14 @@ def start_game(mode):
     env = Env(fen, width, height, canvas)
     map = Map(env, 'map1.txt', 'Test')
 
-    dorian = Player(0, 50, 50, env, 'Dorian', own=True)
+    player = Player(0, 50, 50, env, 'Dorian', own=True)
     if mode == 'PvE':
         for i in range(1, 5):
             Target(i, random.randint(150, width - 150), random.randint(150, height - 150), env)
     elif mode == 'PvP':
-        connect()
+        connect(player)
 
-    interface = Interface(dorian, env)
+    interface = Interface(player, env)
     env.update()
     fen.mainloop()
 
@@ -87,6 +92,6 @@ def settings():
     pass
 
 if __name__ == '__main__':
-    start_game('PvE')
-    # splash_screen()
+    # start_game('PvE')
+    splash_screen()
     sys.exit(0)

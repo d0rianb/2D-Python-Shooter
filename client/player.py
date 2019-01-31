@@ -22,6 +22,7 @@ class Player:
         self.env = env
         self.name = name
         self.own = own  # Si le player est le joueur
+        self.client = None
         self.size = 10  # Radius
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
@@ -47,7 +48,7 @@ class Player:
             self.env.fen.bind('<Button-1>', self.shoot)
             self.env.fen.bind('<ButtonRelease-1>', self.stop_fire)
             keyboard.on_press_key('r', self.reload)
-            keyboard.on_press_key('p', self.env.panic)
+            # keyboard.on_press_key('p', self.env.panic)
             keyboard.on_press_key('a', self.toggle_dash_preview)
             if self.env.isMac():
                 keyboard.on_press_key(56, self.dash)   # dash on shift 56
@@ -216,6 +217,8 @@ class Player:
             self.check_shoot_collide()
         if self.own:
             self.detect_keypress()
+        if self.client:
+            self.client.update_server()
 
     def render(self, dash=False):
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, self.health)
