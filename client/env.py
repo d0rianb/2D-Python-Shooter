@@ -16,7 +16,7 @@ class Env:
         self.width = width
         self.height = height
         self.ratio = width / height
-        self.max_framerate = 60
+        self.max_framerate = 144
         self.framerate = self.max_framerate
         self.last_frame_timestamp = 0
         self.players = []

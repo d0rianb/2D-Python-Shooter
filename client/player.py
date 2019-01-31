@@ -27,7 +27,7 @@ class Player:
         self.mouse = {'x': 0, 'y': 0}
         self.color = '#0066ff' if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
         self.theorical_speed = 4.2
-        self.speed = self.theorical_speed * 60 / self.env.framerate  # real Value
+        self.speed = self.theorical_speed * 60 / self.env.framerate   # computed value
         self.dash_length = 32
         self.dash_preview = False
         self.simul_dash = {'x': 0, 'y': 0}
@@ -37,6 +37,8 @@ class Player:
         self.ammo = self.max_ammo  # Munitions restantes
         self.is_reloading = False
         self.autofire = False
+        self.hit_player = {}
+        self.hit_by_player = {}
         self.alive = True
         self.env.players.append(self)
 
@@ -142,6 +144,7 @@ class Player:
     def dash(self, *args):
         if self.dash_left > 0:
             for i in range(self.dash_length):
+                self.speed = self.theorical_speed
                 self.move(math.cos(self.dir), math.sin(self.dir))
                 self.render(dash=True)
             self.dash_left -= 1
