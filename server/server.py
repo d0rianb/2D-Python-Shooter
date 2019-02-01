@@ -50,7 +50,6 @@ class Server(threading.Thread):
                             client.player.x = message['content']['x']
                             client.player.y = message['content']['y']
                             client.player.health = message['content']['health']
-                            print('[INFO] Update Player', client.player)
 
             except KeyError:
                 print("[WARNING] : Json from %s:%s is not valid" % addr)

@@ -9,6 +9,7 @@ class Client:
     def __init__(self, connection,  player, ip, port):
         self.connection = connection
         self.player = player
+        self.player.client = self
         self.id = 0
         self.ip = ip
         self.port = port

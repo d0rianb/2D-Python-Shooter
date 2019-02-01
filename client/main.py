@@ -50,7 +50,6 @@ def start_local_game(name, difficulty=5):
 
 def start_online_game(name, ip=SERVER_HOST, port=SERVER_PORT):
     connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client = Client(connection, player, SERVER_HOST, SERVER_PORT)
 
     fen = tk.Tk()
     fen.title(GAME_NAME + ' - Local')
@@ -62,7 +61,7 @@ def start_online_game(name, ip=SERVER_HOST, port=SERVER_PORT):
     map = Map(env, 'map1.txt', 'Test')
 
     player = Player(0, 50, 50, env, name, own=True)
-    player.client = client
+    client = Client(connection, player, SERVER_HOST, SERVER_PORT)
     client.send_connection_info()
 
     interface = Interface(player, env)
