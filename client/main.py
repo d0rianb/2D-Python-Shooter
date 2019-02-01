@@ -49,6 +49,7 @@ def start_local_game(name, difficulty=5):
     fen.mainloop()
 
 def start_online_game(name, ip=SERVER_HOST, port=SERVER_PORT):
+    print('Connection to {}:{}'.format(ip, port))
     connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     fen = tk.Tk()
@@ -86,9 +87,9 @@ def splash_screen():
     def handle_click(mode, fen):
         fen.destroy()
         if mode == 'PvE':
-            start_local_game(difficulty_var.get())
+            start_local_game(name_var.get(), difficulty_var.get())
         elif mode == 'PvP':
-            start_online_game(server_ip_var.get(), server_port_var.get())
+            start_online_game(name_var.get(), server_ip_var.get(), server_port_var.get())
 
     title = tk.Label(fen, text='Bievenue dans ' + GAME_NAME, font=title_font)
     subtitle = tk.Label(fen, text='Sélectionnez le mode de jeu : ', font=subtitle_font)
