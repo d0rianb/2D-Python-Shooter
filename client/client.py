@@ -14,10 +14,9 @@ class Client:
         self.port = port
 
     def encode(self, message):
-        print('Send : ' + str(message))
         return json.dumps(message).encode('utf-8')
 
-    def send_message(self, title, content=''):
+    def send_message(self, title, content={}):
         message = {
             'from': self.player.id,
             'title': title,
@@ -25,7 +24,7 @@ class Client:
         }
         self.connection.sendto(self.encode(message), (self.ip, self.port))
 
-    def update_server(self):
+    def send_position(self):
         content = {
             'id': self.player.id,
             'x': self.player.x,
@@ -33,7 +32,6 @@ class Client:
             'health': self.player.health
         }
         self.send_message('update_infos', content)
-
 
     def send_connection_info(self):
         content = {

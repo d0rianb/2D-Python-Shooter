@@ -203,7 +203,6 @@ class Player:
         pass  # dash regain and healt regain
 
     def dead(self):
-        print(self.hit_by_player)
         self.alive = False
 
     def update(self):
@@ -218,7 +217,7 @@ class Player:
         if self.own:
             self.detect_keypress()
         if self.client:
-            self.client.update_server()
+            self.client.send_position()
 
     def render(self, dash=False):
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, self.health)
@@ -232,20 +231,22 @@ class Player:
 
 
 class Target(Player):
-    def __init__(self, id, x, y, env):
+    def __init__(self, id, x, y, env, level=5):
         super().__init__(id, x, y, env, name="Target", own=False)
         self.id = id
         self.x = x
         self.y = y
+        self.env = env
+        self.level = level
         self.name = 'Target ' + str(self.id)
         self.own = False
-        self.theorical_speed = 1.8
+        self.theorical_speed = level / 2.5
         self.color = '#AAA'
         self.tick = 0
         self.vx = random_sign()
         self.vy = random_sign()
         self.interval = random.randint(20, 60)
-        self.env = env
+        self.shoot = self.level > 5
 
     def update(self):
         super().update()
@@ -255,7 +256,6 @@ class Target(Player):
             self.tick = 0
         self.tick += 1
         super().move(self.vx, self.vy)
-
 
     def render(self):
         super().render()
