@@ -43,12 +43,24 @@ class Server(threading.Thread):
                 print('[ERROR] : Loading JSON')
             try:
                 if message['title'] == 'connect_infos':
-                    self.clients.append(Client(message, addr))
+                    already_connect = False
+                    for client in self.clients:
+                        if client.ip == addr[0]:
+                            already_connect = True
+                    if not already_connect:
+                        client_id = len(self.clients)+1
+                        message['content']['id'] = client_id
+                        response_id = json.dumps({'title': 'response_id', 'id': client_id}).encode('utf-8')
+                        self.clients.append(Client(message, addr))
+                        self.socket.sendto(response_id, addr)
+                    else:
+                        print('[WARNING] {} is already connected'.format(addr[0]))
                 elif message['title'] == 'update_infos':
                     for client in self.clients:
                         if client.id == message['content']['id']:
                             client.player.x = message['content']['x']
                             client.player.y = message['content']['y']
+                            client.player.dir = message['content']['dir']
                             client.player.health = message['content']['health']
 
             except KeyError:
@@ -56,10 +68,14 @@ class Server(threading.Thread):
             except ValueError:
                 print("[WARNING] : Message from %s:%s is not valid json string" % addr)
 
+            for client in self.clients:
+                players_array = [client.player.toJSON() for client in self.clients]
+                players_array = players_array
+                message = json.dumps({'title': 'players_array', 'array': players_array}).encode('utf-8')
+                self.socket.sendto(message, (client.ip, client.port))
+
 
     def end(self, *event):
         self.is_running = False
-        for client in self.clients:
-            client.conn.close()
         if self.socket:
             self.socket.close()

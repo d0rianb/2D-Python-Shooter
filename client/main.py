@@ -20,8 +20,8 @@ from client import Client
 from map.map import Map
 
 GAME_NAME = '2PQSTD'
-SERVER_HOST = '127.0.0.1'
-SERVER_PORT = 12801
+SERVER_HOST = '192.168.1.142'
+SERVER_PORT = 80
 
 
 def start_local_game(name, difficulty=5):
@@ -53,7 +53,7 @@ def start_online_game(name, ip=SERVER_HOST, port=SERVER_PORT):
     connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     fen = tk.Tk()
-    fen.title(GAME_NAME + ' - Local')
+    fen.title(GAME_NAME + ' - Multi')
     width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()
 
     canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC', highlightthickness=0)
@@ -62,7 +62,7 @@ def start_online_game(name, ip=SERVER_HOST, port=SERVER_PORT):
     map = Map(env, 'map1.txt', 'Test')
 
     player = Player(0, 50, 50, env, name, own=True)
-    client = Client(connection, player, ip, host)
+    client = Client(connection, player, ip, port)
     client.send_connection_info()
 
     interface = Interface(player, env)
@@ -89,7 +89,7 @@ def splash_screen():
         if mode == 'PvE':
             start_local_game(name_var.get(), difficulty_var.get())
         elif mode == 'PvP':
-            start_online_game(name_var.get(), server_ip_var.get(), server_port_var.get())
+            start_online_game(name_var.get(), server_ip_var.get(), int(server_port_var.get()))
 
     title = tk.Label(fen, text='Bievenue dans ' + GAME_NAME, font=title_font)
     subtitle = tk.Label(fen, text='Sélectionnez le mode de jeu : ', font=subtitle_font)

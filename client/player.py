@@ -218,6 +218,7 @@ class Player:
             self.detect_keypress()
         if self.client:
             self.client.send_position()
+            self.client.receive()
 
     def render(self, dash=False):
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, self.health)

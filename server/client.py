@@ -14,5 +14,5 @@ class Client:
         self.name = content['name']
         self.ip = addr[0]
         self.port = addr[1]
-        self.player = Player(self.id, content['x'], content['y'], content['size'], content['health'])
-        print('[INFO] New Connection : {}:{}'.format(self.ip, self.port))
+        self.player = Player(self.id, content['x'], content['y'], content['dir'], content['size'], content['health'])
+        print('[INFO] New Connection : {}:{} as {}'.format(self.ip, self.port, self.name))
