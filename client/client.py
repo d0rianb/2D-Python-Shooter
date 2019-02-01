@@ -3,7 +3,7 @@
 
 import socket
 import json
-import pickle
+import time
 
 class Client:
     def __init__(self, connection,  player, ip, port):
@@ -13,6 +13,7 @@ class Client:
         self.id = 0
         self.ip = ip
         self.port = port
+        self.ping = 0
         self.connection.setblocking(0)
 
     def encode(self, message):
@@ -22,7 +23,8 @@ class Client:
         message = {
             'from': self.player.id,
             'title': title,
-            'content': content
+            'content': content,
+            'timecode': time.time()
         }
         self.connection.sendto(self.encode(message), (self.ip, self.port))
 
@@ -53,16 +55,23 @@ class Client:
         try:
             data = self.connection.recv(256)
             message = json.loads(data.decode('utf-8'))
+
+            self.ping = time.time() - message['timecode']
+
             if message['title'] == 'players_array':
-                players_array = [json.loads(player) for player in message['array']]
-                print(players_array)
+                print(message)
+                players_array = [json.loads(player) for player in message['content']]
                 for player in self.player.env.players:
                     for new_player in players_array:
                         if player.id == new_player['id'] and not player.own:
                             player.x = new_player['x']
                             player.y = new_player['y']
                             player.health = new_player['health']
+
             if message['title'] == 'response_id':
-                self.player.id = message['id']
+                self.player.id = message['content']['id']
         except BlockingIOError:
             pass
+
+    def disconnect(self):
+        self.connection.close()

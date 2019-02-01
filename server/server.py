@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import socket
-import socketserver
 import threading
 import json
-import re
+import time
 import keyboard
 
 from message import Message
@@ -47,14 +46,16 @@ class Server(threading.Thread):
                     for client in self.clients:
                         if client.ip == addr[0]:
                             already_connect = True
-                    if not already_connect:
-                        client_id = len(self.clients)+1
-                        message['content']['id'] = client_id
-                        response_id = json.dumps({'title': 'response_id', 'id': client_id}).encode('utf-8')
-                        self.clients.append(Client(message, addr))
-                        self.socket.sendto(response_id, addr)
-                    else:
+                            old_client = client
+                    if already_connect:
+                        self.clients.remove(old_client)
                         print('[WARNING] {} is already connected'.format(addr[0]))
+
+                    client_id = len(self.clients)+1
+                    new_client = Client(client_id, message, addr)
+                    self.clients.append(new_client)
+                    self.send_message('response_id', {'id': client_id}, addr[0], addr[1])
+
                 elif message['title'] == 'update_infos':
                     for client in self.clients:
                         if client.id == message['content']['id']:
@@ -62,6 +63,7 @@ class Server(threading.Thread):
                             client.player.y = message['content']['y']
                             client.player.dir = message['content']['dir']
                             client.player.health = message['content']['health']
+                            client.ping = time.time() - message['timecode']
 
             except KeyError:
                 print("[WARNING] : Json from %s:%s is not valid" % addr)
@@ -70,9 +72,17 @@ class Server(threading.Thread):
 
             for client in self.clients:
                 players_array = [client.player.toJSON() for client in self.clients]
-                players_array = players_array
-                message = json.dumps({'title': 'players_array', 'array': players_array}).encode('utf-8')
-                self.socket.sendto(message, (client.ip, client.port))
+                self.send_message('players_array', players_array, client.ip, client.port)
+
+
+    def send_message(self, title, content, ip, port):
+        message = {
+            'title': title,
+            'content': content,
+            'timecode': time.time()
+        }
+        encoded = json.dumps(message).encode('utf-8')
+        self.socket.sendto(encoded, (ip, port))
 
 
     def end(self, *event):

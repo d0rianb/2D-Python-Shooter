@@ -15,7 +15,6 @@ class Interface:
         self.margin_y = 20
         self.width = env.viewArea['width']
         self.height = env.viewArea['height']
-        self.refresh_rate = env.framerate
         self.padding = 20
         self.informations = {}
         self.color = '#92959b'
@@ -38,7 +37,8 @@ class Interface:
         self.informations = {
             'TopLeft': {
                 'Player Name': self.player.name,
-                'FrameRate': self.env.framerate
+                'FrameRate': self.env.framerate,
+                'Ping': '{0:.2g} ms'.format(self.player.client.ping) if self.player.client else 0
             },
             'TopRight': {
                 'People Alive': len(list(filter(lambda player: player.alive, self.env.players)))

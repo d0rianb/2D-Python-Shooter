@@ -35,6 +35,7 @@ class Env:
             'width': self.width,
             'height': self.height
         }
+        self.fen.protocol("WM_DELETE_WINDOW", self.exit)
 
     def manageShoots(self):
         for shoot in self.shoots:
@@ -51,6 +52,9 @@ class Env:
 
     def exit(self):
         self.GAME_IS_RUNNING = False
+        for player in self.players:
+            if player.client:
+                player.client.disconnect()
         self.fen.destroy()
         # Disconnect from server
         sys.exit(0)

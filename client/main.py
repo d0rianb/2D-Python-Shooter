@@ -30,11 +30,11 @@ def start_local_game(name, difficulty=5):
     width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()
 
     canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC', highlightthickness=0)
-    fen.bind('<Key-g>', lambda *args: restart(fen))
+    fen.bind('<Key-g>', lambda *args: restart(fen, name, difficulty))
 
-    def restart(fen):
+    def restart(fen, name, difficulty):
         fen.destroy()
-        start_game('PvE')
+        start_local_game(name, difficulty)
 
     env = Env(fen, width, height, canvas)
     map = Map(env, 'map1.txt', 'Test')
