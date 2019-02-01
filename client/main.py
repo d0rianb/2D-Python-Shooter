@@ -20,15 +20,12 @@ from client import Client
 from map.map import Map
 
 GAME_NAME = '2PQSTD'
-CLIENT_OS = 'Unknown'
-SERVER_HOST = 'localhost'
+SERVER_HOST = '127.0.0.1'
 SERVER_PORT = 12801
 
 def connect(player):
-    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    connection.connect((SERVER_HOST, SERVER_PORT))
-    print("Connection on {}".format(SERVER_PORT))
-    client = Client(connection, player)
+    connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client = Client(connection, player, SERVER_HOST, SERVER_PORT)
     player.client = client
     client.send_connection_info()
 

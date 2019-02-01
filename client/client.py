@@ -6,24 +6,28 @@ import json
 import pickle
 
 class Client:
-    def __init__(self, socket, player):
-        self.socket = socket
+    def __init__(self, connection,  player, ip, port):
+        self.connection = connection
         self.player = player
         self.id = 0
+        self.ip = ip
+        self.port = port
 
     def encode(self, message):
-        print('send : ' + str(message))
+        print('Send : ' + str(message))
         return json.dumps(message).encode('utf-8')
 
     def send_message(self, title, content=''):
         message = {
+            'from': self.player.id,
             'title': title,
             'content': content
         }
-        self.socket.send(self.encode(message))
+        self.connection.sendto(self.encode(message), (self.ip, self.port))
 
     def update_server(self):
         content = {
+            'id': self.player.id,
             'x': self.player.x,
             'y': self.player.y,
             'health': self.player.health
