@@ -62,7 +62,7 @@ def start_online_game(name, ip=SERVER_HOST, port=SERVER_PORT):
     map = Map(env, 'map1.txt', 'Test')
 
     player = Player(0, 50, 50, env, name, own=True)
-    client = Client(connection, player, SERVER_HOST, SERVER_PORT)
+    client = Client(connection, player, ip, host)
     client.send_connection_info()
 
     interface = Interface(player, env)

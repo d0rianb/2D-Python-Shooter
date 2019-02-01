@@ -28,7 +28,7 @@ class Server(threading.Thread):
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.ip, self.port))
 
-        print('Server is running in port {}'.format(self.port))
+        print('Server is running on port {}'.format(self.port))
 
         while self.is_running:
             try:

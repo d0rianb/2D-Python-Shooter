@@ -8,8 +8,8 @@ import json
 from server import Server
 from client import Client
 
-SERVER_IP = '127.0.0.1'
-SERVER_PORT = 12801
+SERVER_IP = 'localhost'
+SERVER_PORT = 80
 
 server = Server(SERVER_IP, SERVER_PORT)
 server.start()
