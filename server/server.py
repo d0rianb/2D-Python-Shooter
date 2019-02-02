@@ -8,6 +8,7 @@ import json
 import datetime
 import keyboard
 import logging
+import time
 
 from client import Client
 
@@ -25,7 +26,7 @@ class Server(threading.Thread):
         ## Logging system
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('[%(levelname)s] : %(message)s')
+        formatter = logging.Formatter('%(asctime)s.%(msecs)03d | [%(levelname)s] : %(message)s', datefmt='%X')
         stream_handler = logging.StreamHandler(sys.stdout)
         stream_handler.setLevel(logging.DEBUG)
         stream_handler.setFormatter(formatter)

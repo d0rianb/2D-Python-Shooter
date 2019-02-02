@@ -21,7 +21,7 @@ from map.map import Map
 
 GAME_NAME = '2PQSTD'
 SERVER_HOST = '192.168.1.142'
-SERVER_PORT = 80
+SERVER_PORT = 12800
 
 
 def start_local_game(name, difficulty=5):
