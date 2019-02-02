@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 import socket
 import threading
 import json
-import time
+import datetime
 import keyboard
+import logging
 
-from message import Message
 from client import Client
 
 class Server(threading.Thread):
@@ -20,66 +21,71 @@ class Server(threading.Thread):
         self.max_tickrate = 144
         self.tickrate = 0
         self.is_running = True
+
+        ## Logging system
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('[%(levelname)s] : %(message)s')
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setLevel(logging.DEBUG)
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+
         keyboard.on_press_key('k', self.end)
+
+    def time(self):
+        return datetime.datetime.utcnow().timestamp() * 1000
 
     def run(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.ip, self.port))
+        self.socket.setblocking(0)
 
-        print('Server is running on port {}'.format(self.port))
+        logging.info('Server is running on port {}'.format(self.port))
 
+        delta_tick = 0
         while self.is_running:
+            self.tickrate = int(1 / (self.time() - delta_tick))
+            delta_tick = self.time()
             try:
                 data, addr = self.socket.recvfrom(1024)
-            except socket.timeout:
-                print('[ERROR] : Socket Timeout')
-                continue
-
-            try:
                 message = json.loads(data)
-            except:
-                print('[ERROR] : Loading JSON')
-            try:
                 if message['title'] == 'connect_infos':
-                    already_connect = False
-                    for client in self.clients:
-                        if client.ip == addr[0]:
-                            already_connect = True
-                            old_client = client
-                    if already_connect:
-                        self.clients.remove(old_client)
-                        print('[WARNING] {} is already connected'.format(addr[0]))
+                    self.new_connection(message, addr)
 
-                    client_id = len(self.clients)+1
-                    new_client = Client(client_id, message, addr)
-                    self.clients.append(new_client)
-                    self.send_message('response_id', {'id': client_id}, addr[0], addr[1])
-
-                elif message['title'] == 'update_infos':
-                    for client in self.clients:
-                        if client.id == message['content']['id']:
-                            client.player.x = message['content']['x']
-                            client.player.y = message['content']['y']
-                            client.player.dir = message['content']['dir']
-                            client.player.health = message['content']['health']
-                            client.ping = time.time() - message['timecode']
-
-            except KeyError:
-                print("[WARNING] : Json from %s:%s is not valid" % addr)
-            except ValueError:
-                print("[WARNING] : Message from %s:%s is not valid json string" % addr)
+                elif message['title'] == 'update_position':
+                    self.update_position(message)
+            except:
+                pass
 
             for client in self.clients:
                 players_array = [client.player.toJSON() for client in self.clients]
                 self.send_message('players_array', players_array, client.ip, client.port)
 
+    def new_connection(self, message, addr):
+        reconnect = False
+        for client in self.clients:
+            if client.ip == addr[0]:
+                reconnect = True
+                old_client = client
+        if reconnect:
+            self.clients.remove(old_client)
+            logging.info('{} is reconnecting'.format(addr[0]))
+
+        client_id = len(self.clients) + 1
+        Client(client_id, message, addr, self)
+        self.send_message('response_id', {'id': client_id}, addr[0], addr[1])
+
+    def update_position(self, message):
+        for client in self.clients:
+            if client.id == message['content']['id']:
+                client.update_player(message)
 
     def send_message(self, title, content, ip, port):
         message = {
             'title': title,
             'content': content,
-            'timecode': time.time()
+            'infos': { 'timestamp': self.time() }
         }
         encoded = json.dumps(message).encode('utf-8')
         self.socket.sendto(encoded, (ip, port))

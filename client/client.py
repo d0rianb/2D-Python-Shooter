@@ -3,7 +3,10 @@
 
 import socket
 import json
-import time
+import datetime
+import math
+
+from player import Player
 
 class Client:
     def __init__(self, connection,  player, ip, port):
@@ -19,12 +22,18 @@ class Client:
     def encode(self, message):
         return json.dumps(message).encode('utf-8')
 
+    def time(self):
+        return datetime.datetime.utcnow().timestamp() * 1000
+
+
     def send_message(self, title, content={}):
         message = {
             'from': self.player.id,
             'title': title,
             'content': content,
-            'timecode': time.time()
+            'info': {
+                'timestamp': self.time()
+            }
         }
         self.connection.sendto(self.encode(message), (self.ip, self.port))
 
@@ -36,7 +45,7 @@ class Client:
             'dir': self.player.dir,
             'health': self.player.health
         }
-        self.send_message('update_infos', content)
+        self.send_message('update_position', content)
 
     def send_connection_info(self):
         content = {
@@ -53,20 +62,24 @@ class Client:
 
     def receive(self):
         try:
-            data = self.connection.recv(256)
+            data = self.connection.recv(4096)
             message = json.loads(data.decode('utf-8'))
 
-            self.ping = time.time() - message['timecode']
+            self.ping = self.time() - message['infos']['timestamp']
 
             if message['title'] == 'players_array':
-                print(message)
                 players_array = [json.loads(player) for player in message['content']]
-                for player in self.player.env.players:
-                    for new_player in players_array:
+                for new_player in players_array:
+                    player_is_new = True
+                    for player in self.player.env.players:
                         if player.id == new_player['id'] and not player.own:
+                            player_is_new = False
                             player.x = new_player['x']
                             player.y = new_player['y']
                             player.health = new_player['health']
+                    if player_is_new and new_player['id'] != self.player.id:
+                        Player(new_player['id'], new_player['x'], new_player['y'], self.player.env, new_player['name'])
+
 
             if message['title'] == 'response_id':
                 self.player.id = message['content']['id']
