@@ -132,11 +132,11 @@ class Player:
     def simul_move(self, x, y):
         old_x, old_y = self.simul_dash['x'], self.simul_dash['y']
 
-        self.simul_dash['x'] += x * self.speed
+        self.simul_dash['x'] += x * self.theorical_speed
         if self.simul_is_colliding_wall():
             self.simul_dash['x'] = old_x
 
-        self.simul_dash['y'] += y * self.speed
+        self.simul_dash['y'] += y * self.theorical_speed
         if self.simul_is_colliding_wall():
             self.simul_dash['y'] = old_y
 
