@@ -4,6 +4,7 @@
 import socket
 import json
 import datetime
+import time
 import math
 
 from player import Player
@@ -23,7 +24,8 @@ class Client:
         return json.dumps(message).encode('utf-8')
 
     def time(self):
-        return datetime.datetime.utcnow().timestamp() * 1000
+        # return datetime.datetime.utcnow().timestamp() * 1000
+        return time.time()
 
 
     def send_message(self, title, content={}):
@@ -31,7 +33,7 @@ class Client:
             'from': self.player.id,
             'title': title,
             'content': content,
-            'info': {
+            'infos': {
                 'timestamp': self.time()
             }
         }
@@ -39,7 +41,6 @@ class Client:
 
     def send_position(self):
         content = {
-            'id': self.player.id,
             'x': self.player.x,
             'y': self.player.y,
             'dir': self.player.dir,
@@ -65,6 +66,7 @@ class Client:
             data = self.connection.recv(4096)
             message = json.loads(data.decode('utf-8'))
 
+            print(message)
             self.ping = self.time() - message['infos']['timestamp']
 
             if message['title'] == 'players_array':
@@ -76,6 +78,7 @@ class Client:
                             player_is_new = False
                             player.x = new_player['x']
                             player.y = new_player['y']
+                            player.dir = new_player['dir']
                             player.health = new_player['health']
                     if player_is_new and new_player['id'] != self.player.id:
                         Player(new_player['id'], new_player['x'], new_player['y'], self.player.env, new_player['name'])

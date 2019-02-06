@@ -9,8 +9,10 @@ import datetime
 import keyboard
 import logging
 import time
+import multiprocessing
 
 from client import Client
+
 
 class Server(threading.Thread):
     def __init__(self,ip, port):
@@ -20,13 +22,16 @@ class Server(threading.Thread):
         self.socket = None
         self.clients = []
         self.max_tickrate = 144
+        self.tick = 0
         self.tickrate = 0
         self.is_running = True
+        self.pool = multiprocessing.Pool(processes=1)
 
         ## Logging system
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s.%(msecs)03d | [%(levelname)s] : %(message)s', datefmt='%X')
+        # formatter = logging.Formatter('%(message)s', datefmt='%X')
         stream_handler = logging.StreamHandler(sys.stdout)
         stream_handler.setLevel(logging.DEBUG)
         stream_handler.setFormatter(formatter)
@@ -35,7 +40,8 @@ class Server(threading.Thread):
         keyboard.on_press_key('k', self.end)
 
     def time(self):
-        return datetime.datetime.utcnow().timestamp() * 1000
+        # return datetime.datetime.utcnow().timestamp() * 1000
+        return time.time()
 
     def run(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -46,6 +52,7 @@ class Server(threading.Thread):
 
         delta_tick = 0
         while self.is_running:
+            self.tick += 1
             self.tickrate = int(1 / (self.time() - delta_tick))
             delta_tick = self.time()
             try:
@@ -56,12 +63,14 @@ class Server(threading.Thread):
 
                 elif message['title'] == 'update_position':
                     self.update_position(message)
-            except:
+            except BlockingIOError:
                 pass
 
+            ## Send players position
             for client in self.clients:
                 players_array = [client.player.toJSON() for client in self.clients]
-                self.send_message('players_array', players_array, client.ip, client.port)
+                self.pool.apply_async(self.send_message, ['players_array', players_array, client.ip, client.port])
+                #self.send_message('players_array', players_array, client.ip, client.port)
 
     def new_connection(self, message, addr):
         reconnect = False
@@ -79,7 +88,7 @@ class Server(threading.Thread):
 
     def update_position(self, message):
         for client in self.clients:
-            if client.id == message['content']['id']:
+            if client.id == message['from']:
                 client.update_player(message)
 
     def send_message(self, title, content, ip, port):

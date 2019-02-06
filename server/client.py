@@ -24,4 +24,4 @@ class Client:
         self.player.y = message['content']['y']
         self.player.dir = message['content']['dir']
         self.player.health = message['content']['health']
-        self.ping = time.time() - message['info']['timestamp']
+        self.ping = self.server.time() - message['infos']['timestamp']

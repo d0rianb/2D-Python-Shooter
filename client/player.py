@@ -48,7 +48,7 @@ class Player:
             self.env.fen.bind('<Button-1>', self.shoot)
             self.env.fen.bind('<ButtonRelease-1>', self.stop_fire)
             keyboard.on_press_key('r', self.reload)
-            # keyboard.on_press_key('p', self.env.panic)
+            keyboard.on_press_key('p', self.env.panic)
             keyboard.on_press_key('a', self.toggle_dash_preview)
             if self.env.isMac():
                 keyboard.on_press_key(56, self.dash)   # dash on shift 56
@@ -202,6 +202,9 @@ class Player:
     def passif(self):
         pass  # dash regain and healt regain
 
+    def dist(self, other):
+        return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
+
     def dead(self):
         self.alive = False
 
@@ -244,18 +247,43 @@ class Target(Player):
         self.theorical_speed = level / 2.5
         self.color = '#AAA'
         self.tick = 0
+        self.shoot_tick = 0
         self.vx = random_sign()
         self.vy = random_sign()
         self.interval = random.randint(20, 60)
-        self.shoot = self.level > 5
+        self.shoot_interval = random.randint(150-self.level*5, 700-self.level*5)
+        self.closer_player = None
+        self.can_shoot = self.level >= 3
+
+    def detect_closer_player(self):
+        for player in self.env.players:
+            if self.closer_player and player != self:
+                if self.dist(player) < self.dist(self.closer_player):
+                    self.closer_player = player
+            elif player != self:
+                self.closer_player = player
+
+    def shoot(self):
+        tir = Tir(len(self.env.shoots), self.x, self.y, self.dir, self)
+        self.env.shoots.append(tir)
+        self.ammo -= 1
 
     def update(self):
         super().update()
-        if (self.tick == self.interval):
+        self.detect_closer_player()
+        self.dir = math.atan2(self.closer_player.y - self.y, self.closer_player.x - self.x)
+        ## Move
+        if self.tick == self.interval:
             self.vy *= random_sign()
             self.vx *= random_sign()
             self.tick = 0
+        ## Shoot
+        if self.can_shoot and self.shoot_tick == self.interval:
+            self.dir += random_sign()*random.random() * math.pi/3
+            self.shoot()
+            self.shoot_tick = 0
         self.tick += 1
+        self.shoot_tick += 1
         super().move(self.vx, self.vy)
 
     def render(self):
