@@ -53,11 +53,7 @@ def start_online_game(name, ip=SERVER_HOST, port=SERVER_PORT):
     connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     fen = tk.Tk()
-<<<<<<< HEAD
-    fen.title(GAME_NAME)
-=======
     fen.title(GAME_NAME + ' - Multi')
->>>>>>> multi-0.0.1
     width, height = fen.winfo_screenwidth(), fen.winfo_screenheight()
 
     canvas = tk.Canvas(fen, width=width, height=height, bg='#F1E7DC', highlightthickness=0)

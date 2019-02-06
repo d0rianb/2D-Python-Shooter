@@ -27,12 +27,9 @@ class Env:
         self.interface = None
         self.debug = False
         self.rendering_stack = []
-<<<<<<< HEAD
-=======
         self.platform = platform.system()
         self.GAME_IS_RUNNING = True
         self.GAME_IS_FOCUS = True
->>>>>>> multi-0.0.1
         self.viewArea = {
             'x': 0,
             'y': 0,
@@ -48,14 +45,6 @@ class Env:
             else:
                 shoot.update()
 
-<<<<<<< HEAD
-    def update(self):
-        self.tick += 1
-        for player in self.players:
-            if player.alive:
-                player.update()
-
-=======
     def isMac(self):
         return self.platform == 'Darwin'
 
@@ -84,16 +73,11 @@ class Env:
             player.update()
 
         self.players_alive = [player for player in self.players if player.alive]
->>>>>>> multi-0.0.1
         self.manageShoots()
         self.interface.update()
         self.render()
 
-<<<<<<< HEAD
-        if self.tick % 10 ==0:
-=======
         if self.tick % 10 == 0:
->>>>>>> multi-0.0.1
             # Update viewArea
             self.viewArea['width'], self.viewArea['height'], *offset = map(lambda val: int(val), re.split(r'[+x]', self.fen.geometry()))
             # Manage Framerate
@@ -103,13 +87,9 @@ class Env:
             self.last_frame_timestamp = end_time
 
         # Loop
-<<<<<<< HEAD
-        self.fen.after(1000 // self.max_framerate, self.update)
-=======
         if self.GAME_IS_RUNNING:
             self.fen.after(1000 // self.max_framerate, self.update)
 
->>>>>>> multi-0.0.1
 
 
     def render(self):
