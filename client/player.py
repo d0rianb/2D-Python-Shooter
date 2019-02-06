@@ -48,7 +48,7 @@ class Player:
             self.env.fen.bind('<Button-1>', self.shoot)
             self.env.fen.bind('<ButtonRelease-1>', self.stop_fire)
             keyboard.on_press_key('r', self.reload)
-            keyboard.on_press_key('p', self.env.panic)
+            # keyboard.on_press_key('p', self.env.panic)
             keyboard.on_press_key('a', self.toggle_dash_preview)
             if self.env.isMac():
                 keyboard.on_press_key(56, self.dash)   # dash on shift 56
@@ -206,6 +206,7 @@ class Player:
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
     def dead(self):
+        print('{} est mort, il a tiré sur {} et s\'est fait tuer par {}'.format(self.name, self.hit_player, self.hit_by_player))
         self.alive = False
 
     def update(self):
@@ -242,25 +243,25 @@ class Target(Player):
         self.y = y
         self.env = env
         self.level = level
-        self.name = 'Target ' + str(self.id)
+        self.name = 'Target {}'.format(self.id)
         self.own = False
         self.theorical_speed = level / 2.5
         self.color = '#AAA'
         self.tick = 0
-        self.shoot_tick = 0
         self.vx = random_sign()
         self.vy = random_sign()
-        self.interval = random.randint(20, 60)
-        self.shoot_interval = random.randint(150-self.level*5, 700-self.level*5)
+        self.move_interval = random.randint(20, 60)
+        self.shoot_interval = random.randint(10-self.level, 60-self.level*2)
         self.closer_player = None
-        self.can_shoot = self.level >= 3
+        self.can_shoot = self.level >= 2
+        self.shoot_dispersion = math.pi/(5 + random.randint(self.level, self.level*2))
 
     def detect_closer_player(self):
         for player in self.env.players:
-            if self.closer_player and player != self:
+            if self.closer_player and player != self and player.alive:
                 if self.dist(player) < self.dist(self.closer_player):
                     self.closer_player = player
-            elif player != self:
+            elif player != self and player.alive:
                 self.closer_player = player
 
     def shoot(self):
@@ -269,22 +270,18 @@ class Target(Player):
         self.ammo -= 1
 
     def update(self):
-        super().update()
-        self.detect_closer_player()
-        self.dir = math.atan2(self.closer_player.y - self.y, self.closer_player.x - self.x)
-        ## Move
-        if self.tick == self.interval:
-            self.vy *= random_sign()
-            self.vx *= random_sign()
-            self.tick = 0
-        ## Shoot
-        if self.can_shoot and self.shoot_tick == self.interval:
-            self.dir += random_sign()*random.random() * math.pi/3
-            self.shoot()
-            self.shoot_tick = 0
-        self.tick += 1
-        self.shoot_tick += 1
-        super().move(self.vx, self.vy)
+        if self.alive and len(self.env.players_alive) > 1:
+            super().update()
+            self.detect_closer_player()
+            self.dir = math.atan2(self.closer_player.y - self.y, self.closer_player.x - self.x)
+            if self.tick % self.move_interval == 0:
+                self.vy *= random_sign()
+                self.vx *= random_sign()
+            if self.tick % self.shoot_interval == 0 and self.can_shoot:
+                self.dir += random_sign()*random.random() * self.shoot_dispersion
+                self.shoot()
+            self.tick += 1
+            super().move(self.vx, self.vy)
 
     def render(self):
         super().render()

@@ -20,6 +20,7 @@ class Env:
         self.framerate = self.max_framerate
         self.last_frame_timestamp = 0
         self.players = []
+        self.players_alive = []
         self.shoots = []
         self.tick = 0
         self.map = None
@@ -73,6 +74,7 @@ class Env:
             if player.alive:
                 player.update()
 
+        self.players_alive = [player for player in self.players if player.alive]
         self.manageShoots()
         self.interface.update()
         self.render()
