@@ -57,7 +57,6 @@ class Env:
             if player.client:
                 player.client.disconnect()
         self.fen.destroy()
-        # Disconnect from server
         sys.exit(0)
 
     def panic(self, *event):
@@ -70,9 +69,8 @@ class Env:
     def update(self):
         self.GAME_IS_FOCUS = True if self.fen.focus_get() != None else False
         self.tick += 1
-        for player in self.players:
-            if player.alive:
-                player.update()
+        for player in self.players_alive:
+            player.update()
 
         self.players_alive = [player for player in self.players if player.alive]
         self.manageShoots()
@@ -91,6 +89,7 @@ class Env:
         # Loop
         if self.GAME_IS_RUNNING:
             self.fen.after(1000 // self.max_framerate, self.update)
+
 
     def render(self):
         self.map.render()
