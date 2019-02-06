@@ -11,7 +11,8 @@ class Tir:
         self.y = y
         self.dir = dir
         self.damage = 20
-        self.speed = 15 * 60 / from_player.env.framerate
+        self.theorical_speed = 15
+        self.speed = self.theorical_speed * 60 / from_player.env.framerate
         self.size = 12
         self.head = {'x': x, 'y': y}
         self.from_player = from_player
@@ -29,6 +30,7 @@ class Tir:
                     self.env.shoots.remove(self)
 
     def update(self):
+        self.speed = self.theorical_speed * 60 / self.env.framerate
         self.x += math.cos(self.dir) * self.speed
         self.y += math.sin(self.dir) * self.speed
         self.head = {
