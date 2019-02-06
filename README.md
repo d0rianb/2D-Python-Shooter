@@ -1,18 +1,20 @@
-# 2D-Python-Shooter
+# 2D Python Shooter
+
 ## Instalation
 
- - Mac :
-	 - `pip3 install keyboard`
+
+- Mac :
 	 - `sudo python3 main.py` (dans le dossier du jeu)
-- PC :
-	- `pip install keyboard`
+- Windows :
     - Exécuter `main.py`
 
 ## Commandes
 - **Se déplacer**  : Z, Q, S, D (ou flèches directionnelles)
-- **Tirer** : Clic Droit
+- **Tirer** : Clic Gauche
 - **Dash** : Majuscule gauche
 - **Recharger** : R
+- **Help** : H
+- **Dash Preview** : H
 
 ## To-Do
 - Health regain

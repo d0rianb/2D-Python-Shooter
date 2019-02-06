@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import tkinter as tk
+import sys
+import os
+import platform
 import re
 import time
 from render import RenderedObject
@@ -13,22 +16,30 @@ class Env:
         self.width = width
         self.height = height
         self.ratio = width / height
-        self.max_framerate = 60
+        self.max_framerate = 144
         self.framerate = self.max_framerate
         self.last_frame_timestamp = 0
         self.players = []
+        self.players_alive = []
         self.shoots = []
         self.tick = 0
         self.map = None
         self.interface = None
         self.debug = False
         self.rendering_stack = []
+<<<<<<< HEAD
+=======
+        self.platform = platform.system()
+        self.GAME_IS_RUNNING = True
+        self.GAME_IS_FOCUS = True
+>>>>>>> multi-0.0.1
         self.viewArea = {
             'x': 0,
             'y': 0,
             'width': self.width,
             'height': self.height
         }
+        self.fen.protocol("WM_DELETE_WINDOW", self.exit)
 
     def manageShoots(self):
         for shoot in self.shoots:
@@ -37,17 +48,52 @@ class Env:
             else:
                 shoot.update()
 
+<<<<<<< HEAD
     def update(self):
         self.tick += 1
         for player in self.players:
             if player.alive:
                 player.update()
 
+=======
+    def isMac(self):
+        return self.platform == 'Darwin'
+
+    def isWindows(self):
+        return self.platform == 'Windows'
+
+    def exit(self):
+        self.GAME_IS_RUNNING = False
+        for player in self.players:
+            if player.client:
+                player.client.disconnect()
+        self.fen.destroy()
+        sys.exit(0)
+
+    def panic(self, *event):
+        if self.GAME_IS_FOCUS:
+            print('Exit with panic')
+            if self.isMac():
+                os.system("open -a IDLE ./ressources/TP-Info.py")
+            self.exit()
+
+    def update(self):
+        self.GAME_IS_FOCUS = True if self.fen.focus_get() != None else False
+        self.tick += 1
+        for player in self.players_alive:
+            player.update()
+
+        self.players_alive = [player for player in self.players if player.alive]
+>>>>>>> multi-0.0.1
         self.manageShoots()
         self.interface.update()
         self.render()
 
+<<<<<<< HEAD
         if self.tick % 10 ==0:
+=======
+        if self.tick % 10 == 0:
+>>>>>>> multi-0.0.1
             # Update viewArea
             self.viewArea['width'], self.viewArea['height'], *offset = map(lambda val: int(val), re.split(r'[+x]', self.fen.geometry()))
             # Manage Framerate
@@ -57,7 +103,13 @@ class Env:
             self.last_frame_timestamp = end_time
 
         # Loop
+<<<<<<< HEAD
         self.fen.after(1000 // self.max_framerate, self.update)
+=======
+        if self.GAME_IS_RUNNING:
+            self.fen.after(1000 // self.max_framerate, self.update)
+
+>>>>>>> multi-0.0.1
 
 
     def render(self):

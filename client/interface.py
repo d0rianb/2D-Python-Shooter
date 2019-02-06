@@ -15,14 +15,21 @@ class Interface:
         self.margin_y = 20
         self.width = env.viewArea['width']
         self.height = env.viewArea['height']
+<<<<<<< HEAD
         self.refresh_rate = env.framerate
+=======
+>>>>>>> multi-0.0.1
         self.padding = 20
         self.informations = {}
         self.color = '#92959b'
         self.font = tkFont.Font(family='Avenir Next', size=16, weight='normal')
 
     def display_help(self, *args):
+<<<<<<< HEAD
         text = ''' Se déplacer : Z, Q, S, D (ou flèches directionnelles)\n Tirer : Clic Droit\n Dash : Majuscule gauche\n Recharger : R\n Restart Game: G (only local)\n Display Help : H '''
+=======
+        text = ' Se déplacer : Z, Q, S, D (ou flèches directionnelles)\n Tirer : Clic Droit\n Dash : Majuscule gauche\n' + 'Recharger : R\n Restart Game: G (only local)\n Toggle Dash Preview: A\n Display Help : H\n Panic : P '
+>>>>>>> multi-0.0.1
         self.env.rendering_stack.append(RenderedObject('text', self.env.width/2, 100, text=text, font=self.font, color=self.color, zIndex=10))
 
     def parse(self, position, x, y, anchor):
@@ -38,7 +45,8 @@ class Interface:
         self.informations = {
             'TopLeft': {
                 'Player Name': self.player.name,
-                'FrameRate': self.env.framerate
+                'FrameRate': self.env.framerate,
+                'Ping': '{0:.2g} ms'.format(self.player.client.ping) if self.player.client else 0
             },
             'TopRight': {
                 'People Alive': len(list(filter(lambda player: player.alive, self.env.players)))
