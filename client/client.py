@@ -11,12 +11,13 @@ from player import Player
 
 class Client:
     def __init__(self, connection,  player, ip, port):
+        self.id = 0
         self.connection = connection
         self.player = player
         self.player.client = self
-        self.id = 0
         self.ip = ip
         self.port = port
+        self.connected = False
         self.ping = 0
         self.connection.setblocking(0)
 
@@ -46,7 +47,8 @@ class Client:
             'dir': self.player.dir,
             'health': self.player.health
         }
-        self.send_message('update_position', content)
+        if self.connected:
+            self.send_message('update_position', content)
 
     def send_connection_info(self):
         content = {
@@ -86,6 +88,8 @@ class Client:
 
             if message['title'] == 'response_id':
                 self.player.id = message['content']['id']
+                self.connected = True
+                print('Connected to {}:{}'.format(self.ip, self.port))
         except BlockingIOError:
             pass
 
