@@ -45,6 +45,11 @@ class Env:
             else:
                 shoot.update()
 
+    def find_by_name(self, name):
+        for player in self.players:
+            if player.name == name:
+                return player
+
     def isMac(self):
         return self.platform == 'Darwin'
 
@@ -57,7 +62,7 @@ class Env:
             if player.client:
                 player.client.disconnect()
         self.fen.destroy()
-        sys.exit(0)
+        # sys.exit(0)
 
     def panic(self, *event):
         if self.GAME_IS_FOCUS:
@@ -67,6 +72,7 @@ class Env:
             self.exit()
 
     def update(self):
+        if not self.GAME_IS_RUNNING: return
         self.GAME_IS_FOCUS = True if self.fen.focus_get() != None else False
         self.tick += 1
         for player in self.players_alive:
@@ -86,9 +92,8 @@ class Env:
             self.framerate = framerate if framerate != 0 and framerate <= self.max_framerate else self.max_framerate
             self.last_frame_timestamp = end_time
 
-        # Loop
-        if self.GAME_IS_RUNNING:
-            self.fen.after(1000 // self.max_framerate, self.update)
+
+        self.fen.after(1000 // self.max_framerate, self.update)
 
 
 

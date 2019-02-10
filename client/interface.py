@@ -41,7 +41,9 @@ class Interface:
                 'Ping': '{0:.2g} ms'.format(self.player.client.ping) if self.player.client else 0
             },
             'TopRight': {
-                'People Alive': len(list(filter(lambda player: player.alive, self.env.players)))
+                'People Alive': len(list(filter(lambda player: player.alive, self.env.players))),
+                'Kills': len(self.player.kills),
+                'Assists': len(self.player.assists)
             },
             'BottomRight': {
                 'Health': self.player.health,
@@ -63,3 +65,23 @@ class Interface:
             if position == 'BottomRight':
                 y = self.height - 2.5*len(self.informations['BottomRight'])*self.padding
             self.parse(position, x, y, anchor)
+
+
+class InterfaceMessage:
+    def __init__(self, interface, type, text):
+        self.interface = interface
+        self.type = type
+        self.text = text
+
+        self.x = interface.env.viewArea['x'] / 2
+        self.y = interface.env.viewArea['y'] / 2
+
+        if self.type == 'info':
+            self.color = "#AAA"
+
+    def update(self):
+        self.y += 1
+        self.color
+
+    def render(self):
+        pass

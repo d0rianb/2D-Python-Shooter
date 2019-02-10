@@ -40,6 +40,8 @@ class Player:
         self.autofire = False
         self.hit_player = {}
         self.hit_by_player = {}
+        self.kills = []
+        self.assists = []
         self.alive = True
         self.env.players.append(self)
 
@@ -76,6 +78,8 @@ class Player:
             dist_tail = math.sqrt((self.x - shoot.x)**2 + (self.y - shoot.y)**2)
             if (dist_head <= self.size + 1 or dist_tail <= self.size + 1) and shoot.from_player != self:
                 self.health -= shoot.damage
+                if self.health <= 0:
+                        shoot.from_player.kills.append(self)
                 if shoot.from_player.name in self.hit_by_player:
                     self.hit_by_player[shoot.from_player.name] += shoot.damage
                 else:
@@ -87,6 +91,7 @@ class Player:
                 self.env.shoots.remove(shoot)
         if self.health <= 0:
             self.dead()
+        self.assists = [player for player in self.hit_player.keys() if not self.env.find_by_name(player).alive]
 
     def is_colliding_wall(self):
         rects = self.env.map.rects
@@ -251,7 +256,7 @@ class Target(Player):
         self.vx = random_sign()
         self.vy = random_sign()
         self.move_interval = random.randint(20, 60)
-        self.shoot_interval = random.randint(10-self.level, 60-self.level*2)
+        self.shoot_interval = random.randint(10-self.level, 200-self.level*2)
         self.closer_player = None
         self.can_shoot = self.level >= 2
         self.shoot_dispersion = math.pi/(5 + random.randint(self.level, self.level*2))

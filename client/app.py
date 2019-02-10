@@ -35,10 +35,6 @@ class App:
         self.env.update()
         self.fen.mainloop()
 
-    def restart(self):
-        self.fen.destroy()
-        self.run()
-
 
 class LocalGame(App):
     def __init__(self, player_name, difficulty):
@@ -46,6 +42,10 @@ class LocalGame(App):
         self.difficulty = difficulty
         self.fen.title(GAME_NAME + ' - Local')
         self.fen.bind('<Key-g>', self.restart)
+
+    def restart(self, *event): #Doesn't work
+        self.env.exit()
+        self.start()
 
     def generate_target(self):
         for i in range(self.difficulty):

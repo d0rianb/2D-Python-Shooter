@@ -11,7 +11,7 @@ class Tir:
         self.y = y
         self.dir = dir
         self.damage = 20
-        self.theorical_speed = 15
+        self.theorical_speed = 18
         self.speed = self.theorical_speed * 60 / from_player.env.framerate
         self.size = 12
         self.head = {'x': x, 'y': y}
