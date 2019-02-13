@@ -94,21 +94,33 @@ class ChatInfo:
 
     def parse(self, *event):
         split = self.text.get().split(' ')
-        try:
-            command, args = split[0], split[1:]
-            if command == 'debug':
-                type, value = args[0], args[1]
-                self.debug(type, value)
-        except ValueError:
-            pass
+        command, *args = split
+        if command == 'debug':
+            type, value = args[0], args[1]
+            self.debug(type, value)
+        elif command == 'kill' or command == 'killall': ## Doesn't work
+            if len(args) > 0:
+                if args[0] == 'bot' or args[0] == 'bots':
+                    self.env.players = [player for player in self.env.players if player.own]
+                else:
+                    player = self.select_player(args[0], args[1])
+                    self.env.players.remove(player)
+            else:
+                self.env.players = []
+
 
     def debug(self, type, value):
         debug_fen = tk.Toplevel(self.env.fen)
+        player = self.select_player(type, value)
+        for key, val in player.__dict__.items():
+            entry = tk.Label(debug_fen, text='{}: {}'.format(key, val))
+            entry.pack(anchor=tk.W)
+
+    def select_player(self, type, value):
+        ''' return the first player where player.type = value '''
         for player in self.env.players:
             if str(player.__dict__[type]) == value:
-                for key, val in player.__dict__.items():
-                    entry = tk.Label(debug_fen, text='{}: {}'.format(key, val))
-                    entry.pack(anchor=tk.W)
+                return player
 
     def update(self):
         pass

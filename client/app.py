@@ -10,6 +10,7 @@ from player import Player, Target
 from env import Env
 from interface import Interface, ChatInfo
 from client import Client
+from render import Canvas
 from map.map import Map
 
 GAME_NAME = '2PQSTD'
@@ -25,7 +26,7 @@ class App:
 
     def init(self):
         self.width, self.height = self.fen.winfo_screenwidth(), self.fen.winfo_screenheight()
-        self.canvas = tk.Canvas(self.fen, width=self.width, height=self.height, bg='#F1E7DC', highlightthickness=0)
+        self.canvas = Canvas(self.fen, self.width, self.height)
         self.env = Env(self.fen, self.width, self.height, self.canvas)
         self.map = Map(self.env, 'map1.txt', 'Test')
         self.player = Player(0, 50, 50, self.env, self.name, own=True)

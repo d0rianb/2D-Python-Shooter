@@ -91,7 +91,6 @@ class Player:
                 self.env.shoots.remove(shoot)
         if self.health <= 0:
             self.dead()
-        self.assists = [player for player in self.hit_player.keys() if not self.env.find_by_name(player).alive]
 
     def is_colliding_wall(self):
         rects = self.env.map.rects
@@ -223,6 +222,7 @@ class Player:
             self.update_dash_preview()
         if self.alive:
             self.check_shoot_collide()
+            self.assists = [player for player in self.hit_player.keys() if not self.env.find_by_name(player).alive]
         if self.own:
             self.detect_keypress()
         if self.client:

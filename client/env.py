@@ -76,10 +76,11 @@ class Env:
         if not self.GAME_IS_RUNNING: return
         self.GAME_IS_FOCUS = True if self.fen.focus_get() != None else False
         self.tick += 1
-        for player in self.players_alive:
-            player.update()
+        if len(self.players) > 0:
+            for player in self.players_alive:
+                player.update()
+            self.players_alive = [player for player in self.players if player.alive]
 
-        self.players_alive = [player for player in self.players if player.alive]
         self.manageShoots()
         self.interface.update()
         self.render()
@@ -99,6 +100,7 @@ class Env:
 
 
     def render(self):
+        ## Pre-Render
         self.map.render()
         self.interface.render()
         for player in self.players:
@@ -107,28 +109,7 @@ class Env:
         for shoot in self.shoots:
             shoot.render()
 
+        ## Canvas rendering
         self.rendering_stack = sorted(self.rendering_stack, key=lambda obj: obj.zIndex)
-
-        self.canvas.delete('all')
-        for object in self.rendering_stack:
-            if object.type == 'rect':
-                self.canvas.create_rectangle(object.x, object.y, object.x + object.width, object.y + object.height,
-                    fill=object.color,
-                    width=0)
-            elif object.type == 'oval':
-                self.canvas.create_oval(object.x, object.y, object.x2, object.y2,
-                    fill=object.color,
-                    width=0)
-            elif object.type == 'line':
-                self.canvas.create_line(object.x, object.y, object.x2, object.y2,
-                    capstyle='round')
-            elif object.type == 'text':
-                self.canvas.create_text(object.x, object.y,
-                    text=object.text,
-                    font=object.font,
-                    fill=object.color,
-                    anchor=object.anchor)
-
-
+        self.canvas.render(self.rendering_stack)
         self.rendering_stack = []
-        self.canvas.pack()
