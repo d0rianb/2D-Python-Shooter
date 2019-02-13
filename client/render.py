@@ -22,6 +22,7 @@ class Canvas:
                     width=0)
             elif object.type == 'line':
                 self.canvas.create_line(object.x, object.y, object.x2, object.y2,
+                    smooth=1,
                     capstyle='round')
             elif object.type == 'text':
                 self.canvas.create_text(object.x, object.y,

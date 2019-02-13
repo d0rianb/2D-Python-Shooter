@@ -15,7 +15,7 @@ def random_sign():
     return sign
 
 class Player:
-    def __init__(self, id, x, y, env, name="Invité", own=False):
+    def __init__(self, id, x, y, env, name="Invité", own=False, key=None):
         self.id = id
         self.x = x
         self.y = y
@@ -43,32 +43,42 @@ class Player:
         self.kills = []
         self.assists = []
         self.alive = True
+        self.key = key or {
+            'up': 'z',
+            'down': 's',
+            'left': 'q',
+            'right': 'd',
+            'dash': 56,
+            'dash_preview': 'a',
+            'reload': 'r',
+            'panic': 'p'
+        }
         self.env.players.append(self)
 
         if self.own:
             self.env.fen.bind('<Motion>', self.mouse_move)
             self.env.fen.bind('<Button-1>', self.shoot)
             self.env.fen.bind('<ButtonRelease-1>', self.stop_fire)
-            keyboard.on_press_key('r', self.reload)
-            # keyboard.on_press_key('p', self.env.panic)
-            keyboard.on_press_key('a', self.toggle_dash_preview)
+            keyboard.on_press_key(self.key['reload'], self.reload)
+            # keyboard.on_press_key(self.key['panic'], self.env.panic)
+            keyboard.on_press_key(self.key['dash_preview'], self.toggle_dash_preview)
             if self.env.isMac():
-                keyboard.on_press_key(56, self.dash)   # dash on shift 56
+                keyboard.on_press_key(self.key['dash'], self.dash)   # dash on shift 56
             elif self.env.isWindows():
-                keyboard.on_press_key('shift', self.dash) # dash on windows
+                keyboard.on_press_key(self.key['dash'], self.dash) # dash on Windows
 
     def mouse_move(self, event):
         self.mouse['x'], self.mouse['y'] = event.x, event.y
 
     def detect_keypress(self):
         x, y = 0, 0
-        if keyboard.is_pressed('z') or keyboard.is_pressed('up'):
+        if keyboard.is_pressed(self.key['up']):
             y = -1
-        if keyboard.is_pressed('s') or keyboard.is_pressed('down'):
+        if keyboard.is_pressed(self.key['down']):
             y = 1
-        if keyboard.is_pressed('d') or keyboard.is_pressed('right'):
+        if keyboard.is_pressed(self.key['right']):
             x = 1
-        if keyboard.is_pressed('q') or keyboard.is_pressed('left'):
+        if keyboard.is_pressed(self.key['left']):
             x = -1
         self.move(x, y)
 

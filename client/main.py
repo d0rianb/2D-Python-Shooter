@@ -12,7 +12,7 @@ import keyboard
 import socket
 import json
 
-from app import LocalGame, OnlineGame, SplashScreen
+from app import LocalGame, OnlineGame, SplashScreen, Settings
 
 
 def start_local_game(name, difficulty=5):
@@ -25,10 +25,12 @@ def start_online_game(name, ip, port):
     app.connect(ip, port)
     app.start()
 
-
+def toggle_settings(splash_screen):
+    splash_screen.fen.attributes('-topmost', False)
+    settings = Settings()
 
 if __name__ == '__main__':
-    splash_screen = SplashScreen(start_online_game, start_local_game)
+    splash_screen = SplashScreen(start_online_game, start_local_game, toggle_settings)
     splash_screen.create_window()
     splash_screen.start()
     sys.exit(0)

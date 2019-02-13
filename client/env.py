@@ -10,13 +10,13 @@ import time
 from render import RenderedObject
 
 class Env:
-    def __init__(self, fen, width, height, canvas):
+    def __init__(self, fen, width, height, canvas, max_framerate=144):
         self.fen = fen
         self.canvas = canvas
         self.width = width
         self.height = height
         self.ratio = width / height
-        self.max_framerate = 144
+        self.max_framerate = max_framerate
         self.framerate = self.max_framerate
         self.last_frame_timestamp = 0
         self.players = []
