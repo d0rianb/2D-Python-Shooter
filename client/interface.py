@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import tkinter.font as tkFont
+import tkinter as tk
 import keyboard
 from render import RenderedObject
 
@@ -66,6 +67,54 @@ class Interface:
                 y = self.height - 2.5*len(self.informations['BottomRight'])*self.padding
             self.parse(position, x, y, anchor)
 
+
+class ChatInfo:
+    def __init__(self, env):
+        self.env = env
+        self.message = {}
+        self.text = tk.StringVar()
+        self.entry = tk.Entry(self.env.fen, width=50, bd=0, takefocus=0, highlightthickness=0, textvariable=self.text)
+        self.entry_y = 0
+        keyboard.on_press_key('/', self.focus_entry)
+        keyboard.on_press_key('esc', self.unfocus_entry)
+        keyboard.on_press_key('enter', self.parse)
+
+    def focus_entry(self, *event):
+        if self.entry_y == 0:
+            entry_height = self.entry.winfo_height()
+            self.entry_y = (self.env.height - entry_height) / self.env.height
+        self.entry.place(relx=0, rely=self.entry_y, anchor=tk.SW)
+        self.entry.focus()
+        self.entry.selection_range(0, tk.END)
+        self.env.command_entry_focus = True
+
+    def unfocus_entry(self, *event):
+        self.entry.place_forget()
+        self.env.command_entry_focus = False
+
+    def parse(self, *event):
+        split = self.text.get().split(' ')
+        try:
+            command, args = split[0], split[1:]
+            if command == 'debug':
+                type, value = args[0], args[1]
+                self.debug(type, value)
+        except ValueError:
+            pass
+
+    def debug(self, type, value):
+        debug_fen = tk.Toplevel(self.env.fen)
+        for player in self.env.players:
+            if str(player.__dict__[type]) == value:
+                for key, val in player.__dict__.items():
+                    entry = tk.Label(debug_fen, text='{}: {}'.format(key, val))
+                    entry.pack(anchor=tk.W)
+
+    def update(self):
+        pass
+
+    def render(self):
+        pass
 
 class InterfaceMessage:
     def __init__(self, interface, type, text):

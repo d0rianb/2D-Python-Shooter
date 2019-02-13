@@ -30,6 +30,7 @@ class Env:
         self.platform = platform.system()
         self.GAME_IS_RUNNING = True
         self.GAME_IS_FOCUS = True
+        self.command_entry_focus = False
         self.viewArea = {
             'x': 0,
             'y': 0,

@@ -8,7 +8,7 @@ import random
 
 from player import Player, Target
 from env import Env
-from interface import Interface
+from interface import Interface, ChatInfo
 from client import Client
 from map.map import Map
 
@@ -30,6 +30,8 @@ class App:
         self.map = Map(self.env, 'map1.txt', 'Test')
         self.player = Player(0, 50, 50, self.env, self.name, own=True)
         self.interface = Interface(self.player, self.env)
+        self.chat = ChatInfo(self.env)
+
 
     def start(self):
         self.env.update()
@@ -40,10 +42,12 @@ class LocalGame(App):
     def __init__(self, player_name, difficulty):
         App.__init__(self, player_name)
         self.difficulty = difficulty
+        self.entry = None
         self.fen.title(GAME_NAME + ' - Local')
         self.fen.bind('<Key-g>', self.restart)
 
-    def restart(self, *event): #Doesn't work
+    def restart(self, *event): ## Doesn't work
+        if self.env.command_entry_focus: return
         self.env.exit()
         self.start()
 
