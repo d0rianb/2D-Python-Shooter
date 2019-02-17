@@ -4,7 +4,6 @@
 import tkinter.font as tkFont
 import tkinter as tk
 import keyboard
-import sys
 
 from render import RenderedObject
 

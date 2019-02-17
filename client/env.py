@@ -75,7 +75,6 @@ class Env:
 
     def update(self):
         if not self.GAME_IS_RUNNING: return
-        self.GAME_IS_FOCUS = True if self.fen.focus_get() != None else False
         self.tick += 1
         if len(self.players) > 0:
             for player in self.players_alive:
@@ -87,6 +86,7 @@ class Env:
         self.render()
 
         if self.tick % 10 == 0:
+            self.GAME_IS_FOCUS = True if self.fen.focus_get() != None else False
             # Update viewArea
             self.viewArea['width'], self.viewArea['height'], *offset = map(lambda val: int(val), re.split(r'[+x]', self.fen.geometry()))
             # Manage Framerate

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import math
+
 from render import RenderedObject
 
 class Tir:

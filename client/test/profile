@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sudo /Library/Frameworks/Python.framework/Versions/3.6/bin/kernprof -l -v  /Users/dorian/Dropbox/Code/Python/2PQSTD/client/main.py
