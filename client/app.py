@@ -23,7 +23,6 @@ class App:
         self.name = player_name
         self.fen = tk.Tk()
         self.config = {}
-        self.platform = platform.system()
         self.init()
 
     def init(self):
@@ -166,6 +165,7 @@ class Settings:
     def __init__(self):
         self.config = {}
         self.new_config = {}
+        self.platform = platform.system()
         self.get_config()
         self.create_window()
 

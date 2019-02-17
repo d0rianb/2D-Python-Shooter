@@ -8,6 +8,17 @@ from threading import Timer
 from render import RenderedObject
 from tir import Tir
 
+default_keys = {
+    'up': 'z',
+    'down': 's',
+    'left': 'q',
+    'right': 'd',
+    'dash': 56,
+    'dash_preview': 'a',
+    'reload': 'r',
+    'panic': 'p'
+}
+
 def random_sign():
     sign = 0
     while sign == 0:
@@ -23,6 +34,7 @@ class Player:
         self.name = name
         self.own = own  # Si le player est le joueur
         self.client = None
+        self.interface = None
         self.size = 10  # Radius
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
@@ -43,16 +55,7 @@ class Player:
         self.kills = []
         self.assists = []
         self.alive = True
-        self.key = key or {
-            'up': 'z',
-            'down': 's',
-            'left': 'q',
-            'right': 'd',
-            'dash': 56,
-            'dash_preview': 'a',
-            'reload': 'r',
-            'panic': 'p'
-        }
+        self.key = key or default_keys
         self.env.players.append(self)
 
         if self.own:
@@ -80,6 +83,8 @@ class Player:
             x = 1
         if keyboard.is_pressed(self.key['left']):
             x = -1
+        if keyboard.is_pressed(self.key['help']) and self.interface:
+            self.interface.display_help()
         self.move(x, y)
 
     def check_shoot_collide(self):

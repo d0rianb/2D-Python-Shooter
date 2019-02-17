@@ -4,6 +4,8 @@
 import tkinter.font as tkFont
 import tkinter as tk
 import keyboard
+import sys
+
 from render import RenderedObject
 
 
@@ -12,6 +14,7 @@ class Interface:
         self.player = player
         self.env = env
         self.env.interface = self
+        self.player.interface = self
         self.margin_x = 8
         self.margin_y = 20
         self.width = env.viewArea['width']
@@ -22,7 +25,14 @@ class Interface:
         self.font = tkFont.Font(family='Avenir Next', size=16, weight='normal')
 
     def display_help(self, *args):
-        text = ' Se déplacer : Z, Q, S, D (ou flèches directionnelles)\n Tirer : Clic Droit\n Dash : Majuscule gauche\n' + 'Recharger : R\n Restart Game: G (only local)\n Toggle Dash Preview: A\n Display Help : H\n Panic : P '
+        text = (' Se déplacer : {up}, {down}, {left}, {right}\n' +
+               ' Tirer : Clic Droit\n' +
+               ' Dash : {dash}\n' +
+               ' Recharger : {reload}\n' +
+               ' Restart Game: G (only local)\n' +
+               ' Toggle Dash Preview: {dash_preview}\n' +
+               ' Display Help : {help}\n' +
+               ' Panic : {panic} ').format(**{key: str(val).upper() if val != 56 else 'Shift' for key, val in self.player.key.items()})
         self.env.rendering_stack.append(RenderedObject('text', self.env.width/2, 100, text=text, font=self.font, color=self.color, zIndex=10))
 
     def parse(self, position, x, y, anchor):
@@ -52,9 +62,6 @@ class Interface:
                 'Dash': self.player.dash_left
             }
         }
-        if keyboard.is_pressed('h'):
-            self.display_help()
-
 
     def render(self):
         for position in self.informations:
