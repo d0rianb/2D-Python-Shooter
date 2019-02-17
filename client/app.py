@@ -254,13 +254,15 @@ class Settings:
     		'panic': 'Panique',
     		'help': 'Aide'}
         for id, key in enumerate(self.config['key_binding'].keys()):
-            self.create_key_bind(key, labels[key], id+1)
+            self.create_key_bind(key, labels[key], id)
 
-        tk.Button(self.key_fen, text='Valider', command=self.validate).place(relx=0.5, rely=0.9, anchor=tk.CENTER)
+        tk.Button(self.key_fen, text='Valider', command=self.validate).place(relx=0.4, rely=0.9, anchor=tk.CENTER)
+        tk.Button(self.key_fen, text='Défaut', command=self.default).place(relx=0.6, rely=0.9, anchor=tk.CENTER)
 
     def create_key_bind(self, key, label, id):
-        tk.Label(self.key_fen, text=label).place(relx=0.1, rely=id/10, anchor=tk.W)
-        tk.Button(self.key_fen, text=self.new_config['key_binding'][key], command=lambda: self.detect_keypress(key)).place(relx=0.7, rely=id/10, anchor=tk.E)
+        offset_height = 0.65
+        tk.Label(self.key_fen, text=label).place(relx=0.1, rely=(id + offset_height)/10, anchor=tk.W)
+        tk.Button(self.key_fen, text=str(self.new_config['key_binding'][key]).capitalize(), command=lambda: self.detect_keypress(key), width=10).place(relx=0.9, rely=(id + offset_height)/10, anchor=tk.E)
 
     def detect_keypress(self, key):
         new_key = keyboard.read_key()
@@ -268,6 +270,12 @@ class Settings:
             new_key = 56
         self.new_config['key_binding'][key] = new_key
         self.update_key_bind()
+
+    def default(self):
+        with open('config_base.json', 'r') as default:
+            self.new_config = json.load(default)
+        self.update_key_bind()
+
 
     def validate(self):
         with open('config.json', 'w') as config:
