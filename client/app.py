@@ -28,10 +28,10 @@ class App:
 
     def init(self):
         self.get_config()
-        self.width, self.height = self.fen.winfo_screenwidth(), self.fen.winfo_screenheight()
+        self.width, self.height = self.fen.winfo_screenwidth(), 814#self.fen.winfo_screenheight()
         self.canvas = Canvas(self.fen, self.width, self.height)
         self.env = Env(self.fen, self.width, self.height, self.canvas, max_framerate=self.config['max_framerate'])
-        self.map = Map(self.env, 'map1.txt', 'Test')
+        self.map = Map(self.env, 'map2.txt', 'MAP 2')
         self.player = Player(0, 50, 50, self.env, self.name, own=True, key=self.config['key_binding'])
         self.interface = Interface(self.player, self.env)
         self.chat = ChatInfo(self.env)

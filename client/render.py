@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import tkinter as tk
+import PIL
+
 
 class Canvas:
-    def __init__(self, parent, width , height):
+    def __init__(self, parent, width, height):
         self.width = width
         self.height = height
         self.canvas = tk.Canvas(parent, width=self.width, height=self.height, bg='#F1E7DC', highlightthickness=0)
@@ -13,19 +15,21 @@ class Canvas:
         self.canvas.delete('all')
         for object in stack:
             if object.type == 'rect':
-                self.canvas.create_rectangle(object.x, object.y, object.x + object.width, object.y + object.height,fill=object.color,width=0)
+                self.canvas.create_rectangle(object.x, object.y, object.x + object.width, object.y + object.height, fill=object.color, width=0)
+            elif object.type == 'image':
+                self.canvas.create_image(object.x, object.y, image=object.image, anchor=tk.NW)
             elif object.type == 'oval':
-                self.canvas.create_oval(object.x, object.y, object.x2, object.y2,fill=object.color,width=0)
+                self.canvas.create_oval(object.x, object.y, object.x2, object.y2, fill=object.color, width=0)
             elif object.type == 'line':
-                self.canvas.create_line(object.x, object.y, object.x2, object.y2,smooth=1,capstyle='round')
+                self.canvas.create_line(object.x, object.y, object.x2, object.y2, smooth=1, capstyle='round')
             elif object.type == 'text':
-                self.canvas.create_text(object.x, object.y,text=object.text,font=object.font,fill=object.color,anchor=object.anchor)
+                self.canvas.create_text(object.x, object.y, text=object.text, font=object.font, fill=object.color, anchor=object.anchor)
         self.canvas.pack()
 
 
 class RenderedObject:
     def __init__(self, type, x, y, **kwargs):
-        self.type = type # rect/text/oval/line
+        self.type = type  # rect/text/oval/line
         self.x = x
         self.y = y
         self.options = kwargs
@@ -34,7 +38,9 @@ class RenderedObject:
         self.width = kwargs.get('width', None)
         self.height = kwargs.get('height', None)
         self.text = kwargs.get('text', None)
+        self.image = kwargs.get('image', None)
         self.color = kwargs.get('color', None)
         self.font = kwargs.get('font', None)
+        self.id = kwargs.get('id', None)
         self.anchor = kwargs.get('anchor', None)
         self.zIndex = kwargs.get('zIndex', 1)

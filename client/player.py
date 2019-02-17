@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import random
 import math
 import keyboard
 
+from PIL import Image, ImageTk
 from threading import Timer
 from render import RenderedObject
 from weapons.weapon import AR, Shotgun, Sniper
@@ -54,7 +56,15 @@ class Player:
         self.assists = []
         self.alive = True
         self.key = key or default_keys
-        self.env.players.append(self)
+
+        self.texture_dic = {}
+        self.texture_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressources/texture/')
+        texture_file = 'player.png' if self.own else 'enemy.png'
+        self.texture = Image.open(os.path.join(self.texture_path, texture_file), mode='r')
+        texture_width, texture_height = self.texture.size
+        scale_factor = min(texture_width/(2*self.size), texture_height/(2*self.size))
+        self.texture_image = self.texture.crop((0, 0, self.size*2*scale_factor, self.size*2*scale_factor)).resize((self.size*2, self.size*2))
+        # self.tk_texture = ImageTk.PhotoImage(image=texture_image)
 
         if self.own:
             self.env.fen.bind('<Motion>', self.mouse_move)
@@ -63,10 +73,9 @@ class Player:
             keyboard.on_press_key(self.key['reload'], self.reload)
             # keyboard.on_press_key(self.key['panic'], self.env.panic)
             keyboard.on_press_key(self.key['dash_preview'], self.toggle_dash_preview)
-            if self.env.isMac():
-                keyboard.on_press_key(self.key['dash'], self.dash)   # dash on shift 56
-            elif self.env.isWindows():
-                keyboard.on_press_key(self.key['dash'], self.dash) # dash on Windows
+            keyboard.on_press_key(self.key['dash'], self.dash)
+
+        self.env.players.append(self)
 
     def mouse_move(self, event):
         self.mouse['x'], self.mouse['y'] = event.x, event.y
@@ -89,7 +98,8 @@ class Player:
         for shoot in self.env.shoots:
             dist_head = math.sqrt((self.x - shoot.head['x'])**2 + (self.y - shoot.head['y'])**2)
             dist_tail = math.sqrt((self.x - shoot.x)**2 + (self.y - shoot.y)**2)
-            if (dist_head <= self.size + 1 or dist_tail <= self.size + 1) and shoot.from_player != self:
+            tolerance = 4
+            if (dist_head <= self.size + tolerance or dist_tail <= self.size + tolerance) and shoot.from_player != self:
                 self.health -= shoot.damage
                 if self.health <= 0:
                         shoot.from_player.kills.append(self)
@@ -224,6 +234,9 @@ class Player:
     def render(self, dash=False):
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, self.health)
         self.env.rendering_stack.append(RenderedObject('oval', self.x - self.size, self.y - self.size, x2=self.x + self.size, y2=self.y + self.size, color=self.color, width=0, dash=self.dash))
+        # image = ImageTk.PhotoImage(image=self.texture_image)
+        # self.texture_dic['0'] = image
+        # self.env.rendering_stack.append(RenderedObject('image', self.x, self.y, image=image))
         if not dash:
             self.env.rendering_stack.append(RenderedObject('line', self.x + math.cos(self.dir) * 12, self.y + math.sin(self.dir) * 12, x2=self.x + math.cos(self.dir) * 20, y2=self.y + math.sin(self.dir) * 20, zIndex=2))
             self.env.rendering_stack.append(RenderedObject('text', self.x - len(self.name) / 2, self.y - 20, text=head_text, color='#787878', zIndex=3))
@@ -252,6 +265,7 @@ class Target(Player):
         self.shoot_interval = random.randint(10-self.level, 200-self.level*2)
         self.closer_player = None
         self.can_shoot = self.level >= 2
+        self.can_move = self.level > 2
         self.shoot_dispersion = math.pi/(5 + random.randint(self.level, self.level*2))
 
     def detect_closer_player(self):
@@ -277,7 +291,8 @@ class Target(Player):
                 self.dir += random_sign()*random.random() * self.shoot_dispersion
                 self.shoot()
             self.tick += 1
-            super().move(self.vx, self.vy)
+            if self.can_move:
+                super().move(self.vx, self.vy)
 
     def render(self):
         super().render()
