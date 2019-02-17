@@ -9,7 +9,6 @@ from threading import Timer
 from render import RenderedObject
 from weapons.weapon import AR, Shotgun, Sniper
 
-
 default_keys = {
     'up': 'z',
     'down': 's',
@@ -35,7 +34,7 @@ class Player:
         self.env = env
         self.name = name
         self.own = own  # Si le player est le joueur
-        self.weapon = None
+        self.weapon = Shotgun(self)
         self.client = None
         self.interface = None
         self.size = 10  # Radius
@@ -49,10 +48,6 @@ class Player:
         self.simul_dash = {'x': 0, 'y': 0}
         self.dash_left = 3
         self.health = 100
-        self.max_ammo = 20  # Taille du chargeur
-        self.ammo = self.max_ammo  # Munitions restantes
-        self.is_reloading = False
-        self.autofire = False
         self.hit_player = {}
         self.hit_by_player = {}
         self.kills = []
@@ -64,7 +59,7 @@ class Player:
         if self.own:
             self.env.fen.bind('<Motion>', self.mouse_move)
             self.env.fen.bind('<Button-1>', self.shoot)
-            self.env.fen.bind('<ButtonRelease-1>', self.stop_fire)
+            self.env.fen.bind('<ButtonRelease-1>', self.weapon.stop_fire)
             keyboard.on_press_key(self.key['reload'], self.reload)
             # keyboard.on_press_key(self.key['panic'], self.env.panic)
             keyboard.on_press_key(self.key['dash_preview'], self.toggle_dash_preview)
@@ -195,31 +190,13 @@ class Player:
             self.simul_move(math.cos(self.dir), math.sin(self.dir))
 
     def shoot(self, *event):
-        if self.ammo > 0 and not self.is_reloading:
-            if event:
-                self.autofire = True
-                self.shoot()
-            if self.autofire and not event:
-                tir = Tir(len(self.env.shoots), self.x, self.y, self.dir, self)
-                self.env.shoots.append(tir)
-                self.ammo -= 1
-                Timer(.2, self.shoot).start()
+        if event:
+            self.weapon.proceed_shoot(event)
         else:
-            self.reload()
+            self.weapon.proceed_shoot()
 
-    def stop_fire(self, *event):
-        self.autofire = False
-
-    def reload(self, *arg):
-        if self.ammo < self.max_ammo:
-            self.is_reloading = True
-            Timer(1, self.has_reload).start()
-
-    def has_reload(self):
-        self.ammo = self.max_ammo
-        self.is_reloading = False
-        if self.autofire:
-            self.shoot()
+    def reload(self, *event):
+        self.weapon.reload(event)
 
     def dist(self, other):
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
@@ -266,6 +243,7 @@ class Target(Player):
         self.name = 'Target {}'.format(self.id)
         self.own = False
         self.theorical_speed = level / 2.5
+        self.weapon = AR(self)
         self.color = '#AAA'
         self.tick = 0
         self.vx = random_sign()
@@ -285,9 +263,7 @@ class Target(Player):
                 self.closer_player = player
 
     def shoot(self):
-        tir = Tir(len(self.env.shoots), self.x, self.y, self.dir, self)
-        self.env.shoots.append(tir)
-        self.ammo -= 1
+        self.weapon.shoot()
 
     def update(self):
         if self.alive and len(self.env.players_alive) > 1:
