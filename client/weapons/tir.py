@@ -21,7 +21,7 @@ class Tir:
         self.id = len(self.env.shoots) + 1
         self.env.shoots.append(self)
 
-    def checkWallCollide(self, map):
+    def check_wall_collide(self, map):
         x = self.head['x']
         y = self.head['y']
         for rect in map.rects:
@@ -46,7 +46,7 @@ class Tir:
             'x': self.x + math.cos(self.dir) * self.size,
             'y': self.y + math.sin(self.dir) * self.size
         }
-        self.checkWallCollide(self.env.map)
+        self.check_wall_collide(self.env.map)
 
     def render(self):
         self.env.rendering_stack.append(RenderedObject('line', self.x, self.y, x2=self.head['x'], y2=self.head['y']))
