@@ -273,7 +273,7 @@ class Settings:
 
     def default(self):
         with open('config_base.json', 'r') as default:
-            self.new_config = json.load(default)
+            self.new_config['key_binding'] = json.load(default)['key_binding']
         self.update_key_bind()
 
 
