@@ -7,6 +7,7 @@ import os
 import platform
 import re
 import time
+
 from render import RenderedObject
 
 class Env:

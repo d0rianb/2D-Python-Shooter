@@ -4,9 +4,11 @@
 import random
 import math
 import keyboard
+
 from threading import Timer
 from render import RenderedObject
-from tir import Tir
+from weapons.weapon import AR, Shotgun, Sniper
+
 
 default_keys = {
     'up': 'z',
@@ -33,6 +35,7 @@ class Player:
         self.env = env
         self.name = name
         self.own = own  # Si le player est le joueur
+        self.weapon = None
         self.client = None
         self.interface = None
         self.size = 10  # Radius
@@ -217,9 +220,6 @@ class Player:
         self.is_reloading = False
         if self.autofire:
             self.shoot()
-
-    def passif(self):
-        pass  # dash regain and healt regain
 
     def dist(self, other):
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)

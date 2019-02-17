@@ -17,6 +17,7 @@ from render import Canvas
 from map.map import Map
 
 GAME_NAME = '2PQSTD'
+config_path = 'ressources/config/'
 
 class App:
     def __init__(self, player_name):
@@ -36,7 +37,7 @@ class App:
         self.chat = ChatInfo(self.env)
 
     def get_config(self):
-        with open('config.json') as settings_file:
+        with open(os.path.join(config_path, 'config.json'), 'r') as settings_file:
             self.config = json.load(settings_file)
             # pprint.pprint(self.config)
 
@@ -87,7 +88,7 @@ class SplashScreen:
         self.get_config()
 
     def get_config(self):
-        with open('config.json') as settings_file:
+        with open(os.path.join(config_path, 'config.json'), 'r') as settings_file:
             self.config = json.load(settings_file)
 
     def create_window(self):
@@ -170,7 +171,7 @@ class Settings:
         self.create_window()
 
     def get_config(self):
-        with open('config.json') as file:
+        with open(os.path.join(config_path, 'config.json'), 'r') as file:
             self.config = json.load(file)
             self.new_config = self.config.copy()
 
@@ -202,7 +203,7 @@ class Settings:
             self.new_config['default_ip'] = default_ip.get()
             self.new_config['default_port'] = default_port.get()
             self.new_config['default_name'] = default_name.get()
-            with open('config.json', 'w') as config:
+            with open(os.path.join(config_path, 'config.json'), 'w') as config:
                 config.write(json.dumps(self.new_config))
             self.fen.destroy()
 
@@ -272,12 +273,12 @@ class Settings:
         self.update_key_bind()
 
     def default(self):
-        with open('config_base.json', 'r') as default:
+        with open(os.path.join(config_path, 'config_default.json'), 'r') as default:
             self.new_config['key_binding'] = json.load(default)['key_binding']
         self.update_key_bind()
 
 
     def validate(self):
-        with open('config.json', 'w') as config:
+        with open(os.path.join(config_path, 'config.json'), 'w') as config:
             config.write(json.dumps(self.new_config))
         self.fen.destroy()
