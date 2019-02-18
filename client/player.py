@@ -115,15 +115,40 @@ class Player:
         if self.health <= 0:
             self.dead()
 
-    def is_colliding_wall(self):
-        rects = self.env.map.rects
-        collide_wall = False
-        for rect in rects:
-            if self.x + self.size >= rect.x and self.x - self.size <= rect.x2 and self.y + self.size >= rect.y and self.y - self.size <= rect.y2:
-                collide_wall = True
-        if self.env.debug:
-            self.color = 'red' if collide_wall else 'green'
-        return collide_wall
+    # def is_colliding_wall(self):
+    #     rects = self.env.map.rects
+    #     collide_wall = False
+    #     for rect in rects:
+    #         if self.x + self.size >= rect.x and self.x - self.size <= rect.x2 and self.y + self.size >= rect.y and self.y - self.size <= rect.y2:
+    #             collide_wall = True
+    #     if self.env.debug:
+    #         self.color = 'red' if collide_wall else 'green'
+    #     return collide_wall
+
+    def collide_wall(self):
+        collide_x, collide_y = False, False
+        delta_x, delta_y = 0, 0
+        for rect in self.env.map.rects:
+            if self.y + self.size >= rect.y and self.y - self.size <= rect.y2:
+                delta_x_left = rect.x - (self.x + self.size)
+                delta_x_right = (self.x - self.size) - rect.x2
+                delta_x_left = delta_x_left if delta_x_left < 0 else 0
+                delta_x_right = delta_x_right if delta_x_right < 0 else 0
+                delta_x = max(delta_x_left, delta_x_right)
+                if delta_x == delta_x_right:
+                    delta_x *= -1
+
+
+            if self.x + self.size >= rect.x and self.x - self.size <= rect.x2:
+                delta_y_top = rect.y - (self.y + self.size)
+                delta_y_bottom = (self.y - self.size) - rect.y2
+                delta_y_top = delta_y_top if delta_y_top < 0 else 0
+                delta_y_bottom = delta_y_bottom if delta_y_bottom < 0 else 0
+                delta_y = max(delta_y_top, delta_y_bottom)
+                if delta_y == delta_y_bottom:
+                    delta_y *= -1
+        return delta_x, delta_y
+
 
     def simul_is_colliding_wall(self):
         rects = self.env.map.rects
@@ -136,15 +161,12 @@ class Player:
         return collide_wall
 
     def move(self, x, y):
-        old_x, old_y = self.x, self.y
-
         self.x += x * self.speed
-        if self.is_colliding_wall():
-            self.x = old_x
-
         self.y += y * self.speed
-        if self.is_colliding_wall():
-            self.y = old_y
+
+        offset_x, offset_y = self.collide_wall()
+        self.x += offset_x # Doesn't work simultualy
+        self.y += offset_y
 
         # Restreint le joueur à l'environnement
         if self.x - self.size <= 0:
