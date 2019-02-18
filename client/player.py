@@ -129,7 +129,7 @@ class Player:
         collide_x, collide_y = False, False
         delta_x, delta_y = 0, 0
         for rect in self.env.map.rects:
-            if self.y + self.size >= rect.y and self.y - self.size <= rect.y2:
+            if self.y + self.size >= rect.y and self.y - self.size <= rect.y2 and self.x + self.size >= rect.x and self.x - self.size <= rect.x2:
                 delta_x_left = rect.x - (self.x + self.size)
                 delta_x_right = (self.x - self.size) - rect.x2
                 delta_x_left = delta_x_left if delta_x_left < 0 else 0
@@ -138,8 +138,6 @@ class Player:
                 if delta_x == delta_x_right:
                     delta_x *= -1
 
-
-            if self.x + self.size >= rect.x and self.x - self.size <= rect.x2:
                 delta_y_top = rect.y - (self.y + self.size)
                 delta_y_bottom = (self.y - self.size) - rect.y2
                 delta_y_top = delta_y_top if delta_y_top < 0 else 0
@@ -147,6 +145,9 @@ class Player:
                 delta_y = max(delta_y_top, delta_y_bottom)
                 if delta_y == delta_y_bottom:
                     delta_y *= -1
+        delta_min = min(abs(delta_x), abs(delta_y))
+        delta_x = delta_x if abs(delta_x) == delta_min else 0
+        delta_y = delta_y if abs(delta_y) == delta_min else 0
         return delta_x, delta_y
 
 
@@ -165,7 +166,7 @@ class Player:
         self.y += y * self.speed
 
         offset_x, offset_y = self.collide_wall()
-        self.x += offset_x # Doesn't work simultualy
+        self.x += offset_x
         self.y += offset_y
 
         # Restreint le joueur à l'environnement
