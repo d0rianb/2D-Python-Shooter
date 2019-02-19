@@ -43,7 +43,7 @@ class Player:
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = '#0066ff' if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
-        self.theorical_speed = 4.2
+        self.theorical_speed = 4.0
         self.speed = self.theorical_speed * 60 / self.env.framerate   # computed value
         self.dash_length = 32
         self.dash_preview = False
@@ -115,51 +115,42 @@ class Player:
         if self.health <= 0:
             self.dead()
 
-    # def is_colliding_wall(self):
-    #     rects = self.env.map.rects
-    #     collide_wall = False
-    #     for rect in rects:
-    #         if self.x + self.size >= rect.x and self.x - self.size <= rect.x2 and self.y + self.size >= rect.y and self.y - self.size <= rect.y2:
-    #             collide_wall = True
-    #     if self.env.debug:
-    #         self.color = 'red' if collide_wall else 'green'
-    #     return collide_wall
+    def collide_wall(self, simulation=False):
+        if simulation: ## Handle dash preview
+            x, y = self.simul_dash['x'], self.simul_dash['y']
+        else:
+            x, y = self.x, self.y
 
-    def collide_wall(self):
         collide_x, collide_y = False, False
-        delta_x, delta_y = 0, 0
+        delta = {'x': 0, 'y': 0}
         for rect in self.env.map.rects:
-            if self.y + self.size >= rect.y and self.y - self.size <= rect.y2 and self.x + self.size >= rect.x and self.x - self.size <= rect.x2:
-                delta_x_left = rect.x - (self.x + self.size)
-                delta_x_right = (self.x - self.size) - rect.x2
+            delta_x, delta_y = 0, 0
+            if y + self.size > rect.y and y - self.size < rect.y2 and x + self.size > rect.x and x - self.size < rect.x2:
+                delta_x_left = rect.x - (x + self.size)
+                delta_x_right = (x - self.size) - rect.x2
                 delta_x_left = delta_x_left if delta_x_left < 0 else 0
                 delta_x_right = delta_x_right if delta_x_right < 0 else 0
                 delta_x = max(delta_x_left, delta_x_right)
                 if delta_x == delta_x_right:
                     delta_x *= -1
 
-                delta_y_top = rect.y - (self.y + self.size)
-                delta_y_bottom = (self.y - self.size) - rect.y2
+                delta_y_top = rect.y - (y + self.size)
+                delta_y_bottom = (y - self.size) - rect.y2
                 delta_y_top = delta_y_top if delta_y_top < 0 else 0
                 delta_y_bottom = delta_y_bottom if delta_y_bottom < 0 else 0
                 delta_y = max(delta_y_top, delta_y_bottom)
                 if delta_y == delta_y_bottom:
                     delta_y *= -1
-        delta_min = min(abs(delta_x), abs(delta_y))
-        delta_x = delta_x if abs(delta_x) == delta_min else 0
-        delta_y = delta_y if abs(delta_y) == delta_min else 0
-        return delta_x, delta_y
 
-
-    def simul_is_colliding_wall(self):
-        rects = self.env.map.rects
-        collide_wall = False
-        for rect in rects:
-            if self.simul_dash['x'] + self.size >= rect.x and self.simul_dash['x'] - self.size <= rect.x2 and self.simul_dash['y'] + self.size >= rect.y and self.simul_dash['y'] - self.size <= rect.y2:
-                collide_wall = True
-        if self.env.debug:
-            self.color = 'red' if collide_wall else 'green'
-        return collide_wall
+            delta_min = min(abs(delta_x), abs(delta_y))
+            delta_x = delta_x if abs(delta_x) == delta_min else 0
+            delta_y = delta_y if abs(delta_y) == delta_min else 0
+            ## Add the delta of each rectangle to the total delta (dict)
+            if delta_x != 0 and delta['x'] == 0:
+                delta['x'] = delta_x
+            if delta_y != 0 and  delta['y'] == 0:
+                 delta['y'] = delta_y
+        return delta['x'], delta['y']
 
     def move(self, x, y):
         self.x += x * self.speed
@@ -180,15 +171,12 @@ class Player:
             self.y = self.env.height - self.size
 
     def simul_move(self, x, y):
-        old_x, old_y = self.simul_dash['x'], self.simul_dash['y']
+        self.simul_dash['x'] += x * self.speed
+        self.simul_dash['y'] += y * self.speed
 
-        self.simul_dash['x'] += x * self.theorical_speed
-        if self.simul_is_colliding_wall():
-            self.simul_dash['x'] = old_x
-
-        self.simul_dash['y'] += y * self.theorical_speed
-        if self.simul_is_colliding_wall():
-            self.simul_dash['y'] = old_y
+        offset_x, offset_y = self.collide_wall(simulation=True)
+        self.simul_dash['x'] += offset_x
+        self.simul_dash['y'] += offset_y
 
         # Restreint le joueur à l'environnement
         if self.simul_dash['x'] - self.size <= 0:

@@ -39,7 +39,6 @@ class App:
     def get_config(self):
         with open(config_path, 'r') as settings_file:
             self.config = json.load(settings_file)
-            # pprint.pprint(self.config)
 
     def start(self):
         self.env.update()
