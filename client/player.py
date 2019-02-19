@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import random
 import math
 import keyboard
+
+from PIL import Image, ImageTk
 from threading import Timer
 from render import RenderedObject
-from tir import Tir
+from weapons.weapon import AR, Shotgun, Sniper
 
 default_keys = {
     'up': 'z',
@@ -33,42 +36,46 @@ class Player:
         self.env = env
         self.name = name
         self.own = own  # Si le player est le joueur
+        self.weapon = Shotgun(self)
         self.client = None
         self.interface = None
         self.size = 10  # Radius
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = '#0066ff' if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
-        self.theorical_speed = 4.2
+        self.theorical_speed = 4.0
         self.speed = self.theorical_speed * 60 / self.env.framerate   # computed value
         self.dash_length = 32
         self.dash_preview = False
         self.simul_dash = {'x': 0, 'y': 0}
         self.dash_left = 3
         self.health = 100
-        self.max_ammo = 20  # Taille du chargeur
-        self.ammo = self.max_ammo  # Munitions restantes
-        self.is_reloading = False
-        self.autofire = False
         self.hit_player = {}
         self.hit_by_player = {}
         self.kills = []
         self.assists = []
         self.alive = True
         self.key = key or default_keys
-        self.env.players.append(self)
+
+        self.texture_dic = {}
+        self.texture_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressources/texture/')
+        texture_file = 'player.png' if self.own else 'enemy.png'
+        self.texture = Image.open(os.path.join(self.texture_path, texture_file), mode='r')
+        texture_width, texture_height = self.texture.size
+        scale_factor = min(texture_width/(2*self.size), texture_height/(2*self.size))
+        self.texture_image = self.texture.crop((0, 0, self.size*2*scale_factor, self.size*2*scale_factor)).resize((self.size*2, self.size*2))
+        # self.tk_texture = ImageTk.PhotoImage(image=texture_image)
 
         if self.own:
             self.env.fen.bind('<Motion>', self.mouse_move)
             self.env.fen.bind('<Button-1>', self.shoot)
-            self.env.fen.bind('<ButtonRelease-1>', self.stop_fire)
+            self.env.fen.bind('<ButtonRelease-1>', self.weapon.stop_fire)
             keyboard.on_press_key(self.key['reload'], self.reload)
             # keyboard.on_press_key(self.key['panic'], self.env.panic)
             keyboard.on_press_key(self.key['dash_preview'], self.toggle_dash_preview)
-            if self.env.isMac():
-                keyboard.on_press_key(self.key['dash'], self.dash)   # dash on shift 56
-            elif self.env.isWindows():
-                keyboard.on_press_key(self.key['dash'], self.dash) # dash on Windows
+            keyboard.on_press_key(self.key['dash'], self.dash)
+
+        self.env.players.append(self)
 
     def mouse_move(self, event):
         self.mouse['x'], self.mouse['y'] = event.x, event.y
@@ -91,7 +98,8 @@ class Player:
         for shoot in self.env.shoots:
             dist_head = math.sqrt((self.x - shoot.head['x'])**2 + (self.y - shoot.head['y'])**2)
             dist_tail = math.sqrt((self.x - shoot.x)**2 + (self.y - shoot.y)**2)
-            if (dist_head <= self.size + 1 or dist_tail <= self.size + 1) and shoot.from_player != self:
+            tolerance = 4
+            if (dist_head <= self.size + tolerance or dist_tail <= self.size + tolerance) and shoot.from_player != self:
                 self.health -= shoot.damage
                 if self.health <= 0:
                         shoot.from_player.kills.append(self)
@@ -107,36 +115,50 @@ class Player:
         if self.health <= 0:
             self.dead()
 
-    def is_colliding_wall(self):
-        rects = self.env.map.rects
-        collide_wall = False
-        for rect in rects:
-            if self.x + self.size >= rect.x and self.x - self.size <= rect.x2 and self.y + self.size >= rect.y and self.y - self.size <= rect.y2:
-                collide_wall = True
-        if self.env.debug:
-            self.color = 'red' if collide_wall else 'green'
-        return collide_wall
+    def collide_wall(self, simulation=False):
+        if simulation: ## Handle dash preview
+            x, y = self.simul_dash['x'], self.simul_dash['y']
+        else:
+            x, y = self.x, self.y
 
-    def simul_is_colliding_wall(self):
-        rects = self.env.map.rects
-        collide_wall = False
-        for rect in rects:
-            if self.simul_dash['x'] + self.size >= rect.x and self.simul_dash['x'] - self.size <= rect.x2 and self.simul_dash['y'] + self.size >= rect.y and self.simul_dash['y'] - self.size <= rect.y2:
-                collide_wall = True
-        if self.env.debug:
-            self.color = 'red' if collide_wall else 'green'
-        return collide_wall
+        collide_x, collide_y = False, False
+        delta = {'x': 0, 'y': 0}
+        for rect in self.env.map.rects:
+            delta_x, delta_y = 0, 0
+            if y + self.size > rect.y and y - self.size < rect.y2 and x + self.size > rect.x and x - self.size < rect.x2:
+                delta_x_left = rect.x - (x + self.size)
+                delta_x_right = (x - self.size) - rect.x2
+                delta_x_left = delta_x_left if delta_x_left < 0 else 0
+                delta_x_right = delta_x_right if delta_x_right < 0 else 0
+                delta_x = max(delta_x_left, delta_x_right)
+                if delta_x == delta_x_right:
+                    delta_x *= -1
+
+                delta_y_top = rect.y - (y + self.size)
+                delta_y_bottom = (y - self.size) - rect.y2
+                delta_y_top = delta_y_top if delta_y_top < 0 else 0
+                delta_y_bottom = delta_y_bottom if delta_y_bottom < 0 else 0
+                delta_y = max(delta_y_top, delta_y_bottom)
+                if delta_y == delta_y_bottom:
+                    delta_y *= -1
+
+            delta_min = min(abs(delta_x), abs(delta_y))
+            delta_x = delta_x if abs(delta_x) == delta_min else 0
+            delta_y = delta_y if abs(delta_y) == delta_min else 0
+            ## Add the delta of each rectangle to the total delta (dict)
+            if delta_x != 0 and delta['x'] == 0:
+                delta['x'] = delta_x
+            if delta_y != 0 and  delta['y'] == 0:
+                 delta['y'] = delta_y
+        return delta['x'], delta['y']
 
     def move(self, x, y):
-        old_x, old_y = self.x, self.y
-
         self.x += x * self.speed
-        if self.is_colliding_wall():
-            self.x = old_x
-
         self.y += y * self.speed
-        if self.is_colliding_wall():
-            self.y = old_y
+
+        offset_x, offset_y = self.collide_wall()
+        self.x += offset_x
+        self.y += offset_y
 
         # Restreint le joueur à l'environnement
         if self.x - self.size <= 0:
@@ -149,15 +171,12 @@ class Player:
             self.y = self.env.height - self.size
 
     def simul_move(self, x, y):
-        old_x, old_y = self.simul_dash['x'], self.simul_dash['y']
+        self.simul_dash['x'] += x * self.speed
+        self.simul_dash['y'] += y * self.speed
 
-        self.simul_dash['x'] += x * self.theorical_speed
-        if self.simul_is_colliding_wall():
-            self.simul_dash['x'] = old_x
-
-        self.simul_dash['y'] += y * self.theorical_speed
-        if self.simul_is_colliding_wall():
-            self.simul_dash['y'] = old_y
+        offset_x, offset_y = self.collide_wall(simulation=True)
+        self.simul_dash['x'] += offset_x
+        self.simul_dash['y'] += offset_y
 
         # Restreint le joueur à l'environnement
         if self.simul_dash['x'] - self.size <= 0:
@@ -192,34 +211,13 @@ class Player:
             self.simul_move(math.cos(self.dir), math.sin(self.dir))
 
     def shoot(self, *event):
-        if self.ammo > 0 and not self.is_reloading:
-            if event:
-                self.autofire = True
-                self.shoot()
-            if self.autofire and not event:
-                tir = Tir(len(self.env.shoots), self.x, self.y, self.dir, self)
-                self.env.shoots.append(tir)
-                self.ammo -= 1
-                Timer(.2, self.shoot).start()
+        if event:
+            self.weapon.proceed_shoot(event)
         else:
-            self.reload()
+            self.weapon.proceed_shoot()
 
-    def stop_fire(self, *event):
-        self.autofire = False
-
-    def reload(self, *arg):
-        if self.ammo < self.max_ammo:
-            self.is_reloading = True
-            Timer(1, self.has_reload).start()
-
-    def has_reload(self):
-        self.ammo = self.max_ammo
-        self.is_reloading = False
-        if self.autofire:
-            self.shoot()
-
-    def passif(self):
-        pass  # dash regain and healt regain
+    def reload(self, *event):
+        self.weapon.reload(event)
 
     def dist(self, other):
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
@@ -247,6 +245,9 @@ class Player:
     def render(self, dash=False):
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, self.health)
         self.env.rendering_stack.append(RenderedObject('oval', self.x - self.size, self.y - self.size, x2=self.x + self.size, y2=self.y + self.size, color=self.color, width=0, dash=self.dash))
+        # image = ImageTk.PhotoImage(image=self.texture_image)
+        # self.texture_dic['0'] = image
+        # self.env.rendering_stack.append(RenderedObject('image', self.x, self.y, image=image))
         if not dash:
             self.env.rendering_stack.append(RenderedObject('line', self.x + math.cos(self.dir) * 12, self.y + math.sin(self.dir) * 12, x2=self.x + math.cos(self.dir) * 20, y2=self.y + math.sin(self.dir) * 20, zIndex=2))
             self.env.rendering_stack.append(RenderedObject('text', self.x - len(self.name) / 2, self.y - 20, text=head_text, color='#787878', zIndex=3))
@@ -266,6 +267,7 @@ class Target(Player):
         self.name = 'Target {}'.format(self.id)
         self.own = False
         self.theorical_speed = level / 2.5
+        self.weapon = AR(self)
         self.color = '#AAA'
         self.tick = 0
         self.vx = random_sign()
@@ -274,6 +276,7 @@ class Target(Player):
         self.shoot_interval = random.randint(10-self.level, 200-self.level*2)
         self.closer_player = None
         self.can_shoot = self.level >= 2
+        self.can_move = self.level > 2
         self.shoot_dispersion = math.pi/(5 + random.randint(self.level, self.level*2))
 
     def detect_closer_player(self):
@@ -285,9 +288,7 @@ class Target(Player):
                 self.closer_player = player
 
     def shoot(self):
-        tir = Tir(len(self.env.shoots), self.x, self.y, self.dir, self)
-        self.env.shoots.append(tir)
-        self.ammo -= 1
+        self.weapon.shoot()
 
     def update(self):
         if self.alive and len(self.env.players_alive) > 1:
@@ -301,7 +302,8 @@ class Target(Player):
                 self.dir += random_sign()*random.random() * self.shoot_dispersion
                 self.shoot()
             self.tick += 1
-            super().move(self.vx, self.vy)
+            if self.can_move:
+                super().move(self.vx, self.vy)
 
     def render(self):
         super().render()

@@ -14,5 +14,6 @@
 	"default_name": "Dorian",
 	"default_difficulty": 5,
 	"default_ip": "192.168.1.142",
-	"default_port": 12800
+	"default_port": 12800,
+	"graphism": "high"
 }

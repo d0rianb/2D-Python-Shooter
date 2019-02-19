@@ -4,7 +4,6 @@
 import tkinter.font as tkFont
 import tkinter as tk
 import keyboard
-import sys
 
 from render import RenderedObject
 
@@ -58,7 +57,7 @@ class Interface:
             },
             'BottomRight': {
                 'Health': self.player.health,
-                'Ammo': self.player.ammo if not self.player.is_reloading else 'Rechargement',
+                'Ammo': self.player.weapon.ammo if not self.player.weapon.is_reloading else 'Rechargement',
                 'Dash': self.player.dash_left
             }
         }

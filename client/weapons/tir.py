@@ -2,23 +2,27 @@
 # -*- coding: utf-8 -*-
 
 import math
+
 from render import RenderedObject
 
 class Tir:
-    def __init__(self, id, x, y, dir, from_player):
-        self.id = id
+    def __init__(self, x, y, dir, weapon):
         self.x = x
         self.y = y
         self.dir = dir
-        self.damage = 20
-        self.theorical_speed = 22
-        self.speed = self.theorical_speed * 60 / from_player.env.framerate
-        self.size = 12
+        self.weapon = weapon
+        self.damage = self.weapon.damage
+        self.range = self.weapon.range
+        self.from_player = self.weapon.player
+        self.theorical_speed = self.weapon.shoot_speed
+        self.speed = self.theorical_speed * 60 / self.from_player.env.framerate
+        self.size = self.weapon.munition_size
         self.head = {'x': x, 'y': y}
-        self.from_player = from_player
-        self.env = from_player.env
+        self.env = self.from_player.env
+        self.id = len(self.env.shoots) + 1
+        self.env.shoots.append(self)
 
-    def checkWallCollide(self, map):
+    def check_wall_collide(self, map):
         x = self.head['x']
         y = self.head['y']
         for rect in map.rects:
@@ -29,7 +33,13 @@ class Tir:
                 if self in self.env.shoots:
                     self.env.shoots.remove(self)
 
+    def destroy(self):
+        self.env.shoots.remove(self)
+
     def update(self):
+        if self.from_player.dist(self) > self.range:
+            self.destroy()
+            return
         self.speed = self.theorical_speed * 60 / self.env.framerate
         self.x += math.cos(self.dir) * self.speed
         self.y += math.sin(self.dir) * self.speed
@@ -37,7 +47,7 @@ class Tir:
             'x': self.x + math.cos(self.dir) * self.size,
             'y': self.y + math.sin(self.dir) * self.size
         }
-        self.checkWallCollide(self.env.map)
+        self.check_wall_collide(self.env.map)
 
     def render(self):
         self.env.rendering_stack.append(RenderedObject('line', self.x, self.y, x2=self.head['x'], y2=self.head['y']))

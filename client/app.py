@@ -7,7 +7,7 @@ import tkinter.font as tkFont
 import socket
 import random
 import keyboard
-import json, pprint
+import json
 
 from player import Player, Target
 from env import Env
@@ -17,6 +17,7 @@ from render import Canvas
 from map.map import Map
 
 GAME_NAME = '2PQSTD'
+config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressources/config/config.json')
 
 class App:
     def __init__(self, player_name):
@@ -27,18 +28,17 @@ class App:
 
     def init(self):
         self.get_config()
-        self.width, self.height = self.fen.winfo_screenwidth(), self.fen.winfo_screenheight()
+        self.width, self.height = self.fen.winfo_screenwidth(), 814#self.fen.winfo_screenheight()
         self.canvas = Canvas(self.fen, self.width, self.height)
         self.env = Env(self.fen, self.width, self.height, self.canvas, max_framerate=self.config['max_framerate'])
-        self.map = Map(self.env, 'map1.txt', 'Test')
+        self.map = Map(self.env, 'map2.txt', 'MAP 2')
         self.player = Player(0, 50, 50, self.env, self.name, own=True, key=self.config['key_binding'])
         self.interface = Interface(self.player, self.env)
         self.chat = ChatInfo(self.env)
 
     def get_config(self):
-        with open('config.json') as settings_file:
+        with open(config_path, 'r') as settings_file:
             self.config = json.load(settings_file)
-            # pprint.pprint(self.config)
 
     def start(self):
         self.env.update()
@@ -87,7 +87,7 @@ class SplashScreen:
         self.get_config()
 
     def get_config(self):
-        with open('config.json') as settings_file:
+        with open(config_path, 'r') as settings_file:
             self.config = json.load(settings_file)
 
     def create_window(self):
@@ -170,7 +170,7 @@ class Settings:
         self.create_window()
 
     def get_config(self):
-        with open('config.json') as file:
+        with open(config_path, 'r') as file:
             self.config = json.load(file)
             self.new_config = self.config.copy()
 
@@ -202,7 +202,7 @@ class Settings:
             self.new_config['default_ip'] = default_ip.get()
             self.new_config['default_port'] = default_port.get()
             self.new_config['default_name'] = default_name.get()
-            with open('config.json', 'w') as config:
+            with open(config_path, 'w') as config:
                 config.write(json.dumps(self.new_config))
             self.fen.destroy()
 
@@ -272,12 +272,12 @@ class Settings:
         self.update_key_bind()
 
     def default(self):
-        with open('config_base.json', 'r') as default:
-            self.new_config = json.load(default)
+        with open(os.path.join(self.path, 'config_default.json'), 'r') as default:
+            self.new_config['key_binding'] = json.load(default)['key_binding']
         self.update_key_bind()
 
 
     def validate(self):
-        with open('config.json', 'w') as config:
+        with open(config_path, 'w') as config:
             config.write(json.dumps(self.new_config))
         self.fen.destroy()
