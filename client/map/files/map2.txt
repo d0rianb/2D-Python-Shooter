@@ -4,6 +4,9 @@ rect 2 13 3 3
 rect 8 0 1 1
 rect 8 2 4 1
 rect 8 3 1 13
+
+circle 12 2.5 0.5
+
 rect 5 8 3 2
 rect 9 15 8 1
 rect 16 15 1 1
@@ -21,4 +24,4 @@ rect 23 3 1 12
 rect 20 15 4 1
 rect 24 8 3 2
 rect 27 2 3 3
-rect 30 8 2 2 
+rect 30 8 2 2

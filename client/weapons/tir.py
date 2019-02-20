@@ -4,6 +4,8 @@
 import math
 
 from render import RenderedObject
+from map.rect import Rect
+from map.circle import Circle
 
 class Tir:
     def __init__(self, x, y, dir, weapon):
@@ -25,13 +27,15 @@ class Tir:
     def check_wall_collide(self, map):
         x = self.head['x']
         y = self.head['y']
-        for rect in map.rects:
-            if x >= rect.x and x <= rect.x2 and y >= rect.y and y <= rect.y2:  # Check for Head
-                if self in self.env.shoots:
-                    self.env.shoots.remove(self)
-            elif self.x >= rect.x and self.x <= rect.x2 and self.y >= rect.y and self.y <= rect.y2:  # Check for bottom
-                if self in self.env.shoots:
-                    self.env.shoots.remove(self)
+        for obj in map.objects:
+            if isinstance(obj, Rect):
+                rect = obj
+                if x >= rect.x and x <= rect.x2 and y >= rect.y and y <= rect.y2:  # Check for Head
+                    if self in self.env.shoots:
+                        self.env.shoots.remove(self)
+                elif self.x >= rect.x and self.x <= rect.x2 and self.y >= rect.y and self.y <= rect.y2:  # Check for bottom
+                    if self in self.env.shoots:
+                        self.env.shoots.remove(self)
 
     def destroy(self):
         self.env.shoots.remove(self)

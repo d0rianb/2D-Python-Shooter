@@ -166,6 +166,7 @@ class Settings:
         self.config = {}
         self.new_config = {}
         self.platform = platform.system()
+        self.path = os.path.dirname(os.path.realpath(__file__))
         self.get_config()
         self.create_window()
 
@@ -272,7 +273,7 @@ class Settings:
         self.update_key_bind()
 
     def default(self):
-        with open(os.path.join(self.path, 'config_default.json'), 'r') as default:
+        with open(os.path.join(self.path, 'ressources/config/config_default.json'), 'r') as default:
             self.new_config['key_binding'] = json.load(default)['key_binding']
         self.update_key_bind()
 

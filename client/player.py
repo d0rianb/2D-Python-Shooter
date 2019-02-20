@@ -9,6 +9,8 @@ import keyboard
 from PIL import Image, ImageTk
 from threading import Timer
 from render import RenderedObject
+from map.rect import Rect
+from map.circle import Circle
 from weapons.weapon import AR, Shotgun, Sniper
 
 default_keys = {
@@ -123,33 +125,45 @@ class Player:
 
         collide_x, collide_y = False, False
         delta = {'x': 0, 'y': 0}
-        for rect in self.env.map.rects:
-            delta_x, delta_y = 0, 0
-            if y + self.size > rect.y and y - self.size < rect.y2 and x + self.size > rect.x and x - self.size < rect.x2:
-                delta_x_left = rect.x - (x + self.size)
-                delta_x_right = (x - self.size) - rect.x2
-                delta_x_left = delta_x_left if delta_x_left < 0 else 0
-                delta_x_right = delta_x_right if delta_x_right < 0 else 0
-                delta_x = max(delta_x_left, delta_x_right)
-                if delta_x == delta_x_right:
-                    delta_x *= -1
+        for obj in self.env.map.objects:
+            if isinstance(obj, Rect):
+                rect = obj
+                delta_x, delta_y = 0, 0
+                if y + self.size > rect.y and y - self.size < rect.y2 and x + self.size > rect.x and x - self.size < rect.x2:
+                    delta_x_left = rect.x - (x + self.size)
+                    delta_x_right = (x - self.size) - rect.x2
+                    delta_x_left = delta_x_left if delta_x_left < 0 else 0
+                    delta_x_right = delta_x_right if delta_x_right < 0 else 0
+                    delta_x = max(delta_x_left, delta_x_right)
+                    if delta_x == delta_x_right:
+                        delta_x *= -1
 
-                delta_y_top = rect.y - (y + self.size)
-                delta_y_bottom = (y - self.size) - rect.y2
-                delta_y_top = delta_y_top if delta_y_top < 0 else 0
-                delta_y_bottom = delta_y_bottom if delta_y_bottom < 0 else 0
-                delta_y = max(delta_y_top, delta_y_bottom)
-                if delta_y == delta_y_bottom:
-                    delta_y *= -1
+                    delta_y_top = rect.y - (y + self.size)
+                    delta_y_bottom = (y - self.size) - rect.y2
+                    delta_y_top = delta_y_top if delta_y_top < 0 else 0
+                    delta_y_bottom = delta_y_bottom if delta_y_bottom < 0 else 0
+                    delta_y = max(delta_y_top, delta_y_bottom)
+                    if delta_y == delta_y_bottom:
+                        delta_y *= -1
 
-            delta_min = min(abs(delta_x), abs(delta_y))
-            delta_x = delta_x if abs(delta_x) == delta_min else 0
-            delta_y = delta_y if abs(delta_y) == delta_min else 0
-            ## Add the delta of each rectangle to the total delta (dict)
-            if delta_x != 0 and delta['x'] == 0:
-                delta['x'] = delta_x
-            if delta_y != 0 and  delta['y'] == 0:
-                 delta['y'] = delta_y
+                delta_min = min(abs(delta_x), abs(delta_y))
+                delta_x = delta_x if abs(delta_x) == delta_min else 0
+                delta_y = delta_y if abs(delta_y) == delta_min else 0
+                ## Add the delta of each rectangle to the total delta (dict)
+                if delta_x != 0 and delta['x'] == 0:
+                    delta['x'] = delta_x
+                if delta_y != 0 and  delta['y'] == 0:
+                     delta['y'] = delta_y
+            elif isinstance(obj, Circle):
+                circle = obj
+                dist = math.sqrt((self.x - circle.x)**2 + (self.y - circle.y)**2)
+                if dist <= self.size + circle.radius:
+                    delta_dist = dist - self.size - circle.radius
+                    angle = math.atan2(circle.y - self.y, circle.x - self.x)
+                    if delta['x'] == 0:
+                        delta['x'] = math.cos(angle)*delta_dist
+                    if delta['y'] == 0:
+                        delta['y'] = math.sin(angle)*delta_dist
         return delta['x'], delta['y']
 
     def move(self, x, y):

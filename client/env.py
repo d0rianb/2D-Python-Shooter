@@ -73,6 +73,7 @@ class Env:
                 os.system("open -a IDLE ./ressources/TP-Info.py")
             self.exit()
 
+    @profile
     def update(self):
         if not self.GAME_IS_RUNNING: return
         self.tick += 1

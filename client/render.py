@@ -11,6 +11,7 @@ class Canvas:
         self.height = height
         self.canvas = tk.Canvas(parent, width=self.width, height=self.height, bg='#F1E7DC', highlightthickness=0)
 
+    @profile
     def render(self, stack):
         self.canvas.delete('all')
         for object in stack:
