@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 class Circle:
     def __init__(self, id, x, y, radius, map):
         self.id = int(id)

@@ -9,7 +9,7 @@ class Canvas:
     def __init__(self, parent, width, height):
         self.width = width
         self.height = height
-        self.canvas = tk.Canvas(parent, width=self.width, height=self.height, bg='#F1E7DC', highlightthickness=0)
+        self.canvas = tk.Canvas(parent, width=self.width, height=self.height, bg='#EEE', highlightthickness=0)
 
     # @profile
     def render(self, stack):

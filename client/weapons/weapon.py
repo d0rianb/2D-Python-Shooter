@@ -82,7 +82,7 @@ class Shotgun(Weapon):
         self.reload_cooldown = 1.5
         self.nb_shoot = 5
         self.range = 350
-        self.dispersion = math.pi/13
+        self.dispersion = math.pi/12
         self.ammo = self.max_ammo
 
     def shoot(self):

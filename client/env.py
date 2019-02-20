@@ -73,6 +73,9 @@ class Env:
                 os.system("open -a IDLE ./ressources/TP-Info.py")
             self.exit()
 
+    def background(self):
+        self.rendering_stack.append(RenderedObject('rect', 0, 0, width=self.width, height=self.height, color='#F1E7DC', zIndex=1))
+
     # @profile
     def update(self):
         if not self.GAME_IS_RUNNING: return
@@ -103,6 +106,7 @@ class Env:
 
     def render(self):
         ## Pre-Render
+        self.background()
         self.map.render()
         self.interface.render()
         for player in self.players:
