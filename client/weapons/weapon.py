@@ -62,11 +62,11 @@ class Sniper(Weapon):
         super(Sniper, self).__init__(player)
         self.name = 'sniper'
         self.max_ammo = 5
-        self.damage = 65
-        self.shoot_speed = 25
-        self.munition_size = 18
-        self.shoot_cooldown = .6
-        self.reload_cooldown = 2
+        self.damage = 60
+        self.shoot_speed = 28
+        self.munition_size = 16
+        self.shoot_cooldown = .62
+        self.reload_cooldown = 1.9
         self.ammo = self.max_ammo
 
 
@@ -75,14 +75,14 @@ class Shotgun(Weapon):
         super(Shotgun, self).__init__(player)
         self.name = 'fusil à pompe'
         self.max_ammo = 5
-        self.damage = 15
+        self.damage = 14
         self.shoot_speed = 20
-        self.munition_size = 7
-        self.shoot_cooldown = .45
-        self.reload_cooldown = 1.5
+        self.munition_size = 6
+        self.shoot_cooldown = .48
+        self.reload_cooldown = 1.42
         self.nb_shoot = 5
-        self.range = 350
-        self.dispersion = math.pi/12
+        self.range = 335
+        self.dispersion = math.pi/13
         self.ammo = self.max_ammo
 
     def shoot(self):
@@ -103,6 +103,6 @@ class AR(Weapon):
         self.damage = 20
         self.shoot_speed = 22
         self.munition_size = 12
-        self.shoot_cooldown = .15
+        self.shoot_cooldown = .21
         self.reload_cooldown = 1.1
         self.ammo = self.max_ammo

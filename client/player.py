@@ -45,7 +45,7 @@ class Player:
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = '#0066ff' if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
-        self.theorical_speed = 4.0
+        self.theorical_speed = 3.75
         self.speed = self.theorical_speed * 60 / self.env.framerate   # computed value
         self.dash_length = 32
         self.dash_preview = False
@@ -203,6 +203,7 @@ class Player:
             self.simul_dash['y'] = self.env.height - self.size
 
     def dash(self, *args):
+        if not self.alive: return
         if self.dash_left > 0:
             for i in range(self.dash_length):
                 self.speed = self.theorical_speed
@@ -225,12 +226,14 @@ class Player:
             self.simul_move(math.cos(self.dir), math.sin(self.dir))
 
     def shoot(self, *event):
+        if not self.alive: return
         if event:
             self.weapon.proceed_shoot(event)
         else:
             self.weapon.proceed_shoot()
 
     def reload(self, *event):
+        if not self.alive: return
         self.weapon.reload(event)
 
     def dist(self, other):
@@ -241,6 +244,7 @@ class Player:
         self.alive = False
 
     def update(self):
+        if not self.alive: return
         deltaX = self.mouse['x'] - self.x if (self.x != self.mouse['x']) else 1
         deltaY = self.mouse['y'] - self.y
         self.dir = math.atan2(deltaY, deltaX)
@@ -280,8 +284,8 @@ class Target(Player):
         self.level = level
         self.name = 'Target {}'.format(self.id)
         self.own = False
-        self.theorical_speed = level / 2.5
-        self.weapon = AR(self)
+        self.theorical_speed = level / 2.75
+        self.weapon = Shotgun(self)
         self.color = '#AAA'
         self.tick = 0
         self.vx = random_sign()
@@ -291,7 +295,7 @@ class Target(Player):
         self.closer_player = None
         self.can_shoot = self.level >= 2
         self.can_move = self.level > 2
-        self.shoot_dispersion = math.pi/(5 + random.randint(self.level, self.level*2))
+        self.shoot_dispersion = math.pi/(4 + random.randint(self.level, self.level*2))
 
     def detect_closer_player(self):
         for player in self.env.players:
