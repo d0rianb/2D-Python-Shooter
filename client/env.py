@@ -32,6 +32,7 @@ class Env:
         self.GAME_IS_RUNNING = True
         self.GAME_IS_FOCUS = True
         self.command_entry_focus = False
+        self.canvas.env = self
         self.viewArea = {
             'x': 0,
             'y': 0,
