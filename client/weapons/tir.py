@@ -14,6 +14,8 @@ class Tir:
         self.dir = dir
         self.weapon = weapon
         self.damage = self.weapon.damage
+        self.damage_decrease = self.weapon.damage_decrease
+        self.has_decreased_damage = False
         self.range = self.weapon.range
         self.from_player = self.weapon.player
         self.theorical_speed = self.weapon.shoot_speed
@@ -41,9 +43,15 @@ class Tir:
         self.env.shoots.remove(self)
 
     def update(self):
-        if self.from_player.dist(self) > self.range:
+        player_dist = self.from_player.dist(self)
+        if player_dist > self.range:
             self.destroy()
             return
+            
+        if player_dist > self.damage_decrease['range'] and not self.has_decreased_damage:
+            self.damage *= self.damage_decrease['factor']
+            self.has_decreased_damage = True
+
         self.speed = self.theorical_speed * 60 / self.env.framerate
         self.x += math.cos(self.dir) * self.speed
         self.y += math.sin(self.dir) * self.speed

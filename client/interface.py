@@ -4,6 +4,7 @@
 import tkinter.font as tkFont
 import tkinter as tk
 import keyboard
+import math
 
 from render import RenderedObject
 
@@ -46,7 +47,6 @@ class Interface:
     def update(self):
         self.informations = {
             'TopLeft': {
-                'Player Name': self.player.name,
                 'FrameRate': self.env.framerate,
                 'Ping': '{0:.2g} ms'.format(self.player.client.ping) if self.player.client else 0
             },
@@ -56,7 +56,7 @@ class Interface:
                 'Assists': len(self.player.assists)
             },
             'BottomRight': {
-                'Health': self.player.health,
+                'Health': math.ceil(self.player.health),
                 'Ammo': self.player.weapon.ammo if not self.player.weapon.is_reloading else 'Rechargement',
                 'Dash': self.player.dash_left
             }

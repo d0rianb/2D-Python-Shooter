@@ -16,6 +16,7 @@ class Weapon:
         self.munition_size = 12
         self.shoot_cooldown = .2
         self.reload_cooldown = 1
+        self.damage_decrease = {'range': math.inf, 'factor': 1}
         self.range = math.inf
         self.can_shoot = True
         self.is_reloading = False
@@ -75,13 +76,14 @@ class Shotgun(Weapon):
         super(Shotgun, self).__init__(player)
         self.name = 'fusil à pompe'
         self.max_ammo = 5
-        self.damage = 14
+        self.damage = 15
         self.shoot_speed = 20
         self.munition_size = 6
         self.shoot_cooldown = .48
         self.reload_cooldown = 1.42
         self.nb_shoot = 5
         self.range = 335
+        self.damage_decrease = {'range': self.range / 2, 'factor': 0.67}
         self.dispersion = math.pi/13
         self.ammo = self.max_ammo
 
@@ -101,6 +103,7 @@ class AR(Weapon):
         self.name = 'fusil d\'assaut'
         self.max_ammo = 20
         self.damage = 20
+        self.damage_decrease = {'range': 500 / 2, 'factor': 0.88}
         self.shoot_speed = 22
         self.munition_size = 12
         self.shoot_cooldown = .21

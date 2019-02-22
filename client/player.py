@@ -100,7 +100,7 @@ class Player:
         for shoot in self.env.shoots:
             dist_head = math.sqrt((self.x - shoot.head['x'])**2 + (self.y - shoot.head['y'])**2)
             dist_tail = math.sqrt((self.x - shoot.x)**2 + (self.y - shoot.y)**2)
-            tolerance = 4
+            tolerance = 4.5
             if (dist_head <= self.size + tolerance or dist_tail <= self.size + tolerance) and shoot.from_player != self:
                 self.health -= shoot.damage
                 if self.health <= 0:
@@ -240,7 +240,7 @@ class Player:
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
     def dead(self):
-        print('{} est mort, il a tiré sur {} et s\'est fait tuer par {}'.format(self.name, self.hit_player, self.hit_by_player))
+        # print('{} est mort, il a tiré sur {} et s\'est fait tuer par {}'.format(self.name, self.hit_player, self.hit_by_player))
         self.alive = False
 
     def update(self):
@@ -261,7 +261,7 @@ class Player:
             self.client.receive()
 
     def render(self, dash=False):
-        head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, self.health)
+        head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, math.ceil(self.health))
         self.env.rendering_stack.append(RenderedObject('oval', self.x - self.size, self.y - self.size, x2=self.x + self.size, y2=self.y + self.size, color=self.color, width=0, dash=self.dash))
         # image = ImageTk.PhotoImage(image=self.texture_image)
         # self.texture_dic['0'] = image
@@ -285,7 +285,7 @@ class Target(Player):
         self.name = 'Target {}'.format(self.id)
         self.own = False
         self.theorical_speed = level / 2.75
-        self.weapon = Shotgun(self)
+        self.weapon = AR(self)
         self.color = '#AAA'
         self.tick = 0
         self.vx = random_sign()
@@ -293,8 +293,8 @@ class Target(Player):
         self.move_interval = random.randint(20, 60)
         self.shoot_interval = random.randint(10-self.level, 200-self.level*2)
         self.closer_player = None
-        self.can_shoot = self.level >= 2
-        self.can_move = self.level > 2
+        self.can_shoot = self.level >= 3
+        self.can_move = self.level >= 2
         self.shoot_dispersion = math.pi/(4 + random.randint(self.level, self.level*2))
 
     def detect_closer_player(self):

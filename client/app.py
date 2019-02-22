@@ -122,8 +122,8 @@ class SplashScreen:
         difficulty_label = tk.Label(self.fen, text='Difficultée : ', font=regular_font)
         difficulty_scale = tk.Scale(self.fen, variable=difficulty_var, orient='horizontal', from_=0, to=10, resolution=1, length=200, relief=tk.FLAT)
 
-        PvE_button = tk.Button(self.fen, text='Local', command=lambda: handle_click('PvE'), padx=30, pady=20, relief=tk.FLAT)
-        PvP_button = tk.Button(self.fen, text='Multi', command=lambda: handle_click('PvP'), padx=30, pady=20, relief=tk.FLAT)
+        PvE_button = tk.Button(self.fen, text='Local', command=lambda: handle_click('PvE'), padx=30, pady=5, relief=tk.FLAT)
+        PvP_button = tk.Button(self.fen, text='Multi', command=lambda: handle_click('PvP'), padx=30, pady=5, relief=tk.FLAT)
 
         settings_icon = tk.PhotoImage(file='{}/ressources/open_file.gif'.format(self.path))
         settings = tk.Button(self.fen, text='Settings',relief=tk.FLAT, command=lambda: self.settings_callback(self))
