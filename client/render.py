@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import tkinter as tk
-import PIL
-
 
 class Canvas:
     def __init__(self, parent, width, height):
         self.width = width
         self.height = height
+        self.scale = 1
         self.canvas = tk.Canvas(parent, width=self.width, height=self.height, bg='#EEE', highlightthickness=0)
 
     # @profile

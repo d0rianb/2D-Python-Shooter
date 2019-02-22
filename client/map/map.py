@@ -4,8 +4,8 @@
 import os
 
 from PIL import Image, ImageTk
-from map.rect import Rect
-from map.circle import Circle
+from object.rect import Rect
+from object.circle import Circle
 from render import RenderedObject
 
 

@@ -9,8 +9,8 @@ import keyboard
 from PIL import Image, ImageTk
 from threading import Timer
 from render import RenderedObject
-from map.rect import Rect
-from map.circle import Circle
+from object.rect import Rect
+from object.circle import Circle
 from weapons.weapon import AR, Shotgun, Sniper
 
 default_keys = {
@@ -44,9 +44,10 @@ class Player:
         self.size = 10  # Radius
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
-        self.color = '#0066ff' if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
-        self.theorical_speed = 3.75
+        self.color = '#0066ff' # if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
+        self.theorical_speed = 3.25
         self.speed = self.theorical_speed * 60 / self.env.framerate   # computed value
+        self.dash_speed = 4.0
         self.dash_length = 32
         self.dash_preview = False
         self.simul_dash = {'x': 0, 'y': 0}
@@ -101,18 +102,23 @@ class Player:
             dist_head = math.sqrt((self.x - shoot.head['x'])**2 + (self.y - shoot.head['y'])**2)
             dist_tail = math.sqrt((self.x - shoot.x)**2 + (self.y - shoot.y)**2)
             tolerance = 4.5
-            if (dist_head <= self.size + tolerance or dist_tail <= self.size + tolerance) and shoot.from_player != self:
-                self.health -= shoot.damage
-                if self.health <= 0:
-                        shoot.from_player.kills.append(self)
-                if shoot.from_player.name in self.hit_by_player:
-                    self.hit_by_player[shoot.from_player.name] += shoot.damage
+            shooter = shoot.from_player
+            victim = self
+            if (dist_head <= victim.size + tolerance or dist_tail <= victim.size + tolerance) and shooter != victim:
+                victim.health -= shoot.damage
+                if victim.health <= 0:
+                        shooter.kills.append(victim)
+
+                if shooter.name in victim.hit_by_player:
+                    victim.hit_by_player[shooter.name] += shoot.damage
                 else:
-                    self.hit_by_player[shoot.from_player.name] = shoot.damage
-                if self.name in shoot.from_player.hit_player:
-                    shoot.from_player.hit_player[self.name] += shoot.damage
+                    victim.hit_by_player[shooter.name] = shoot.damage
+
+                if self.name in shooter.hit_player:
+                    shooter.hit_player[victim.name] += shoot.damage
                 else:
-                    shoot.from_player.hit_player[self.name] = shoot.damage
+                    shooter.hit_player[victim.name] = shoot.damage
+
                 self.env.shoots.remove(shoot)
         if self.health <= 0:
             self.dead()
@@ -206,7 +212,7 @@ class Player:
         if not self.alive: return
         if self.dash_left > 0:
             for i in range(self.dash_length):
-                self.speed = self.theorical_speed
+                self.speed = self.dash_speed
                 self.move(math.cos(self.dir), math.sin(self.dir))
                 self.render(dash=True)
             self.dash_left -= 1
@@ -240,8 +246,12 @@ class Player:
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
     def dead(self):
-        # print('{} est mort, il a tiré sur {} et s\'est fait tuer par {}'.format(self.name, self.hit_player, self.hit_by_player))
         self.alive = False
+        print(self.name, self.stats())
+
+    def stats(self):
+        total_damage = sum(self.hit_player.values())
+        return {'total_damage': total_damage, 'kills': len(self.kills), 'assists': len(self.assists)}
 
     def update(self):
         if not self.alive: return
@@ -253,7 +263,7 @@ class Player:
             self.update_dash_preview()
         if self.alive:
             self.check_shoot_collide()
-            self.assists = [player for player in self.hit_player.keys() if not self.env.find_by_name(player).alive]
+            self.assists = [player for player in self.hit_player.keys() if not self.env.find_by('name', player).alive]
         if self.own:
             self.detect_keypress()
         if self.client:

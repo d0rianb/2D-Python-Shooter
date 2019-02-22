@@ -4,8 +4,8 @@
 import math
 
 from render import RenderedObject
-from map.rect import Rect
-from map.circle import Circle
+from object.rect import Rect
+from object.circle import Circle
 
 class Tir:
     def __init__(self, x, y, dir, weapon):
@@ -47,7 +47,7 @@ class Tir:
         if player_dist > self.range:
             self.destroy()
             return
-            
+
         if player_dist > self.damage_decrease['range'] and not self.has_decreased_damage:
             self.damage *= self.damage_decrease['factor']
             self.has_decreased_damage = True

@@ -40,16 +40,16 @@ class Env:
         }
         self.fen.protocol("WM_DELETE_WINDOW", self.exit)
 
-    def manageShoots(self):
+    def manage_shoots(self):
         for shoot in self.shoots:
             if shoot.x < 0 or shoot.x > self.width or shoot.y < 0 or shoot.y > self.height:
                 self.shoots.remove(shoot)
             else:
                 shoot.update()
 
-    def find_by_name(self, name):
+    def find_by(self, attr, value):
         for player in self.players:
-            if player.name == name:
+            if player.__dict__[attr] == value:
                 return player
 
     def isMac(self):
@@ -85,7 +85,7 @@ class Env:
                 player.update()
             self.players_alive = [player for player in self.players if player.alive]
 
-        self.manageShoots()
+        self.manage_shoots()
         self.interface.update()
         self.render()
 
