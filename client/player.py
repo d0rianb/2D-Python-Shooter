@@ -45,7 +45,7 @@ class Player:
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = '#0066ff' # if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
-        self.theorical_speed = 3.25
+        self.theorical_speed = 8 #3.25
         self.speed = self.theorical_speed * 60 / self.env.framerate   # computed value
         self.dash_speed = 4.0
         self.dash_length = 32
@@ -81,7 +81,7 @@ class Player:
         self.env.players.append(self)
 
     def mouse_move(self, event):
-        self.mouse['x'], self.mouse['y'] = event.x, event.y
+        self.mouse['x'], self.mouse['y'] = self.env.viewArea['x'] + event.x, event.y + self.env.viewArea['y']
 
     def detect_keypress(self):
         x, y = 0, 0
@@ -266,6 +266,15 @@ class Player:
             self.assists = [player for player in self.hit_player.keys() if not self.env.find_by('name', player).alive]
         if self.own:
             self.detect_keypress()
+            viewBox = self.env.viewArea
+            if self.x >= viewBox['width'] / 2 and self.x <= self.env.width - viewBox['width'] / 2:
+                viewBox['x'] = self.x - viewBox['width'] / 2
+            else:
+                viewBox['x'] = 0 if self.x <= viewBox['width'] / 2 else self.env.width - viewBox['width']
+            if self.y >= viewBox['height'] / 2 and self.y <= self.env.height - viewBox['height'] / 2:
+                viewBox['y'] = self.y - viewBox['height'] / 2
+            else:
+                viewBox['y'] = 0 if self.y <=viewBox['height'] / 2 else self.env.height - viewBox['height']
         if self.client:
             self.client.send_position()
             self.client.receive()
@@ -273,6 +282,7 @@ class Player:
     def render(self, dash=False):
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, math.ceil(self.health))
         self.env.rendering_stack.append(RenderedObject('oval', self.x - self.size, self.y - self.size, x2=self.x + self.size, y2=self.y + self.size, color=self.color, width=0, dash=self.dash))
+        self.env.rendering_stack.append(RenderedObject('oval', self.mouse['x'] - self.size, self.mouse['y'] - self.size, width=self.size, height=self.size, color='red'))
         # image = ImageTk.PhotoImage(image=self.texture_image)
         # self.texture_dic['0'] = image
         # self.env.rendering_stack.append(RenderedObject('image', self.x, self.y, image=image))

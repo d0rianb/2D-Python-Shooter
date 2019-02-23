@@ -17,8 +17,10 @@ class Interface:
         self.player.interface = self
         self.margin_x = 8
         self.margin_y = 20
-        self.width = env.viewArea['width']
-        self.height = env.viewArea['height']
+        self.x = self.env.viewArea['x']
+        self.y = self.env.viewArea['y']
+        self.width = self.env.viewArea['width']
+        self.height = self.env.viewArea['height']
         self.padding = 20
         self.informations = {}
         self.color = '#92959b'
@@ -45,6 +47,10 @@ class Interface:
                 font=self.font))
 
     def update(self):
+        self.x = self.env.viewArea['x']
+        self.y = self.env.viewArea['y']
+        self.width = self.env.viewArea['width']
+        self.height = self.env.viewArea['height']
         self.informations = {
             'TopLeft': {
                 'FrameRate': self.env.framerate,
@@ -64,13 +70,13 @@ class Interface:
 
     def render(self):
         for position in self.informations:
-            x, y = self.margin_x, self.margin_y
+            x, y = self.x + self.margin_x, self.y + self.margin_y
             anchor = 'w'
             if position == 'TopRight' or position == 'BottomRight':
-                x = self.width - self.margin_x
+                x = self.x + self.width - self.margin_x
                 anchor = 'e'
             if position == 'BottomRight':
-                y = self.height - 2.5*len(self.informations['BottomRight'])*self.padding
+                y = self.y + self.height - len(self.informations['BottomRight'])*self.padding
             self.parse(position, x, y, anchor)
 
 

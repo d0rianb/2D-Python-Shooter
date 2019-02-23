@@ -28,7 +28,7 @@ class App:
 
     def init(self):
         self.get_config()
-        self.width, self.height = self.fen.winfo_screenwidth(), 814#self.fen.winfo_screenheight()
+        self.width, self.height = 4096, 2304
         self.canvas = Canvas(self.fen, self.width, self.height)
         self.env = Env(self.fen, self.width, self.height, self.canvas, max_framerate=self.config['max_framerate'])
         self.map = Map(self.env, 'map2.txt', 'MAP 2')
@@ -126,7 +126,7 @@ class SplashScreen:
         PvP_button = tk.Button(self.fen, text='Multi', command=lambda: handle_click('PvP'), padx=30, pady=5, relief=tk.FLAT)
 
         settings_icon = tk.PhotoImage(file='{}/ressources/open_file.gif'.format(self.path))
-        settings = tk.Button(self.fen, text='Settings',relief=tk.FLAT, command=lambda: self.settings_callback(self))
+        settings = tk.Button(self.fen, text='Settings', relief=tk.FLAT, padx=15, pady=5, command=lambda: self.settings_callback(self))
 
         ## LAYOUT ##
         title.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
@@ -155,7 +155,6 @@ class SplashScreen:
                 self.offline_callback(name_var.get(), difficulty_var.get())
             elif mode == 'PvP':
                 self.online_callback(name_var.get(), server_ip_var.get(), int(server_port_var.get()))
-
 
     def start(self):
         self.fen.mainloop()
@@ -276,7 +275,6 @@ class Settings:
         with open(os.path.join(self.path, 'ressources/config/config_default.json'), 'r') as default:
             self.new_config['key_binding'] = json.load(default)['key_binding']
         self.update_key_bind()
-
 
     def validate(self):
         with open(config_path, 'w') as config:

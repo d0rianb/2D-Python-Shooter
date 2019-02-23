@@ -10,8 +10,8 @@ class Rect:
         self.relative_height = float(height)
         self.map = map
         real_ratio = abs(self.map.env.viewArea['width'] / self.map.env.viewArea['height'] - 16 / 9)
-        gridX = self.map.env.viewArea['width'] / 32
-        gridY = self.map.env.viewArea['height'] / (18 + real_ratio)
+        gridX = self.map.env.width / self.map.grid['x']
+        gridY = self.map.env.height / (self.map.grid['y'] + real_ratio)
 
         self.x = self.relative_x * gridX
         self.y = self.relative_y * gridY

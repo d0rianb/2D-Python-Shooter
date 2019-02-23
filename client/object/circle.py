@@ -9,8 +9,8 @@ class Circle:
         self.relative_radius = float(radius)
         self.map = map
         real_ratio = abs(self.map.env.viewArea['width'] / self.map.env.viewArea['height'] - 16 / 9)
-        gridX = self.map.env.viewArea['width'] / 32
-        gridY = self.map.env.viewArea['height'] / (18 + real_ratio)
+        gridX = self.map.env.width / self.map.grid['x']
+        gridY = self.map.env.height / (self.map.grid['y'] + real_ratio)
 
         self.radius = self.relative_radius * gridX
         self.x = self.relative_x * gridX

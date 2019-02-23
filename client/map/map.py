@@ -17,6 +17,7 @@ class Map:
         self.objects = []
         self.rects_texture = {}
         self.file = file
+        self.grid = { 'x': 0, 'y': 0 }
         dir = os.path.dirname(os.path.realpath(__file__))
 
         self.wall_texture_path = os.path.join(dir, '../ressources/texture/wall_texture_2.jpg')
@@ -24,7 +25,7 @@ class Map:
         self.texture_width, self.texture_height = self.wall_texture.size
 
         lines = []
-        keyword = ['object', 'rect', 'circle']
+        keyword = ['object', 'rect', 'circle', 'define']
         map_file = open(os.path.join(dir, 'files', file), 'r')
         for line in map_file.readlines():
             if len(line.split()) > 0 and line.split()[0] in keyword:
@@ -36,6 +37,9 @@ class Map:
                 self.objects.append(Rect(len(self.objects) + 1, line[1], line[2], line[3], line[4], self))
             elif line[0] == 'circle':
                 self.objects.append(Circle(len(self.objects) + 1, line[1], line[2], line[3], self))
+            elif line[0] == 'define' and line[1] == 'grid':
+                self.grid['x'] = int(line[2])
+                self.grid['y'] = int(line[3])
 
         for object in self.objects:
             if isinstance(object, Rect):
@@ -47,6 +51,12 @@ class Map:
                 self.rects_texture[rect.id] = texture
 
     def render(self):
+        # for col in range(self.grid['x']):
+        #     rect = Rect(100 + col, col, 0, 0.05, self.grid['y'], self)
+        #     self.env.rendering_stack.append(RenderedObject('rect', rect.x, rect.y,  width=rect.width, height=rect.height, color='green'))
+        # for line in range(self.grid['y']):
+        #     rect = Rect(128 + line, 0, line, self.grid['x'], 0.05, self)
+        #     self.env.rendering_stack.append(RenderedObject('rect', rect.x, rect.y,  width=rect.width, height=rect.height, color='green'))
         for object in self.objects:
             if isinstance(object, Rect):
                 rect = object

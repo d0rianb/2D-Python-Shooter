@@ -16,6 +16,7 @@ class Env:
         self.canvas = canvas
         self.width = width
         self.height = height
+        self.scale = 1
         self.ratio = width / height
         self.max_framerate = max_framerate
         self.framerate = self.max_framerate
@@ -36,10 +37,15 @@ class Env:
         self.viewArea = {
             'x': 0,
             'y': 0,
-            'width': self.width,
-            'height': self.height
+            'width': self.fen.winfo_screenwidth(),
+            'height': self.fen.winfo_screenheight()
         }
         self.fen.protocol("WM_DELETE_WINDOW", self.exit)
+        self.fen.bind("<MouseWheel>", self.change_scale)
+
+    def change_scale(self, event):
+        if (self.scale >= 0.1 and event.delta > 0) or (self.scale <= 5 and event.delta < 0):
+            self.scale -= event.delta/100
 
     def manage_shoots(self):
         for shoot in self.shoots:
@@ -100,7 +106,6 @@ class Env:
             self.framerate = framerate if framerate != 0 and framerate <= self.max_framerate else self.max_framerate
             self.last_frame_timestamp = end_time
 
-
         self.fen.after(1000 // self.max_framerate, self.update)
 
 
@@ -115,6 +120,11 @@ class Env:
                 player.render()
         for shoot in self.shoots:
             shoot.render()
+
+        self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'], width=self.viewArea['width'], height=0, zIndex=2))
+        self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'], width=0, height=self.viewArea['height'], zIndex=2))
+        self.rendering_stack.append(RenderedObject('line', self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'], width=0, height=self.viewArea['height'], zIndex=2))
+        self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'] + self.viewArea['height'], width=self.viewArea['width'], height=0, zIndex=2))
 
         ## Canvas rendering
         self.rendering_stack = sorted(self.rendering_stack, key=lambda obj: obj.zIndex)
