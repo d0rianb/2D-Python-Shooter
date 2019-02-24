@@ -27,7 +27,7 @@ class Canvas:
             object = self.scale(object)
             view_x, view_y, view_x2, view_y2 = object.viewBox_coord(self.env.viewArea)
             if object.type == 'rect':
-                self.canvas.create_rectangle(view_x, view_y, view_x + object.width, view_y + object.height, fill=object.color, width=0)
+                self.canvas.create_rectangle(view_x, view_y, view_x + object.width, view_y + object.height, fill=object.color, width=object.borderwidth, outline='#000')
             elif object.type == 'image':
                 self.canvas.create_image(view_x, view_y, image=object.image, anchor=tk.NW)
             elif object.type == 'oval':
@@ -55,6 +55,7 @@ class RenderedObject:
         self.font = kwargs.get('font', None)
         self.id = kwargs.get('id', -1)
         self.anchor = kwargs.get('anchor', tk.CENTER)
+        self.borderwidth = kwargs.get('borderwidth', 0)
         self.zIndex = kwargs.get('zIndex', 1)
 
     def viewBox_coord(self, viewBox):

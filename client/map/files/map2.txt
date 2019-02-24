@@ -1,4 +1,5 @@
 define grid 128 72
+define multiplier 4
 
 rect 2 2 3 3
 rect 0 8 2 2
@@ -12,8 +13,8 @@ circle 12 2.5 0.5
 rect 5 8 3 2
 rect 9 15 8 1
 rect 16 15 1 1
-rect 8 18 1 1
-rect 23 18 1 1
+rect 8 17 1 1
+rect 23 17 1 1
 rect 15 8 2 2
 rect 12 8 1 1
 rect 12 9 1 2

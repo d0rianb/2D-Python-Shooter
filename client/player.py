@@ -45,7 +45,7 @@ class Player:
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = '#0066ff' # if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
-        self.theorical_speed = 8 #3.25
+        self.theorical_speed = 3.25
         self.speed = self.theorical_speed * 60 / self.env.framerate   # computed value
         self.dash_speed = 4.0
         self.dash_length = 32

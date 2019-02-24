@@ -227,8 +227,8 @@ class Settings:
         default_ip_entry.place(relx=0.9, rely=0.5, anchor=tk.E)
         default_port_entry.place(relx=0.9, rely=0.6, anchor=tk.E)
         max_framerate_entry.place(relx=0.9, rely=0.7, anchor=tk.E)
-        keybinding.place(relx=0.4, rely=0.9, anchor=tk.CENTER)
-        valider.place(relx=0.6, rely=0.9, anchor=tk.CENTER)
+        keybinding.place(relx=0.6, rely=0.9, anchor=tk.CENTER)
+        valider.place(relx=0.4, rely=0.9, anchor=tk.CENTER)
 
         self.fen.mainloop()
 
@@ -261,8 +261,9 @@ class Settings:
 
     def create_key_bind(self, key, label, id):
         offset_height = 0.65
+        key_text = 'Shift' if self.new_config['key_binding'][key] == 56 else str(self.new_config['key_binding'][key]).capitalize()
         tk.Label(self.key_fen, text=label).place(relx=0.1, rely=(id + offset_height)/10, anchor=tk.W)
-        tk.Button(self.key_fen, text=str(self.new_config['key_binding'][key]).capitalize(), command=lambda: self.detect_keypress(key), width=10).place(relx=0.9, rely=(id + offset_height)/10, anchor=tk.E)
+        tk.Button(self.key_fen, text=key_text, command=lambda: self.detect_keypress(key), width=10).place(relx=0.9, rely=(id + offset_height)/10, anchor=tk.E)
 
     def detect_keypress(self, key):
         new_key = keyboard.read_key()

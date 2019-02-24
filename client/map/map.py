@@ -18,6 +18,7 @@ class Map:
         self.rects_texture = {}
         self.file = file
         self.grid = { 'x': 0, 'y': 0 }
+        self.multiplier = 1
         dir = os.path.dirname(os.path.realpath(__file__))
 
         self.wall_texture_path = os.path.join(dir, '../ressources/texture/wall_texture_2.jpg')
@@ -33,13 +34,16 @@ class Map:
         map_file.close()
 
         for line in lines:
-            if line[0] == 'rect':
-                self.objects.append(Rect(len(self.objects) + 1, line[1], line[2], line[3], line[4], self))
+            if line[0] == 'define':
+                if line[1] == 'grid':
+                    self.grid['x'] = int(line[2])
+                    self.grid['y'] = int(line[3])
+                if line[1] == 'multiplier':
+                    self.multiplier = line[2]
+            elif line[0] == 'rect':
+                self.objects.append(Rect(len(self.objects) + 1, line[1], line[2], line[3], line[4], self, self.multiplier))
             elif line[0] == 'circle':
-                self.objects.append(Circle(len(self.objects) + 1, line[1], line[2], line[3], self))
-            elif line[0] == 'define' and line[1] == 'grid':
-                self.grid['x'] = int(line[2])
-                self.grid['y'] = int(line[3])
+                self.objects.append(Circle(len(self.objects) + 1, line[1], line[2], line[3], self, self.multiplier))
 
         for object in self.objects:
             if isinstance(object, Rect):
@@ -51,12 +55,6 @@ class Map:
                 self.rects_texture[rect.id] = texture
 
     def render(self):
-        # for col in range(self.grid['x']):
-        #     rect = Rect(100 + col, col, 0, 0.05, self.grid['y'], self)
-        #     self.env.rendering_stack.append(RenderedObject('rect', rect.x, rect.y,  width=rect.width, height=rect.height, color='green'))
-        # for line in range(self.grid['y']):
-        #     rect = Rect(128 + line, 0, line, self.grid['x'], 0.05, self)
-        #     self.env.rendering_stack.append(RenderedObject('rect', rect.x, rect.y,  width=rect.width, height=rect.height, color='green'))
         for object in self.objects:
             if isinstance(object, Rect):
                 rect = object
