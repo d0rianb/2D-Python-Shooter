@@ -93,44 +93,44 @@ class Env:
         return False
 
     def merge_rect(self, *event):
-        list = [[rect.x, rect.y, rect.x2, rect.y2] for rect in self.objects]
-        rectList, weights = cv2.groupRectangles(list, 1, 0)
-        print(rectList)
-        # line_rect = []
-        # for line in range(self.map.grid['y']):
-        #     line_array = []
-        #     for col in range(self.map.grid['x']):
-        #         rect = self.find_rect(col, line)
-        #         if rect:
-        #             line_array.append(rect)
-        #         else:
-        #             line_array.append(None)
-        #     for (index, obj) in enumerate(line_array):
-        #         rect = Rect(-1, 0, 0, 1, 1, self.map)
-        #         if obj:
-        #             rect.id = 99
-        #             rect.relative_x, rect.relative_y = obj.relative_x, obj.relative_y
-        #             while line_array[index+1]:
-        #                 rect.relative_width += 1
-        #                 del line_array[index+1]
-        #             line_rect.append(rect)
-        #
-        # rects = []
-        # for line_cell in line_rect:
-        #     has_merged = False
-        #     for other_cell in line_rect:
-        #         if line_cell.relative_x == other_cell.relative_x and line_cell.relative_y + line_cell.relative_height == other_cell.relative_y and line_cell != other_cell:
-        #             rect = Rect(99, line_cell.relative_x, line_cell.relative_y, line_cell.relative_width, line_cell.relative_height + other_cell.relative_height, self.map)
-        #             rects.append(rect)
-        #             has_merged = True
-        #     if not has_merged:
-        #         rects.append(line_cell)
-        #
-        #
-        # for obj in rects:
-        #     obj.computed_values()
-        # self.objects = rects.copy()
+        line_rects = []
+        for line in range(self.map.grid['y']):
+            line_array = []
+            for col in range(self.map.grid['x']):
+                rect = self.find_rect(col, line)
+                if rect:
+                    line_array.append(rect)
+                else:
+                    line_array.append(None)
+            for (index, obj) in enumerate(line_array):
+                rect = Rect(-1, 0, 0, 1, 1, self.map)
+                if obj:
+                    rect.id = 99
+                    rect.relative_x, rect.relative_y = obj.relative_x, obj.relative_y
+                    while line_array[index+1]:
+                        rect.relative_width += 1
+                        del line_array[index+1]
+                    line_rects.append(rect)
+        i = 0
+        while i < len(line_rects):
+            cell = line_rects[i]
+            has_merged = False
+            for other in line_rects:
+                if cell.relative_x == other.relative_x and cell.relative_width == other.relative_width and cell.relative_y + cell.relative_height == other.relative_y and cell != other:
+                    rect = Rect(0, cell.relative_x, cell.relative_y, cell.relative_width, cell.relative_height + other.relative_height, self.map)
+                    line_rects.append(rect)
+                    del line_rects[line_rects.index(cell)]
+                    del line_rects[line_rects.index(other)]
+                    has_merged = True
+            if has_merged:
+                i = 0
+            else:
+                i += 1
 
+        self.objects = []
+        for rect in line_rects:
+            rect.computed_values()
+        self.objects = line_rects.copy()
 
 
     def delete_all(self, *event):
