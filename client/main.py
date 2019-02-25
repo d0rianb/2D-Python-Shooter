@@ -15,13 +15,13 @@ import json
 from app import LocalGame, OnlineGame, SplashScreen, Settings
 
 
-def start_local_game(name, difficulty=5):
-    app = LocalGame(name, difficulty)
+def start_local_game(name, difficulty, role):
+    app = LocalGame(name, difficulty, role)
     app.generate_target()
     app.start()
 
-def start_online_game(name, ip, port):
-    app = OnlineGame(name)
+def start_online_game(name, ip, port, role):
+    app = OnlineGame(name, role)
     app.connect(ip, port)
     app.start()
 

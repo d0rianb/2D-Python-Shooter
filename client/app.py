@@ -18,10 +18,12 @@ from map.map import Map
 
 GAME_NAME = '2PQSTD'
 config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressources/config/config.json')
+ROLES = [('Assault', 'A'), ('Shotgun', 'SG'), ('Sniper', 'S')]
 
 class App:
-    def __init__(self, player_name):
+    def __init__(self, player_name, role):
         self.name = player_name
+        self.role = role
         self.fen = tk.Tk()
         self.config = {}
         self.init()
@@ -32,7 +34,7 @@ class App:
         self.canvas = Canvas(self.fen, self.width, self.height)
         self.env = Env(self.fen, self.width, self.height, self.canvas, max_framerate=self.config['max_framerate'])
         self.map = Map(self.env, 'map2.txt', 'MAP 2')
-        self.player = Player(0, 50, 50, self.env, self.name, own=True, key=self.config['key_binding'])
+        self.player = Player(0, 50, 50, self.env, self.name, role=self.role, own=True, key=self.config['key_binding'])
         self.interface = Interface(self.player, self.env)
         self.chat = ChatInfo(self.env)
 
@@ -46,8 +48,8 @@ class App:
 
 
 class LocalGame(App):
-    def __init__(self, player_name, difficulty):
-        App.__init__(self, player_name)
+    def __init__(self, player_name, difficulty, role):
+        App.__init__(self, player_name, role)
         self.difficulty = difficulty
         self.entry = None
         self.fen.title(GAME_NAME + ' - Local')
@@ -64,8 +66,8 @@ class LocalGame(App):
 
 
 class OnlineGame(App):
-    def __init__(self, player_name):
-        App.__init__(self, player_name)
+    def __init__(self, player_name, role):
+        App.__init__(self, player_name, role)
         self.connection = None
         self.client = None
         self.fen.title(GAME_NAME + ' - Multi')
@@ -99,25 +101,28 @@ class SplashScreen:
         self.fen.geometry('%dx%d%+d%+d' % (L,H,X,Y))
         self.fen.resizable(width=False, height=False)
 
-        title_font = tkFont.Font(family='Avenir Next', size=30, weight='bold')
-        subtitle_font = tkFont.Font(family='Avenir Next', size=20, weight='normal')
+        ## Style
+        title_font = tkFont.Font(family='Avenir Next', size=35, weight='bold')
+        subtitle_font = tkFont.Font(family='Avenir Next', size=22, weight='normal')
         regular_font = tkFont.Font(family='Avenir Next', size=15, weight='normal')
 
         title = tk.Label(self.fen, text='Bievenue dans ' + GAME_NAME, font=title_font)
         subtitle = tk.Label(self.fen, text='Sélectionnez le mode de jeu : ', font=subtitle_font)
 
         name_var = tk.StringVar(self.fen, value=self.config['default_name'])
-        server_ip_var = tk.StringVar(self.fen, value=self.config['default_ip'])
-        server_port_var = tk.StringVar(self.fen, value=self.config['default_port'])
         difficulty_var = tk.IntVar(self.fen, value=self.config['default_difficulty'])
 
         name_label = tk.Label(self.fen, text='Nom : ', font=regular_font)
         name_entry = tk.Entry(self.fen, textvariable=name_var, width=20)
 
-        server_ip_label = tk.Label(self.fen, text='Adresse IP du serveur : ', font=regular_font)
-        server_port_label = tk.Label(self.fen, text='Port du server : ', font=regular_font)
-        server_ip_entry = tk.Entry(self.fen, textvariable=server_ip_var, width=20)
-        server_port_entry = tk.Entry(self.fen, textvariable=server_port_var, width=20)
+        role_label = tk.Label(self.fen, text='Role : ', font=regular_font)
+        role_list = []
+        selected_role = tk.StringVar()
+        selected_role.set('A')
+        for (role, value) in ROLES:
+            check_box = tk.Radiobutton(self.fen, text=role, value=value, variable=selected_role,
+                                        indicatoron=0, padx=20, pady=5, selectcolor='blue', relief=tk.SUNKEN)
+            role_list.append(check_box)
 
         difficulty_label = tk.Label(self.fen, text='Difficultée : ', font=regular_font)
         difficulty_scale = tk.Scale(self.fen, variable=difficulty_var, orient='horizontal', from_=0, to=10, resolution=1, length=200, relief=tk.FLAT)
@@ -130,16 +135,14 @@ class SplashScreen:
 
         ## LAYOUT ##
         title.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
-        subtitle.place(relx=0.5, rely=0.2, anchor=tk.CENTER)
+        subtitle.place(relx=0.5, rely=0.22, anchor=tk.CENTER)
 
-        name_label.place(relx=0.1, rely=0.33, anchor=tk.W)
-        name_entry.place(relx=0.8, rely=0.33, anchor=tk.E)
+        name_label.place(relx=0.1, rely=0.42, anchor=tk.W)
+        name_entry.place(relx=0.8, rely=0.42, anchor=tk.E)
 
-        server_ip_label.place(relx=0.1, rely=0.45, anchor=tk.W)
-        server_port_label.place(relx=0.1, rely=0.57, anchor=tk.W)
-
-        server_ip_entry.place(relx=0.9, rely=0.45, anchor=tk.E)
-        server_port_entry.place(relx=0.9, rely=0.57, anchor=tk.E)
+        role_label.place(relx=0.1, rely=0.52, anchor=tk.W)
+        for (index, role) in enumerate(role_list):
+            role.place(relx=0.15 + index*0.8/3, rely=0.60, anchor=tk.W)
 
         difficulty_label.place(relx=0.1, rely=0.74, anchor=tk.W)
         difficulty_scale.place(relx=0.8, rely=0.71, anchor=tk.E)
@@ -152,9 +155,9 @@ class SplashScreen:
         def handle_click(mode):
             self.fen.destroy()
             if mode == 'PvE':
-                self.offline_callback(name_var.get(), difficulty_var.get())
+                self.offline_callback(name_var.get(), difficulty_var.get(), selected_role.get())
             elif mode == 'PvP':
-                self.online_callback(name_var.get(), server_ip_var.get(), int(server_port_var.get()))
+                self.online_callback(name_var.get(), server_ip_var.get(), int(server_port_var.get()), selected_role.get())
 
     def start(self):
         self.fen.mainloop()
@@ -181,13 +184,16 @@ class Settings:
         X, Y = (width - L) / 2, (height - H) / 2
         self.fen.geometry('%dx%d%+d%+d' % (L,H,X,Y))
 
+        ## Style
+        title_font = tkFont.Font(family='Avenir Next', size=30, weight='bold')
+        subtitle_font = tkFont.Font(family='Avenir Next', size=20, weight='normal')
+        regular_font = tkFont.Font(family='Avenir Next', size=15, weight='normal')
+
         max_framerate = tk.IntVar(self.fen, value=self.config['max_framerate'])
         default_difficulty = tk.IntVar(self.fen, value=self.config['default_difficulty'])
-        default_ip = tk.StringVar(self.fen, value=self.config['default_ip'])
-        default_port = tk.IntVar(self.fen, value=self.config['default_port'])
+        default_ip = tk.StringVar(self.fen, value=self.config['server_ip'])
+        default_port = tk.IntVar(self.fen, value=self.config['server_port'])
         default_name = tk.StringVar(self.fen, value=self.config['default_name'])
-
-        title_font = tkFont.Font(family='Avenir Next', size=30, weight='bold')
 
         title = tk.Label(self.fen, text='Paramètres', font=title_font)
         max_framerate_label = tk.Label(self.fen, text='Framerate Maximum (fps)')
@@ -199,8 +205,8 @@ class Settings:
         def validate():
             self.new_config['max_framerate'] = max_framerate.get()
             self.new_config['default_difficulty'] = default_difficulty.get()
-            self.new_config['default_ip'] = default_ip.get()
-            self.new_config['default_port'] = default_port.get()
+            self.new_config['server_ip'] = default_ip.get()
+            self.new_config['server_port'] = default_port.get()
             self.new_config['default_name'] = default_name.get()
             with open(config_path, 'w') as config:
                 config.write(json.dumps(self.new_config))

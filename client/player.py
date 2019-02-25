@@ -31,14 +31,16 @@ def random_sign():
     return sign
 
 class Player:
-    def __init__(self, id, x, y, env, name="Invité", own=False, key=None):
+    def __init__(self, id, x, y, env, name="Invité", role='A', own=False, key=None):
         self.id = id
         self.x = x
         self.y = y
         self.env = env
         self.name = name
         self.own = own  # Si le player est le joueur
-        self.weapon = Shotgun(self)
+        if role == 'A': self.weapon = AR(self)
+        elif role == 'SG': self.weapon = Shotgun(self)
+        elif role == 'S': self.weapon = Sniper(self)
         self.client = None
         self.interface = None
         self.size = 10  # Radius
@@ -282,7 +284,7 @@ class Player:
     def render(self, dash=False):
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, math.ceil(self.health))
         self.env.rendering_stack.append(RenderedObject('oval', self.x - self.size, self.y - self.size, x2=self.x + self.size, y2=self.y + self.size, color=self.color, width=0, dash=self.dash))
-        self.env.rendering_stack.append(RenderedObject('oval', self.mouse['x'] - self.size, self.mouse['y'] - self.size, width=self.size, height=self.size, color='red'))
+        # self.env.rendering_stack.append(RenderedObject('oval', self.mouse['x'] - self.size, self.mouse['y'] - self.size, width=self.size, height=self.size, color='red'))
         # image = ImageTk.PhotoImage(image=self.texture_image)
         # self.texture_dic['0'] = image
         # self.env.rendering_stack.append(RenderedObject('image', self.x, self.y, image=image))
