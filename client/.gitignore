@@ -4,5 +4,5 @@ __pycache__/*
 */.DS_Store
 *.pyc
 */*.pyc
-./config/config.json
-./map/files/temp*
+./ressources/config/config.json
+./map/files/temp_map.txt
