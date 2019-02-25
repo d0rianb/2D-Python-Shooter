@@ -46,7 +46,6 @@ class Env:
         self.fen.bind('<ButtonRelease-1>', lambda *e: self.click('left', 'end'))
         self.fen.bind('<ButtonRelease-2>', lambda *e: self.click('right', 'end'))
         keyboard.on_press_key('delete', self.delete_all)
-        keyboard.on_press_key('m', self.merge_rect)
 
     def change_scale(self, *event, value=1):
         if event:

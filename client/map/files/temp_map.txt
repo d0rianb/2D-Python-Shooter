@@ -1,0 +1,6 @@
+define grid 128 72
+rect 7 5 3.0 1.0
+rect 8 8 5.0 1.0
+rect 8 9 2.0 1.0
+rect 11 9 1.0 1.0
+rect 7 6 6.0 2.0
