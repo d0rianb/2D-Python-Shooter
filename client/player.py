@@ -5,6 +5,7 @@ import os
 import random
 import math
 import keyboard
+import time
 
 from PIL import Image, ImageTk
 from threading import Timer
@@ -46,14 +47,19 @@ class Player:
         self.size = 10  # Radius
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
-        self.color = '#0066ff' # if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
+        self.color = '#0c6af7' # if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
         self.theorical_speed = 3.25
         self.speed = self.theorical_speed * 60 / self.env.framerate   # computed value
         self.dash_speed = 4.0
-        self.dash_length = 32
+        self.dash_length = 32  # cycle
         self.dash_preview = False
         self.simul_dash = {'x': 0, 'y': 0}
-        self.dash_left = 3
+        self.number_dash = 3
+        self.dash_left = self.number_dash
+        self.dash_animation = []
+        self.dash_animation_duration = 3  # tick
+        self.dash_animation_end_tick = 0
+        self.dash_cooldown = 3  # secondes
         self.health = 100
         self.hit_player = {}
         self.hit_by_player = {}
@@ -210,19 +216,22 @@ class Player:
         elif self.simul_dash['y'] + self.size >= self.env.height:
             self.simul_dash['y'] = self.env.height - self.size
 
-    def dash(self, *args):
+    def dash(self, *event):
         if not self.alive: return
         if self.dash_left > 0:
+            self.dash_animation = []
+            self.dash_animation_end_tick = self.env.tick + self.dash_animation_duration
             for i in range(self.dash_length):
                 self.speed = self.dash_speed
+                self.dash_animation.append({'x': self.x, 'y': self.y})
                 self.move(math.cos(self.dir), math.sin(self.dir))
                 self.render(dash=True)
             self.dash_left -= 1
-            cooldown = Timer(3, self.new_dash)
+            cooldown = Timer(self.dash_cooldown, self.new_dash)
             cooldown.start()
 
     def new_dash(self):
-        if self.dash_left < 3:
+        if self.dash_left < self.number_dash:
             self.dash_left += 1
 
     def toggle_dash_preview(self, *event):
@@ -294,6 +303,14 @@ class Player:
             if self.dash_preview:
                 preview_size = self.size
                 self.env.rendering_stack.append(RenderedObject('oval', self.simul_dash['x'] - preview_size, self.simul_dash['y'] - preview_size, x2=self.simul_dash['x'] + preview_size, y2=self.simul_dash['y'] + preview_size, color='#ccc'))
+
+        if self.env.tick <= self.dash_animation_end_tick:
+            self.env.rendering_stack = [el for el in self.env.rendering_stack if el.role != 'dash_animation']
+            for coord in self.dash_animation:
+                size = self.size/len(self.dash_animation) * self.dash_animation.index(coord) / 1.25
+                self.env.rendering_stack.append(RenderedObject('oval', coord['x'] - size, coord['y'] - size, x2=coord['x'] + size, y2=coord['y'] + size, color=self.color, zIndex=3, role='dash_animation'))
+
+            print(len(self.dash_animation), ' : ', len(self.env.rendering_stack))
 
 
 class Target(Player):

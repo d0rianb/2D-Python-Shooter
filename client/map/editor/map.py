@@ -33,7 +33,7 @@ class Map:
         rects = self.env.objects.copy()
         text = ''
         with open(self.file, 'w+') as map_file:
-            text += 'define grid {x} {y}\n'.format(**self.grid)
+            text += 'define grid {x} {y}\n\n'.format(**self.grid)
             for obj in rects:
                 if isinstance(obj, Rect):
                     text += 'rect {relative_x:n} {relative_y:n} {relative_width:n} {relative_height:n}\n'.format(**obj.__dict__)

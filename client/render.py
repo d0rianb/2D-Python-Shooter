@@ -44,6 +44,7 @@ class RenderedObject:
         self.type = type  # rect/text/oval/line
         self.x = x
         self.y = y
+        self.memory_id = id(self)
         self.options = kwargs
         self.width = kwargs.get('width', 0)
         self.height = kwargs.get('height', 0)
@@ -54,9 +55,13 @@ class RenderedObject:
         self.color = kwargs.get('color', None)
         self.font = kwargs.get('font', None)
         self.id = kwargs.get('id', -1)
+        self.role = kwargs.get('role', None)
         self.anchor = kwargs.get('anchor', tk.CENTER)
         self.borderwidth = kwargs.get('borderwidth', 0)
         self.zIndex = kwargs.get('zIndex', 1)
+
+    def __repr__(self):
+        return 'RenderedObject {type} at {x:n}, {y:n} at: {memory_id}'.format(**self.__dict__)
 
     def viewBox_coord(self, viewBox):
         return self.x - viewBox['x'], self.y - viewBox['y'], self.x2 - viewBox['x'], self.y2 - viewBox['y']
