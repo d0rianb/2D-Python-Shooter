@@ -78,7 +78,6 @@ class Player:
         # self.tk_texture = ImageTk.PhotoImage(image=texture_image)
 
         if self.own:
-            self.env.fen.bind('<Motion>', self.mouse_move)
             self.env.fen.bind('<Button-1>', self.shoot)
             self.env.fen.bind('<ButtonRelease-1>', self.weapon.stop_fire)
             keyboard.on_press_key(self.key['reload'], self.reload)
@@ -87,9 +86,6 @@ class Player:
             keyboard.on_press_key(self.key['dash'], self.dash)
 
         self.env.players.append(self)
-
-    def mouse_move(self, event):
-        self.mouse['x'], self.mouse['y'] = self.env.viewArea['x'] + event.x, event.y + self.env.viewArea['y']
 
     def detect_keypress(self):
         x, y = 0, 0
@@ -253,6 +249,17 @@ class Player:
         if not self.alive: return
         self.weapon.reload(event)
 
+    def update_viewBox(self):
+        viewBox = self.env.viewArea
+        if self.x >= viewBox['width'] / 2 and self.x <= self.env.width - viewBox['width'] / 2:
+            viewBox['x'] = self.x - viewBox['width'] / 2
+        else:
+            viewBox['x'] = 0 if self.x <= viewBox['width'] / 2 else self.env.width - viewBox['width']
+        if self.y >= viewBox['height'] / 2 and self.y <= self.env.height - viewBox['height'] / 2:
+            viewBox['y'] = self.y - viewBox['height'] / 2
+        else:
+            viewBox['y'] = 0 if self.y <=viewBox['height'] / 2 else self.env.height - viewBox['height']
+
     def dist(self, other):
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
@@ -266,6 +273,8 @@ class Player:
 
     def update(self):
         if not self.alive: return
+        self.mouse['x'] = self.env.viewArea['x'] + self.env.fen.winfo_pointerx() - self.env.fen.winfo_rootx()
+        self.mouse['y'] = self.env.viewArea['y'] + self.env.fen.winfo_pointery() - self.env.fen.winfo_rooty()
         deltaX = self.mouse['x'] - self.x if (self.x != self.mouse['x']) else 1
         deltaY = self.mouse['y'] - self.y
         self.dir = math.atan2(deltaY, deltaX)
@@ -277,15 +286,7 @@ class Player:
             self.assists = [player for player in self.hit_player.keys() if not self.env.find_by('name', player).alive]
         if self.own:
             self.detect_keypress()
-            viewBox = self.env.viewArea
-            if self.x >= viewBox['width'] / 2 and self.x <= self.env.width - viewBox['width'] / 2:
-                viewBox['x'] = self.x - viewBox['width'] / 2
-            else:
-                viewBox['x'] = 0 if self.x <= viewBox['width'] / 2 else self.env.width - viewBox['width']
-            if self.y >= viewBox['height'] / 2 and self.y <= self.env.height - viewBox['height'] / 2:
-                viewBox['y'] = self.y - viewBox['height'] / 2
-            else:
-                viewBox['y'] = 0 if self.y <=viewBox['height'] / 2 else self.env.height - viewBox['height']
+            self.update_viewBox()
         if self.client:
             self.client.send_position()
             self.client.receive()
@@ -305,6 +306,7 @@ class Player:
                 self.env.rendering_stack.append(RenderedObject('oval', self.simul_dash['x'] - preview_size, self.simul_dash['y'] - preview_size, x2=self.simul_dash['x'] + preview_size, y2=self.simul_dash['y'] + preview_size, color='#ccc'))
 
         if self.env.tick <= self.dash_animation_end_tick:
+            self.update_viewBox()
             self.env.rendering_stack = [el for el in self.env.rendering_stack if el.role != 'dash_animation']
             for coord in self.dash_animation:
                 size = self.size/len(self.dash_animation) * self.dash_animation.index(coord) / 1.25
