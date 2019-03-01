@@ -29,7 +29,6 @@ class Camera:
         self.theorical_speed = 8
         self.speed = self.theorical_speed * 60 / self.env.framerate   # computed value
         self.key = default_keys
-        keyboard.on_press_key('&', lambda *e: self.env.change_scale(value=1))
 
     def detect_keypress(self):
         x, y = 0, 0

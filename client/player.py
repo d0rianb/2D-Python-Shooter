@@ -38,7 +38,7 @@ class Player:
         self.y = y
         self.env = env
         self.name = name
-        self.own = own  # Si le player est le joueur
+        self.own = own  # if the  instance is the player
         if role == 'A': self.weapon = AR(self)
         elif role == 'SG': self.weapon = Shotgun(self)
         elif role == 'S': self.weapon = Sniper(self)
@@ -47,11 +47,11 @@ class Player:
         self.size = 10  # Radius
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
-        self.color = '#0c6af7' # if self.own else random.choice(['#cc6600', '#ff9900', '#ff3300'])
+        self.color = '#0c6af7'
         self.theorical_speed = 3.25
-        self.speed = self.theorical_speed * 60 / self.env.framerate   # computed value
+        self.speed = self.theorical_speed * 60 / self.env.framerate  # computed value
         self.dash_speed = 4.0
-        self.dash_length = 32  # cycle
+        self.dash_length = 42  # cycle
         self.dash_preview = False
         self.simul_dash = {'x': 0, 'y': 0}
         self.number_dash = 3
@@ -84,6 +84,9 @@ class Player:
             # keyboard.on_press_key(self.key['panic'], self.env.panic)
             keyboard.on_press_key(self.key['dash_preview'], self.toggle_dash_preview)
             keyboard.on_press_key(self.key['dash'], self.dash)
+            keyboard.on_press_key('&', lambda *e: self.env.change_scale(value=1))
+            keyboard.on_press_key('é', lambda *e: self.env.change_scale(value=self.env.viewArea['width']/self.env.canvas.width))
+            keyboard.on_press_key('à', lambda *e: self.env.toggle_optimization())
 
         self.env.players.append(self)
 
@@ -312,8 +315,6 @@ class Player:
                 size = self.size/len(self.dash_animation) * self.dash_animation.index(coord) / 1.25
                 self.env.rendering_stack.append(RenderedObject('oval', coord['x'] - size, coord['y'] - size, x2=coord['x'] + size, y2=coord['y'] + size, color=self.color, zIndex=3, role='dash_animation'))
 
-            print(len(self.dash_animation), ' : ', len(self.env.rendering_stack))
-
 
 class Target(Player):
     def __init__(self, id, x, y, env, level=5):
@@ -332,7 +333,7 @@ class Target(Player):
         self.vx = random_sign()
         self.vy = random_sign()
         self.move_interval = random.randint(20, 60)
-        self.shoot_interval = random.randint(10-self.level, 200-self.level*2)
+        self.shoot_interval = random.randint(11-self.level, 200-self.level*2)
         self.closer_player = None
         self.can_shoot = self.level >= 3
         self.can_move = self.level >= 2

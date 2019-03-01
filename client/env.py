@@ -32,6 +32,7 @@ class Env:
         self.platform = platform.system()
         self.GAME_IS_RUNNING = True
         self.GAME_IS_FOCUS = True
+        self.optimize = True
         self.command_entry_focus = False
         self.canvas.env = self
         self.viewArea = {
@@ -43,9 +44,19 @@ class Env:
         self.fen.protocol("WM_DELETE_WINDOW", self.exit)
         self.fen.bind("<MouseWheel>", self.change_scale)
 
-    def change_scale(self, event):
-        if (self.scale >= 0.1 and event.delta > 0) or (self.scale <= 5 and event.delta < 0):
-            self.scale -= event.delta/100
+    def change_scale(self, *event, value=1):
+        if event:
+            event = event[0]
+            if (self.scale >= 0.1 and event.delta > 0) or (self.scale <= 5 and event.delta < 0):
+                self.scale -= event.delta/100
+        else:
+            self.scale = value
+
+    def toggle_optimization(self, value=None):
+        if value:
+            self.optimize = value
+        else:
+            self.optimize = not self.optimize
 
     def manage_shoots(self):
         for shoot in self.shoots:
@@ -81,9 +92,15 @@ class Env:
             self.exit()
 
     def background(self):
-        self.rendering_stack.append(RenderedObject('rect', 0, 0, width=self.width, height=self.height, color='#F1E7DC', zIndex=1))
+        self.rendering_stack.append(RenderedObject('rect', 0, 0, width=self.width, height=self.height, color='#F1E7DC', zIndex=1, persistent=True))
 
-    # @profile
+    def in_viewBox(self, obj):
+        viewX, viewY = self.viewArea['x'], self.viewArea['y']
+        viewX2, viewY2 = self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'] + self.viewArea['height']
+        if obj.persistent: return True
+        return (obj.x >= viewX and obj.y >= viewY and obj.x <= viewX2 and obj.y <= viewY2) or (obj.x2 >= viewX and obj.y2 >= viewY and obj.x2 <= viewX2 and obj.y2 <= viewY2)
+
+    #@profile
     def update(self):
         if not self.GAME_IS_RUNNING: return
         self.tick += 1
@@ -108,8 +125,6 @@ class Env:
 
         self.fen.after(1000 // self.max_framerate, self.update)
 
-
-
     def render(self):
         ## Pre-Render
         self.background()
@@ -127,6 +142,7 @@ class Env:
         self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'] + self.viewArea['height'], width=self.viewArea['width'], height=0, zIndex=2))
 
         ## Canvas rendering
-        self.rendering_stack = sorted(self.rendering_stack, key=lambda obj: obj.zIndex)
+        rendering_stack = [obj for obj in self.rendering_stack if self.in_viewBox(obj)] if self.optimize else self.rendering_stack
+        self.rendering_stack = sorted(rendering_stack, key=lambda obj: obj.zIndex)
         self.canvas.render(self.rendering_stack)
         self.rendering_stack = []

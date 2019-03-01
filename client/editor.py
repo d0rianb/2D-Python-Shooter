@@ -25,6 +25,7 @@ class Editor:
         self.start()
 
     def start(self):
+        self.env.bind()
         self.env.update()
         self.fen.mainloop()
 

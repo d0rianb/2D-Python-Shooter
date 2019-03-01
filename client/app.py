@@ -33,7 +33,7 @@ class App:
         self.width, self.height = 4096, 2304
         self.canvas = Canvas(self.fen, self.width, self.height)
         self.env = Env(self.fen, self.width, self.height, self.canvas, max_framerate=self.config['max_framerate'])
-        self.map = Map(self.env, 'map3_start.txt', 'MAP 2')
+        self.map = Map(self.env, 'full_first.txt', 'MAP 2')
         self.player = Player(0, 50, 50, self.env, self.name, role=self.role, own=True, key=self.config['key_binding'])
         self.interface = Interface(self.player, self.env)
         self.chat = ChatInfo(self.env)

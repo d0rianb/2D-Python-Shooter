@@ -40,12 +40,19 @@ class Env:
             'width': self.fen.winfo_screenwidth(),
             'height': self.fen.winfo_screenheight()
         }
+
+    def bind(self):
         self.fen.bind('<MouseWheel>', self.change_scale)
         self.fen.bind('<Button-1>', lambda *e: self.click('left', 'start'))
         self.fen.bind('<Button-2>', lambda *e: self.click('right', 'start'))
         self.fen.bind('<ButtonRelease-1>', lambda *e: self.click('left', 'end'))
         self.fen.bind('<ButtonRelease-2>', lambda *e: self.click('right', 'end'))
         keyboard.on_press_key('delete', self.delete_all)
+        keyboard.on_press_key('enter', self.axial_symmetry)
+        keyboard.on_press_key('t', self.semi_axial_symmetry)
+        keyboard.on_press_key('m', self.map.save)
+        keyboard.on_press_key('&', lambda *e: self.change_scale(value=1))
+        keyboard.on_press_key('é', lambda *e: self.change_scale(value=self.viewArea['width']/self.canvas.width))
 
     def change_scale(self, *event, value=1):
         if event:
@@ -68,7 +75,6 @@ class Env:
         elif side == 'right':
             self.right_click_pressed = bool
 
-
     def add_rect(self, display_x, display_y):
         x, y = (self.viewArea['x'] + display_x)/self.scale, (self.viewArea['y'] + display_y)/self.scale
         for col in range(self.map.grid['x']):
@@ -87,9 +93,19 @@ class Env:
 
     def find_rect(self, rel_x, rel_y):
         for obj in self.objects:
-            if obj.relative_x == rel_x and obj.relative_y == rel_y:
+            if obj.rel_x == rel_x and obj.rel_y == rel_y:
                 return obj
         return False
+
+    def optimize(self):
+        duplicate = []
+        for rect in self.objects:
+            for other in self.objects:
+                if rect == other and rect is not other:
+                    duplicate.append(rect)
+        print(duplicate)
+        for dup in duplicate:
+            self.objects.remove(dup)
 
     def merge_rect(self, *event):
         line_rects = []
@@ -105,18 +121,21 @@ class Env:
                 rect = Rect(-1, 0, 0, 1, 1, self.map)
                 if obj:
                     rect.id = 99
-                    rect.relative_x, rect.relative_y = obj.relative_x, obj.relative_y
-                    while line_array[index+1]:
-                        rect.relative_width += 1
-                        del line_array[index+1]
-                    line_rects.append(rect)
+                    rect.rel_x, rect.rel_y = obj.rel_x, obj.rel_y
+                    try:
+                        while line_array[index+1]:
+                            rect.rel_width += 1
+                            del line_array[index+1]
+                        line_rects.append(rect)
+                    except IndexError:
+                        print(self.objects)
         i = 0
         while i < len(line_rects):
             cell = line_rects[i]
             has_merged = False
             for other in line_rects:
-                if cell.relative_x == other.relative_x and cell.relative_width == other.relative_width and cell.relative_y + cell.relative_height == other.relative_y and cell != other:
-                    rect = Rect(0, cell.relative_x, cell.relative_y, cell.relative_width, cell.relative_height + other.relative_height, self.map)
+                if cell.rel_x == other.rel_x and cell.rel_width == other.rel_width and cell.rel_y + cell.rel_height == other.rel_y and cell != other:
+                    rect = Rect(0, cell.rel_x, cell.rel_y, cell.rel_width, cell.rel_height + other.rel_height, self.map)
                     line_rects.append(rect)
                     del line_rects[line_rects.index(cell)]
                     del line_rects[line_rects.index(other)]
@@ -131,6 +150,48 @@ class Env:
             rect.computed_values()
         self.objects = line_rects.copy()
 
+    def semi_axial_symmetry(self, *event):
+        self.objects = [rect for rect in self.objects if rect.rel_x + rect.rel_width <= self.map.grid['x'] // 4 and rect.rel_y + rect.rel_height <= self.map.grid['y'] // 4]
+        for rect in self.objects:
+            if rect.rel_x + rect.rel_width <= self.map.grid['x'] // 4 and rect.rel_y + rect.rel_height <= self.map.grid['y'] // 4:
+                rect.color = 'green'
+            new_x = self.map.grid['x'] / 2 - rect.rel_x - 1
+            new_y = self.map.grid['y'] / 2 - rect.rel_y - 1
+            new_rect_x = Rect(-1, new_x, rect.rel_y, rect.rel_width, rect.rel_height, self.map)
+            new_rect_y = Rect(-1, rect.rel_x, new_y, rect.rel_width, rect.rel_height, self.map)
+            new_rect_both = Rect(-1, new_x, new_y, rect.rel_width, rect.rel_height, self.map)
+            new_rects = [new_rect_x, new_rect_y, new_rect_both]
+            for new in new_rects:
+                already_exist = False
+                for rect in self.objects:
+                    if rect == new and rect is not new:
+                        already_exist = True
+                if not already_exist:
+                    self.objects.append(new)
+
+    def axial_symmetry(self, *event, axis='both'):
+        for rect in self.objects:
+            if rect.rel_x + rect.rel_width <= self.map.grid['x'] // 2 and rect.rel_y + rect.rel_height <= self.map.grid['y'] // 2:
+                new_x = self.map.grid['x'] - rect.rel_x - 1
+                new_y = self.map.grid['y'] - rect.rel_y - 1
+                new_rects = []
+                if axis == 'x' or axis == 'both':
+                    new_rect_x = Rect(-1, new_x, rect.rel_y, rect.rel_width, rect.rel_height, self.map)
+                    new_rects.append(new_rect_x)
+                if axis == 'y' or axis == 'both':
+                    new_rect_y = Rect(-1, rect.rel_x, new_y, rect.rel_width, rect.rel_height, self.map)
+                    new_rects.append(new_rect_y)
+                if axis == 'both':
+                    new_rect_both = Rect(-1, new_x, new_y, rect.rel_width, rect.rel_height, self.map)
+                    new_rects.append(new_rect_both)
+
+                for new in new_rects:
+                    already_exist = False
+                    for rect in self.objects:
+                        if rect == new and rect is not new:
+                            already_exist = True
+                    if not already_exist:
+                        self.objects.append(new)
 
     def delete_all(self, *event):
         self.objects = []

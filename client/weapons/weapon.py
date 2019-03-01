@@ -36,7 +36,9 @@ class Weapon:
 
     def shoot(self):
         if not self.can_shoot: return
-        tir = Tir(self.player.x, self.player.y, self.player.dir, self)
+        x = self.player.x + math.cos(self.player.dir) * 20
+        y = self.player.y + math.sin(self.player.dir) * 20
+        tir = Tir(x, y, self.player.dir, self)
         self.ammo -= 1
         self.can_shoot = False
         Timer(self.shoot_cooldown, self.allow_shoot).start()

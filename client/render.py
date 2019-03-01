@@ -25,7 +25,7 @@ class Canvas:
         self.canvas.delete('all')
         for object in stack:
             object = self.scale(object)
-            view_x, view_y, view_x2, view_y2 = object.viewBox_coord(self.env.viewArea)
+            view_x, view_y, view_x2, view_y2 = object.viewBox_coord(self.env.viewArea, self.env.scale)
             if object.type == 'rect':
                 self.canvas.create_rectangle(view_x, view_y, view_x + object.width, view_y + object.height, fill=object.color, width=object.borderwidth, outline='#000')
             elif object.type == 'image':
@@ -57,11 +57,16 @@ class RenderedObject:
         self.id = kwargs.get('id', -1)
         self.role = kwargs.get('role', None)
         self.anchor = kwargs.get('anchor', tk.CENTER)
+        self.persistent = kwargs.get('persistent', False)
         self.borderwidth = kwargs.get('borderwidth', 0)
         self.zIndex = kwargs.get('zIndex', 1)
 
     def __repr__(self):
         return 'RenderedObject {type} at {x:n}, {y:n} at: {memory_id}'.format(**self.__dict__)
 
-    def viewBox_coord(self, viewBox):
-        return self.x - viewBox['x'], self.y - viewBox['y'], self.x2 - viewBox['x'], self.y2 - viewBox['y']
+    def viewBox_coord(self, viewBox, scale):
+        if scale == 1:
+            viewX, viewY = viewBox['x'], viewBox['y']
+        else:
+            viewX, viewY = 0, 0
+        return self.x - viewX, self.y - viewY, self.x2 - viewX, self.y2 - viewY
