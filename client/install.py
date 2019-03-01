@@ -15,7 +15,7 @@ def isMac(self):
 def isWindows(self):
     return platform.system() == 'Windows'
 
-pkgs = ['keyboard', 'pillow', 'opencv-python']
+pkgs = ['keyboard', 'pillow']
 
 for package in pkgs:
     try:

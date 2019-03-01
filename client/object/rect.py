@@ -50,3 +50,9 @@ class Rect:
         x2 = max(self.rel_x2, rect.rel_x2)
         y2 = max(self.rel_y2, rect.rel_y2)
         return Rect(self.id, x, y, x2-x, y2-y, self.map)
+
+    @staticmethod
+    def intersect(rect1, rect2):
+        dx = min(rect1.x2, rect2.x2) - max(rect1.x, rect2.x)
+        dy = min(rect1.y2, rect2.y2) - max(rect1.y, rect2.y)
+        return dx >= 0 and dy >= 0

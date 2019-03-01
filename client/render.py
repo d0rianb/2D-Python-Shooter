@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import tkinter as tk
+import multiprocessing
+import threading
 
 class Canvas:
     def __init__(self, parent, width, height):
@@ -11,7 +13,7 @@ class Canvas:
         self.canvas = tk.Canvas(parent, width=self.width, height=self.height, bg='#EEE', highlightthickness=0)
 
     def scale(self, object):
-        scale = self.env.scale #* self.env.width / self.env.viewArea['width']
+        scale = self.env.scale
         object.x *= scale
         object.y *= scale
         object.x2 *= scale
@@ -20,7 +22,7 @@ class Canvas:
         object.height *= scale
         return object
 
-    # @profile
+    @profile
     def render(self, stack):
         self.canvas.delete('all')
         for object in stack:

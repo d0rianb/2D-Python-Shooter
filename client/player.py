@@ -7,6 +7,7 @@ import math
 import keyboard
 import time
 
+from collections import namedtuple
 from PIL import Image, ImageTk
 from threading import Timer
 from render import RenderedObject
@@ -24,6 +25,9 @@ default_keys = {
     'reload': 'r',
     'panic': 'p'
 }
+
+display_pointer = False
+Box = namedtuple('Box', 'x y x2 y2')
 
 def random_sign():
     sign = 0
@@ -66,6 +70,7 @@ class Player:
         self.kills = []
         self.assists = []
         self.alive = True
+        self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
         self.key = key or default_keys
 
         self.texture_dic = {}
@@ -130,6 +135,7 @@ class Player:
         if self.health <= 0:
             self.dead()
 
+    #@profile
     def collide_wall(self, simulation=False):
         if simulation: ## Handle dash preview
             x, y = self.simul_dash['x'], self.simul_dash['y']
@@ -138,47 +144,52 @@ class Player:
 
         collide_x, collide_y = False, False
         delta = {'x': 0, 'y': 0}
-        for obj in self.env.map.objects:
-            if isinstance(obj, Rect):
-                rect = obj
-                delta_x, delta_y = 0, 0
-                if y + self.size > rect.y and y - self.size < rect.y2 and x + self.size > rect.x and x - self.size < rect.x2:
-                    delta_x_left = rect.x - (x + self.size)
-                    delta_x_right = (x - self.size) - rect.x2
-                    delta_x_left = delta_x_left if delta_x_left < 0 else 0
-                    delta_x_right = delta_x_right if delta_x_right < 0 else 0
-                    delta_x = max(delta_x_left, delta_x_right)
-                    if delta_x == delta_x_right:
-                        delta_x *= -1
+        rects = [obj for obj in self.env.map.objects if isinstance(obj, Rect) and Rect.intersect(obj, self.collide_box)]
+        # circle = [obj for obj in self.env.map.objects if isinstance(obj, Oval) and Oval.intersect(obj, self.collide_box)]
+        for obj in rects:
+            rect = obj
+            delta_x, delta_y = 0, 0
+            if y + self.size > rect.y and y - self.size < rect.y2 and x + self.size > rect.x and x - self.size < rect.x2:
+                delta_x_left = rect.x - (x + self.size)
+                delta_x_right = (x - self.size) - rect.x2
+                delta_x_left = delta_x_left if delta_x_left < 0 else 0
+                delta_x_right = delta_x_right if delta_x_right < 0 else 0
+                delta_x = max(delta_x_left, delta_x_right)
+                if delta_x == delta_x_right:
+                    delta_x *= -1
 
-                    delta_y_top = rect.y - (y + self.size)
-                    delta_y_bottom = (y - self.size) - rect.y2
-                    delta_y_top = delta_y_top if delta_y_top < 0 else 0
-                    delta_y_bottom = delta_y_bottom if delta_y_bottom < 0 else 0
-                    delta_y = max(delta_y_top, delta_y_bottom)
-                    if delta_y == delta_y_bottom:
-                        delta_y *= -1
+                delta_y_top = rect.y - (y + self.size)
+                delta_y_bottom = (y - self.size) - rect.y2
+                delta_y_top = delta_y_top if delta_y_top < 0 else 0
+                delta_y_bottom = delta_y_bottom if delta_y_bottom < 0 else 0
+                delta_y = max(delta_y_top, delta_y_bottom)
+                if delta_y == delta_y_bottom:
+                    delta_y *= -1
 
-                delta_min = min(abs(delta_x), abs(delta_y))
-                delta_x = delta_x if abs(delta_x) == delta_min else 0
-                delta_y = delta_y if abs(delta_y) == delta_min else 0
-                ## Add the delta of each rectangle to the total delta (dict)
-                if delta_x != 0 and delta['x'] == 0:
-                    delta['x'] = delta_x
-                if delta_y != 0 and  delta['y'] == 0:
-                     delta['y'] = delta_y
-            elif isinstance(obj, Circle):
-                circle = obj
-                dist = math.sqrt((self.x - circle.x)**2 + (self.y - circle.y)**2)
-                if dist <= self.size + circle.radius:
-                    delta_dist = dist - self.size - circle.radius
-                    angle = math.atan2(circle.y - self.y, circle.x - self.x)
-                    if delta['x'] == 0:
-                        delta['x'] = math.cos(angle)*delta_dist
-                    if delta['y'] == 0:
-                        delta['y'] = math.sin(angle)*delta_dist
+            delta_min = min(abs(delta_x), abs(delta_y))
+            delta_x = delta_x if abs(delta_x) == delta_min else 0
+            delta_y = delta_y if abs(delta_y) == delta_min else 0
+            ## Add the delta of each rectangle to the total delta (dict)
+            if delta_x != 0 and delta['x'] == 0:
+                delta['x'] = delta_x
+            if delta_y != 0 and  delta['y'] == 0:
+                 delta['y'] = delta_y
+
+        # for obj in circle:
+        #     if isinstance(obj, Circle):
+        #         circle = obj
+        #         dist = math.sqrt((self.x - circle.x)**2 + (self.y - circle.y)**2)
+        #         if dist <= self.size + circle.radius:
+        #             delta_dist = dist - self.size - circle.radius
+        #             angle = math.atan2(circle.y - self.y, circle.x - self.x)
+        #             if delta['x'] == 0:
+        #                 delta['x'] = math.cos(angle)*delta_dist
+        #             if delta['y'] == 0:
+        #                 delta['y'] = math.sin(angle)*delta_dist
+
         return delta['x'], delta['y']
 
+    #@profile
     def move(self, x, y):
         self.x += x * self.speed
         self.y += y * self.speed
@@ -274,10 +285,12 @@ class Player:
         total_damage = sum(self.hit_player.values())
         return {'total_damage': total_damage, 'kills': len(self.kills), 'assists': len(self.assists)}
 
+    # @profile
     def update(self):
         if not self.alive: return
-        self.mouse['x'] = self.env.viewArea['x'] + self.env.fen.winfo_pointerx() - self.env.fen.winfo_rootx()
-        self.mouse['y'] = self.env.viewArea['y'] + self.env.fen.winfo_pointery() - self.env.fen.winfo_rooty()
+        if not self.env.fen: return
+        self.mouse['x'] = (self.env.viewArea['x'] + self.env.fen.winfo_pointerx() - self.env.fen.winfo_rootx()) / self.env.scale
+        self.mouse['y'] = (self.env.viewArea['y'] + self.env.fen.winfo_pointery() - self.env.fen.winfo_rooty()) / self.env.scale
         deltaX = self.mouse['x'] - self.x if (self.x != self.mouse['x']) else 1
         deltaY = self.mouse['y'] - self.y
         self.dir = math.atan2(deltaY, deltaX)
@@ -285,6 +298,7 @@ class Player:
         if self.dash_preview:
             self.update_dash_preview()
         if self.alive:
+            self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
             self.check_shoot_collide()
             self.assists = [player for player in self.hit_player.keys() if not self.env.find_by('name', player).alive]
         if self.own:
@@ -297,6 +311,8 @@ class Player:
     def render(self, dash=False):
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, math.ceil(self.health))
         self.env.rendering_stack.append(RenderedObject('oval', self.x - self.size, self.y - self.size, x2=self.x + self.size, y2=self.y + self.size, color=self.color, width=0, dash=self.dash))
+        if display_pointer:
+            self.env.rendering_stack.append(RenderedObject('oval', self.mouse['x'] - self.size, self.mouse['y'] - self.size/3, x2=self.mouse['x'] + self.size/3, y2=self.mouse['y'] + self.size, color='red', width=0))
         # self.env.rendering_stack.append(RenderedObject('oval', self.mouse['x'] - self.size, self.mouse['y'] - self.size, width=self.size, height=self.size, color='red'))
         # image = ImageTk.PhotoImage(image=self.texture_image)
         # self.texture_dic['0'] = image

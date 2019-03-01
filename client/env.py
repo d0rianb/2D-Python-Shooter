@@ -5,8 +5,12 @@ import tkinter as tk
 import sys
 import os
 import platform
+import threading
+import multiprocessing
+import concurrent
 import re
 import time
+import pprint
 
 from render import RenderedObject
 
@@ -100,13 +104,12 @@ class Env:
         if obj.persistent: return True
         return (obj.x >= viewX and obj.y >= viewY and obj.x <= viewX2 and obj.y <= viewY2) or (obj.x2 >= viewX and obj.y2 >= viewY and obj.x2 <= viewX2 and obj.y2 <= viewY2)
 
-    #@profile
+    @profile
     def update(self):
         if not self.GAME_IS_RUNNING: return
         self.tick += 1
         if len(self.players) > 0:
-            for player in self.players_alive:
-                player.update()
+            player_threads = [threading.Thread(target=player.update).start() for player in self.players_alive]
             self.players_alive = [player for player in self.players if player.alive]
 
         self.manage_shoots()
