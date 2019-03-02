@@ -4,7 +4,7 @@
 import math
 
 from render import RenderedObject
-from object.rect import Rect
+from object.rect import Rect, Box
 from object.circle import Circle
 
 class Tir:
@@ -24,12 +24,14 @@ class Tir:
         self.head = {'x': x, 'y': y}
         self.env = self.from_player.env
         self.id = len(self.env.shoots) + 1
+        self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
         self.env.shoots.append(self)
 
     def check_wall_collide(self, map):
         x = self.head['x']
         y = self.head['y']
-        for obj in map.objects:
+        rects = [obj for obj in map.objects if isinstance(obj, Rect) and Rect.intersect(obj, self.collide_box)]
+        for obj in rects:
             if isinstance(obj, Rect):
                 rect = obj
                 if x >= rect.x and x <= rect.x2 and y >= rect.y and y <= rect.y2:  # Check for Head
@@ -59,6 +61,7 @@ class Tir:
             'x': self.x + math.cos(self.dir) * self.size,
             'y': self.y + math.sin(self.dir) * self.size
         }
+        self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
         self.check_wall_collide(self.env.map)
 
     def render(self):

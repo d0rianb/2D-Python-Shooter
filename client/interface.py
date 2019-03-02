@@ -5,9 +5,12 @@ import tkinter.font as tkFont
 import tkinter as tk
 import keyboard
 import math
+import time
 
+from object.color import Color
 from render import RenderedObject
 
+BG_COLOR = Color((241, 231, 220))
 
 class Interface:
     def __init__(self, player, env):
@@ -23,6 +26,7 @@ class Interface:
         self.height = self.env.viewArea['height']
         self.padding = 20
         self.informations = {}
+        self.messages = []
         self.color = '#92959b'
         self.font = tkFont.Font(family='Avenir Next', size=16, weight='normal')
 
@@ -59,14 +63,17 @@ class Interface:
             'TopRight': {
                 'People Alive': len(list(filter(lambda player: player.alive, self.env.players))),
                 'Kills': len(self.player.kills),
-                'Assists': len(self.player.assists)
+                'Assists': len(self.player.assists),
+                'Damage': int(self.player.total_damage)
             },
             'BottomRight': {
                 'Health': math.ceil(self.player.health),
-                'Ammo': self.player.weapon.ammo if not self.player.weapon.is_reloading else 'Rechargement',
+                'Ammo': '|' * self.player.weapon.ammo if not self.player.weapon.is_reloading else 'Rechargement',
                 'Dash': self.player.dash_left
             }
         }
+        for msg in self.messages:
+            msg.update()
 
     def render(self):
         for position in self.informations:
@@ -78,7 +85,8 @@ class Interface:
             if position == 'BottomRight':
                 y = self.y + self.height - len(self.informations['BottomRight'])*self.padding
             self.parse(position, x, y, anchor)
-
+        for msg in self.messages:
+            msg.render()
 
 class ChatInfo:
     def __init__(self, env):
@@ -140,21 +148,38 @@ class ChatInfo:
     def render(self):
         pass
 
-class InterfaceMessage:
-    def __init__(self, interface, type, text):
+class TempMessage:
+    def __init__(self, type, text, interface):
         self.interface = interface
+        self.env = self.interface.env
         self.type = type
         self.text = text
 
-        self.x = interface.env.viewArea['x'] / 2
-        self.y = interface.env.viewArea['y'] / 2
+        self.start = time.time()
+        self.duration = 0.75  # s
+        self.tick = 0
+
+        self.x = self.interface.player.x
+        self.y = self.interface.player.y + 20
 
         if self.type == 'info':
-            self.color = "#AAA"
+            self.initial_color = Color((30, 80, 160))  #"#4354FF"
+        self.interface.messages.append(self)
+
+    def destroy(self):
+        self.interface.messages.remove(self)
 
     def update(self):
+        delta_time = self.start + self.duration - time.time()
+        if delta_time <= 0:
+            return self.destroy()
         self.y += 1
-        self.color
+        self.color = Color.blend(self.initial_color, BG_COLOR, 1 - delta_time/self.duration)
+        self.tick += 1
 
     def render(self):
-        pass
+        self.interface.env.rendering_stack.append(RenderedObject('text', self.x, self.y + (len(self.interface.messages) - 1)*self.interface.padding,
+            text=self.text,
+            anchor=tk.CENTER,
+            color=self.color.to_hex(),
+            font=self.interface.font))

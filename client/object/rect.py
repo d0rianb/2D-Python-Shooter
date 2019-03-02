@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from collections import namedtuple
+
+Box = namedtuple('Box', 'x y x2 y2')
+
 class Rect:
     def __init__(self, _id, x, y, width, height, map, multiplier=1):
         self.id = int(_id)

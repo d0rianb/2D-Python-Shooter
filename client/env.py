@@ -12,6 +12,7 @@ import re
 import time
 import pprint
 
+from object.rect import Rect, Box
 from render import RenderedObject
 
 class Env:
@@ -99,18 +100,23 @@ class Env:
         self.rendering_stack.append(RenderedObject('rect', 0, 0, width=self.width, height=self.height, color='#F1E7DC', zIndex=1, persistent=True))
 
     def in_viewBox(self, obj):
-        viewX, viewY = self.viewArea['x'], self.viewArea['y']
-        viewX2, viewY2 = self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'] + self.viewArea['height']
+        viewBox = Box(self.viewArea['x'], self.viewArea['y'], self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'] + self.viewArea['height'])
         if obj.persistent: return True
-        return (obj.x >= viewX and obj.y >= viewY and obj.x <= viewX2 and obj.y <= viewY2) or (obj.x2 >= viewX and obj.y2 >= viewY and obj.x2 <= viewX2 and obj.y2 <= viewY2)
+        if obj.type == 'rect':
+            return Rect.intersect(viewBox, obj)
+        elif obj.type == 'line':
+            return obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x2 <= viewBox.x2 and obj.y2 <= viewBox.y2
+        else:
+            return True
 
     @profile
     def update(self):
         if not self.GAME_IS_RUNNING: return
         self.tick += 1
         if len(self.players) > 0:
-            player_threads = [threading.Thread(target=player.update).start() for player in self.players_alive]
-            self.players_alive = [player for player in self.players if player.alive]
+            for player in self.players_alive:
+                player.update()
+        self.players_alive = [player for player in self.players if player.alive]
 
         self.manage_shoots()
         self.interface.update()

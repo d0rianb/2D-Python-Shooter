@@ -6,12 +6,13 @@ import random
 import math
 import keyboard
 import time
+import threading
 
-from collections import namedtuple
 from PIL import Image, ImageTk
 from threading import Timer
 from render import RenderedObject
-from object.rect import Rect
+from interface import TempMessage
+from object.rect import Rect, Box
 from object.circle import Circle
 from weapons.weapon import AR, Shotgun, Sniper
 
@@ -27,7 +28,6 @@ default_keys = {
 }
 
 display_pointer = False
-Box = namedtuple('Box', 'x y x2 y2')
 
 def random_sign():
     sign = 0
@@ -52,7 +52,7 @@ class Player:
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = '#0c6af7'
-        self.theorical_speed = 3.25
+        self.theorical_speed = 3.55
         self.speed = self.theorical_speed * 60 / self.env.framerate  # computed value
         self.dash_speed = 4.0
         self.dash_length = 42  # cycle
@@ -67,6 +67,7 @@ class Player:
         self.health = 100
         self.hit_player = {}
         self.hit_by_player = {}
+        self.total_damage = 0
         self.kills = []
         self.assists = []
         self.alive = True
@@ -109,7 +110,9 @@ class Player:
             self.interface.display_help()
         self.move(x, y)
 
+    @profile
     def check_shoot_collide(self):
+        shoots = [obj for obj in self.env.map.objects if obj.x >= self.collide_box.x and obj.y >= self.collide_box.y and obj.x2 <= self.collide_box.x2 and obj.y2 <= self.collide_box.y2]
         for shoot in self.env.shoots:
             dist_head = math.sqrt((self.x - shoot.head['x'])**2 + (self.y - shoot.head['y'])**2)
             dist_tail = math.sqrt((self.x - shoot.x)**2 + (self.y - shoot.y)**2)
@@ -135,7 +138,7 @@ class Player:
         if self.health <= 0:
             self.dead()
 
-    #@profile
+    @profile
     def collide_wall(self, simulation=False):
         if simulation: ## Handle dash preview
             x, y = self.simul_dash['x'], self.simul_dash['y']
@@ -189,7 +192,6 @@ class Player:
 
         return delta['x'], delta['y']
 
-    #@profile
     def move(self, x, y):
         self.x += x * self.speed
         self.y += y * self.speed
@@ -261,6 +263,7 @@ class Player:
 
     def reload(self, *event):
         if not self.alive: return
+        TempMessage('info', 'Reloading', self.interface)
         self.weapon.reload(event)
 
     def update_viewBox(self):
@@ -282,19 +285,18 @@ class Player:
         print(self.name, self.stats())
 
     def stats(self):
-        total_damage = sum(self.hit_player.values())
-        return {'total_damage': total_damage, 'kills': len(self.kills), 'assists': len(self.assists)}
+        return {'total_damage': self.total_damage, 'kills': len(self.kills), 'assists': len(self.assists)}
 
-    # @profile
+    @profile
     def update(self):
         if not self.alive: return
-        if not self.env.fen: return
         self.mouse['x'] = (self.env.viewArea['x'] + self.env.fen.winfo_pointerx() - self.env.fen.winfo_rootx()) / self.env.scale
         self.mouse['y'] = (self.env.viewArea['y'] + self.env.fen.winfo_pointery() - self.env.fen.winfo_rooty()) / self.env.scale
         deltaX = self.mouse['x'] - self.x if (self.x != self.mouse['x']) else 1
         deltaY = self.mouse['y'] - self.y
         self.dir = math.atan2(deltaY, deltaX)
         self.speed = self.theorical_speed * 60 / self.env.framerate
+        self.total_damage = sum(self.hit_player.values())
         if self.dash_preview:
             self.update_dash_preview()
         if self.alive:

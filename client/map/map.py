@@ -27,7 +27,7 @@ class Map:
 
         lines = []
         keyword = ['object', 'rect', 'circle', 'define']
-        map_file = open(os.path.join(dir, 'files', file), 'r')
+        map_file = open(os.path.join(dir, 'files/compiled', file), 'r')
         for line in map_file.readlines():
             if len(line.split()) > 0 and line.split()[0] in keyword:
                 lines.append(line.strip('\n').split())

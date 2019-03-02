@@ -51,6 +51,7 @@ class Env:
         keyboard.on_press_key('enter', self.axial_symmetry)
         keyboard.on_press_key('t', self.semi_axial_symmetry)
         keyboard.on_press_key('m', self.map.save)
+        keyboard.on_press_key('l', lambda *e: self.map.save(e, optimize=True))
         keyboard.on_press_key('&', lambda *e: self.change_scale(value=1))
         keyboard.on_press_key('é', lambda *e: self.change_scale(value=self.viewArea['width']/self.canvas.width))
 
