@@ -122,7 +122,11 @@ class Player:
             if (dist_head <= victim.size + tolerance or dist_tail <= victim.size + tolerance) and shooter != victim:
                 victim.health -= shoot.damage
                 if victim.health <= 0:
-                        shooter.kills.append(victim)
+                    ### A revoir
+                    self.message('alert', f'Kill {victim.name}', duration=1.05)
+                    shooter.kills.append(victim)
+                else:
+                    self.message('warning', f'Hit {victim.name}', duration=.95)
 
                 if shooter.name in victim.hit_by_player:
                     victim.hit_by_player[shooter.name] += shoot.damage
@@ -136,6 +140,7 @@ class Player:
 
                 self.env.shoots.remove(shoot)
         if self.health <= 0:
+            self.message('alert', 'You\'re DEAD', duration=1.5)
             self.dead()
 
     @profile
@@ -263,7 +268,7 @@ class Player:
 
     def reload(self, *event):
         if not self.alive: return
-        TempMessage('info', 'Reloading', self.interface)
+        self.message('info', 'Reloading')
         self.weapon.reload(event)
 
     def update_viewBox(self):
@@ -283,6 +288,10 @@ class Player:
     def dead(self):
         self.alive = False
         print(self.name, self.stats())
+
+    def message(self, type, text, duration=.8):
+        if not self.own: return
+        TempMessage(type, text, self.interface, duration=duration)
 
     def stats(self):
         return {'total_damage': self.total_damage, 'kills': len(self.kills), 'assists': len(self.assists)}

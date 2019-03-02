@@ -149,21 +149,30 @@ class ChatInfo:
         pass
 
 class TempMessage:
-    def __init__(self, type, text, interface):
+    def __init__(self, type, text, interface, duration=0.8):
         self.interface = interface
         self.env = self.interface.env
         self.type = type
         self.text = text
 
         self.start = time.time()
-        self.duration = 0.75  # s
+        self.duration = duration  # s
         self.tick = 0
 
         self.x = self.interface.player.x
         self.y = self.interface.player.y + 20
 
         if self.type == 'info':
-            self.initial_color = Color((30, 80, 160))  #"#4354FF"
+            self.initial_color = Color((96, 125, 139))
+        elif self.type == 'warning':
+            self.initial_color = Color((251, 140, 0))
+        elif self.type == 'alert':
+            self.initial_color = Color((211, 47, 47))
+        else:
+            self.initial_color = Color((200, 200, 200))
+            
+        self.color = self.initial_color.to_hex()
+
         self.interface.messages.append(self)
 
     def destroy(self):
