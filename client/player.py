@@ -11,10 +11,10 @@ import threading
 from PIL import Image, ImageTk
 from threading import Timer
 from render import RenderedObject
-from interface import TempMessage
+from interface import TempMessage, DamageMessage
 from object.rect import Rect, Box
 from object.circle import Circle
-from weapons.weapon import AR, Shotgun, Sniper
+from weapons.weapon import AR, Shotgun, Sniper, SMG
 
 default_keys = {
     'up': 'z',
@@ -46,6 +46,7 @@ class Player:
         if role == 'A': self.weapon = AR(self)
         elif role == 'SG': self.weapon = Shotgun(self)
         elif role == 'S': self.weapon = Sniper(self)
+        elif role == 'SMG': self.weapon = SMG(self)
         self.client = None
         self.interface = None
         self.size = 10  # Radius
@@ -55,7 +56,7 @@ class Player:
         self.theorical_speed = 3.55
         self.speed = self.theorical_speed * 60 / self.env.framerate  # computed value
         self.dash_speed = 4.0
-        self.dash_length = 42  # cycle
+        self.dash_length = 38  # cycle
         self.dash_preview = False
         self.simul_dash = {'x': 0, 'y': 0}
         self.number_dash = 3
@@ -71,7 +72,7 @@ class Player:
         self.kills = []
         self.assists = []
         self.alive = True
-        self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
+        self.collide_box = Box(self.x - 100, self.y - 100, self.x + 100, self.y + 100)
         self.key = key or default_keys
 
         self.texture_dic = {}
@@ -120,28 +121,33 @@ class Player:
             shooter = shoot.from_player
             victim = self
             if (dist_head <= victim.size + tolerance or dist_tail <= victim.size + tolerance) and shooter != victim:
-                victim.health -= shoot.damage
-                if victim.health <= 0:
-                    ### A revoir
-                    self.message('alert', f'Kill {victim.name}', duration=1.05)
-                    shooter.kills.append(victim)
-                else:
-                    self.message('warning', f'Hit {victim.name}', duration=.95)
-
-                if shooter.name in victim.hit_by_player:
-                    victim.hit_by_player[shooter.name] += shoot.damage
-                else:
-                    victim.hit_by_player[shooter.name] = shoot.damage
-
-                if self.name in shooter.hit_player:
-                    shooter.hit_player[victim.name] += shoot.damage
-                else:
-                    shooter.hit_player[victim.name] = shoot.damage
-
+                real_damage = victim.hit_by(shooter, shoot.damage)
+                shooter.hit(victim, real_damage, victim.health <= 0)
                 self.env.shoots.remove(shoot)
+
+    def hit(self, victim, damage, kill=False):
+        if victim.id in self.hit_player:
+            self.hit_player[victim.id] += damage
+        else:
+            self.hit_player[victim.id] = damage
+        if kill:
+            self.message('alert', f'Kill {victim.name}', duration=1.05)
+            self.kills.append(victim)
+        else:
+            self.message('hit', f'{int(damage)}', duration=.95, victim=victim)
+
+    def hit_by(self, player, damage):
+        self.health -= damage
+        real_damage = damage if self.health >= 0 else damage - abs(self.health)
+        self.message('warning', f'Hit by {player.name}')
+        if player.id in self.hit_by_player:
+            self.hit_by_player[player.id] += damage
+        else:
+            self.hit_by_player[player.id] = damage
         if self.health <= 0:
-            self.message('alert', 'You\'re DEAD', duration=1.5)
             self.dead()
+            self.health = 0
+        return real_damage
 
     @profile
     def collide_wall(self, simulation=False):
@@ -150,6 +156,7 @@ class Player:
         else:
             x, y = self.x, self.y
 
+        self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
         collide_x, collide_y = False, False
         delta = {'x': 0, 'y': 0}
         rects = [obj for obj in self.env.map.objects if isinstance(obj, Rect) and Rect.intersect(obj, self.collide_box)]
@@ -268,10 +275,10 @@ class Player:
 
     def reload(self, *event):
         if not self.alive: return
-        self.message('info', 'Reloading')
         self.weapon.reload(event)
 
     def update_viewBox(self):
+        if not self.own: return
         viewBox = self.env.viewArea
         if self.x >= viewBox['width'] / 2 and self.x <= self.env.width - viewBox['width'] / 2:
             viewBox['x'] = self.x - viewBox['width'] / 2
@@ -280,18 +287,22 @@ class Player:
         if self.y >= viewBox['height'] / 2 and self.y <= self.env.height - viewBox['height'] / 2:
             viewBox['y'] = self.y - viewBox['height'] / 2
         else:
-            viewBox['y'] = 0 if self.y <=viewBox['height'] / 2 else self.env.height - viewBox['height']
+            viewBox['y'] = 0 if self.y <= viewBox['height'] / 2 else self.env.height - viewBox['height']
 
     def dist(self, other):
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
     def dead(self):
+        self.message('alert', 'You\'re DEAD', duration=1.5)
         self.alive = False
         print(self.name, self.stats())
 
-    def message(self, type, text, duration=.8):
+    def message(self, type, text, duration=.8, victim=None):
         if not self.own: return
-        TempMessage(type, text, self.interface, duration=duration)
+        if type == 'hit':
+            DamageMessage(victim, text, self.interface)
+        else:
+            TempMessage(type, text, self.interface, duration=duration)
 
     def stats(self):
         return {'total_damage': self.total_damage, 'kills': len(self.kills), 'assists': len(self.assists)}
@@ -309,9 +320,8 @@ class Player:
         if self.dash_preview:
             self.update_dash_preview()
         if self.alive:
-            self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
             self.check_shoot_collide()
-            self.assists = [player for player in self.hit_player.keys() if not self.env.find_by('name', player).alive]
+            self.assists = [player for player in self.hit_player.keys() if not self.env.find_by('id', player).alive]
         if self.own:
             self.detect_keypress()
             self.update_viewBox()
@@ -322,6 +332,7 @@ class Player:
     def render(self, dash=False):
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, math.ceil(self.health))
         self.env.rendering_stack.append(RenderedObject('oval', self.x - self.size, self.y - self.size, x2=self.x + self.size, y2=self.y + self.size, color=self.color, width=0, dash=self.dash))
+
         if display_pointer:
             self.env.rendering_stack.append(RenderedObject('oval', self.mouse['x'] - self.size, self.mouse['y'] - self.size/3, x2=self.mouse['x'] + self.size/3, y2=self.mouse['y'] + self.size, color='red', width=0))
         # self.env.rendering_stack.append(RenderedObject('oval', self.mouse['x'] - self.size, self.mouse['y'] - self.size, width=self.size, height=self.size, color='red'))

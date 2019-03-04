@@ -50,6 +50,7 @@ class Tir:
             self.destroy()
             return
 
+        decrease_factor = 1
         if player_dist > self.damage_decrease['range'] and not self.has_decreased_damage:
             self.damage *= self.damage_decrease['factor']
             self.has_decreased_damage = True

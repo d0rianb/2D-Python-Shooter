@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import math
+import random
 
 from weapons.tir import Tir
 from threading import Timer
@@ -34,8 +35,12 @@ class Weapon:
         else:
             self.reload()
 
+    def pre_shoot(self):
+        pass
+
     def shoot(self):
         if not self.can_shoot: return
+        self.pre_shoot()
         x = self.player.x + math.cos(self.player.dir) * 20
         y = self.player.y + math.sin(self.player.dir) * 20
         tir = Tir(x, y, self.player.dir, self)
@@ -50,7 +55,8 @@ class Weapon:
         self.autofire = False
 
     def reload(self, *event):
-        if self.ammo < self.max_ammo:
+        if self.ammo < self.max_ammo and not self.is_reloading:
+            self.player.message('info', 'Reloading')
             self.is_reloading = True
             Timer(self.reload_cooldown, self.has_reload).start()
 
@@ -65,10 +71,10 @@ class Sniper(Weapon):
         super(Sniper, self).__init__(player)
         self.name = 'sniper'
         self.max_ammo = 5
-        self.damage = 60
+        self.damage = 55
         self.shoot_speed = 28
         self.munition_size = 16
-        self.shoot_cooldown = .62
+        self.shoot_cooldown = .68
         self.reload_cooldown = 1.9
         self.ammo = self.max_ammo
 
@@ -105,9 +111,27 @@ class AR(Weapon):
         self.name = 'fusil d\'assaut'
         self.max_ammo = 20
         self.damage = 20
-        self.damage_decrease = {'range': 500 / 2, 'factor': 0.88}
+        self.damage_decrease = {'range': 400, 'factor': 0.88}
         self.shoot_speed = 22
         self.munition_size = 12
         self.shoot_cooldown = .21
         self.reload_cooldown = 1.1
         self.ammo = self.max_ammo
+
+
+class SMG(Weapon):
+    def __init__(self, player):
+        super(SMG, self).__init__(player)
+        self.name = 'SMG'
+        self.max_ammo = 35
+        self.damage = 12
+        self.damage_decrease = {'range': 300, 'factor': 0.8}
+        self.shoot_speed = 25
+        self.munition_size = 6
+        self.shoot_cooldown = .1
+        self.reload_cooldown = .9
+        self.dispersion = math.pi/35
+        self.ammo = self.max_ammo
+
+    def pre_shoot(self):
+        self.player.dir += random.random()*self.dispersion

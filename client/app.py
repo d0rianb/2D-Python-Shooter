@@ -19,8 +19,9 @@ from map.map import Map
 
 GAME_NAME = '2PQSTD'
 config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressources/config/config.json')
-ROLES = [('Assault', 'A'), ('Shotgun', 'SG'), ('Sniper', 'S')]
+ROLES = [('Assault', 'A'), ('Shotgun', 'SG'), ('Sniper', 'S'), ('SMG', 'SMG')]
 
+FULLSCREEN = False
 MAP = 'map_optimize.compile.map'
 
 class App:
@@ -46,6 +47,9 @@ class App:
             self.config = json.load(settings_file)
 
     def start(self):
+        self.fen.state("zoomed")
+        if FULLSCREEN:
+            self.fen.wm_attributes('-fullscreen','true')
         self.env.update()
         self.fen.mainloop()
 
@@ -64,8 +68,11 @@ class LocalGame(App):
         self.start()
 
     def generate_target(self):
-        for i in range(self.difficulty):
-            Target(i, random.randint(150, self.width - 150), random.randint(150, self.height - 150), self.env, level=self.difficulty)
+        if self.difficulty == 1:
+            Target(1, 400, 250, self.env, level=1)
+        else:
+            for i in range(self.difficulty):
+                Target(i, random.randint(150, self.width - 150), random.randint(150, self.height - 150), self.env, level=self.difficulty)
 
 
 class OnlineGame(App):
@@ -121,10 +128,10 @@ class SplashScreen:
         role_label = tk.Label(self.fen, text='Role : ', font=regular_font)
         role_list = []
         selected_role = tk.StringVar()
-        selected_role.set('A')
+        selected_role.set('SMG')
         for (role, value) in ROLES:
             check_box = tk.Radiobutton(self.fen, text=role, value=value, variable=selected_role,
-                                        indicatoron=0, padx=20, pady=5, selectcolor='blue', relief=tk.SUNKEN)
+                                        indicatoron=0, padx=22, pady=5, selectcolor='blue', relief=tk.SUNKEN)
             role_list.append(check_box)
 
         difficulty_label = tk.Label(self.fen, text='Difficultée : ', font=regular_font)
@@ -145,7 +152,7 @@ class SplashScreen:
 
         role_label.place(relx=0.1, rely=0.52, anchor=tk.W)
         for (index, role) in enumerate(role_list):
-            role.place(relx=0.15 + index*0.8/3, rely=0.60, anchor=tk.W)
+            role.place(relx=0.15 + index*0.8/len(ROLES), rely=0.60, anchor=tk.W)
 
         difficulty_label.place(relx=0.1, rely=0.74, anchor=tk.W)
         difficulty_scale.place(relx=0.8, rely=0.71, anchor=tk.E)

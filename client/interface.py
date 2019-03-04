@@ -162,16 +162,21 @@ class TempMessage:
         self.x = self.interface.player.x
         self.y = self.interface.player.y + 20
 
+        self.delta_y = 1
+        self.speed = 1
+
         if self.type == 'info':
             self.initial_color = Color((96, 125, 139))
         elif self.type == 'warning':
             self.initial_color = Color((251, 140, 0))
         elif self.type == 'alert':
             self.initial_color = Color((211, 47, 47))
+        elif self.type == 'hit':
+            self.initial_color = Color((198, 40, 40))
         else:
             self.initial_color = Color((200, 200, 200))
-            
-        self.color = self.initial_color.to_hex()
+
+        self.color = self.initial_color
 
         self.interface.messages.append(self)
 
@@ -182,13 +187,23 @@ class TempMessage:
         delta_time = self.start + self.duration - time.time()
         if delta_time <= 0:
             return self.destroy()
-        self.y += 1
+        self.y += self.delta_y*self.speed
         self.color = Color.blend(self.initial_color, BG_COLOR, 1 - delta_time/self.duration)
         self.tick += 1
 
     def render(self):
-        self.interface.env.rendering_stack.append(RenderedObject('text', self.x, self.y + (len(self.interface.messages) - 1)*self.interface.padding,
+        self.interface.env.rendering_stack.append(RenderedObject('text', self.x, self.y + self.interface.messages.index(self)*self.delta_y*self.interface.padding,
             text=self.text,
             anchor=tk.CENTER,
             color=self.color.to_hex(),
-            font=self.interface.font))
+            font=self.interface.font,
+            zIndex=5))
+
+class DamageMessage(TempMessage):
+    def __init__(self, player, text, interface):
+        TempMessage.__init__(self, 'hit', text, interface, duration=0.95)
+        self.player = player
+        self.x = self.player.x + 15
+        self.y = self.player.y - 20
+        self.delta_y = -1
+        self.speed = .75
