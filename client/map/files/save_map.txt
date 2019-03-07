@@ -1,5 +1,0 @@
-define grid 128 72
-
-rect 5 3 2 2
-rect 8 3 2 2
-rect 11 3 2 2

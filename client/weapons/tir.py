@@ -13,6 +13,7 @@ class Tir:
         self.y = y
         self.dir = dir
         self.weapon = weapon
+        self.alive = True
         self.damage = self.weapon.damage
         self.damage_decrease = self.weapon.damage_decrease
         self.has_decreased_damage = False
@@ -35,20 +36,22 @@ class Tir:
             if isinstance(obj, Rect):
                 rect = obj
                 if x >= rect.x and x <= rect.x2 and y >= rect.y and y <= rect.y2:  # Check for Head
-                    if self in self.env.shoots:
-                        self.env.shoots.remove(self)
+                    self.destroy()
                 elif self.x >= rect.x and self.x <= rect.x2 and self.y >= rect.y and self.y <= rect.y2:  # Check for bottom
-                    if self in self.env.shoots:
-                        self.env.shoots.remove(self)
+                    self.destroy()
 
     def destroy(self):
-        self.env.shoots.remove(self)
+        if self in self.env.shoots:
+            self.env.shoots.remove(self)
+            self.alive = False
 
     def update(self):
+        self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
+        self.check_wall_collide(self.env.map)
         player_dist = self.from_player.dist(self)
         if player_dist > self.range:
             self.destroy()
-            return
+        if not self.alive: return
 
         decrease_factor = 1
         if player_dist > self.damage_decrease['range'] and not self.has_decreased_damage:
@@ -62,8 +65,6 @@ class Tir:
             'x': self.x + math.cos(self.dir) * self.size,
             'y': self.y + math.sin(self.dir) * self.size
         }
-        self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
-        self.check_wall_collide(self.env.map)
 
     def render(self):
         self.env.rendering_stack.append(RenderedObject('line', self.x, self.y, x2=self.head['x'], y2=self.head['y']))

@@ -20,6 +20,7 @@ class Canvas:
         object.y2 *= scale
         object.width *= scale
         object.height *= scale
+        # self.canvas.config(width=200)
         return object
 
     @profile
@@ -29,7 +30,7 @@ class Canvas:
             object = self.scale(object)
             view_x, view_y, view_x2, view_y2 = object.viewBox_coord(self.env.viewArea, self.env.scale)
             if object.type == 'rect':
-                self.canvas.create_rectangle(view_x, view_y, view_x + object.width, view_y + object.height, fill=object.color, width=object.borderwidth, outline='#000')
+                self.canvas.create_rectangle(view_x, view_y, view_x + object.width, view_y + object.height, fill=object.color, width=object.borderwidth, outline='#000', stipple='gray25')
             elif object.type == 'image':
                 self.canvas.create_image(view_x, view_y, image=object.image, anchor=tk.NW)
             elif object.type == 'oval':

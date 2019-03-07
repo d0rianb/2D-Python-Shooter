@@ -72,6 +72,7 @@ class Player:
         self.kills = []
         self.assists = []
         self.alive = True
+        self.aimbot = False
         self.collide_box = Box(self.x - 100, self.y - 100, self.x + 100, self.y + 100)
         self.key = key or default_keys
 
@@ -94,6 +95,7 @@ class Player:
             keyboard.on_press_key('&', lambda *e: self.env.change_scale(value=1))
             keyboard.on_press_key('é', lambda *e: self.env.change_scale(value=self.env.viewArea['width']/self.env.canvas.width))
             keyboard.on_press_key('à', lambda *e: self.env.toggle_optimization())
+            keyboard.on_press_key('"', lambda *e: self.toggle_aimbot())
 
         self.env.players.append(self)
 
@@ -126,14 +128,15 @@ class Player:
                 self.env.shoots.remove(shoot)
 
     def hit(self, victim, damage, kill=False):
+        self.weapon.bullets_hit += 1
         if victim.id in self.hit_player:
             self.hit_player[victim.id] += damage
         else:
             self.hit_player[victim.id] = damage
-        if kill:
-            self.message('alert', f'Kill {victim.name}', duration=1.05)
+        if kill and not victim in self.kills:
+            self.message('alert', f'Kill {victim.name}', duration=1.15)
             self.kills.append(victim)
-        else:
+        elif damage > 0:
             self.message('hit', f'{int(damage)}', duration=.95, victim=victim)
 
     def hit_by(self, player, damage):
@@ -277,6 +280,9 @@ class Player:
         if not self.alive: return
         self.weapon.reload(event)
 
+    def toggle_aimbot(self):
+        self.aimbot = not self.aimbot
+
     def update_viewBox(self):
         if not self.own: return
         viewBox = self.env.viewArea
@@ -292,10 +298,23 @@ class Player:
     def dist(self, other):
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
+    def detect_closer_player(self):
+        closer = None
+        for player in self.env.players:
+            if closer and player != self and player.alive:
+                if self.dist(player) < self.dist(closer):
+                    closer = player
+            elif player != self and player.alive:
+                closer = player
+        return closer
+
     def dead(self):
+        if not self.alive: return
         self.message('alert', 'You\'re DEAD', duration=1.5)
         self.alive = False
-        print(self.name, self.stats())
+        if self.own:
+            Timer(.5, lambda: self.interface.menu.toggle('on')).start()
+
 
     def message(self, type, text, duration=.8, victim=None):
         if not self.own: return
@@ -305,16 +324,23 @@ class Player:
             TempMessage(type, text, self.interface, duration=duration)
 
     def stats(self):
-        return {'total_damage': self.total_damage, 'kills': len(self.kills), 'assists': len(self.assists)}
+        precision = self.weapon.bullets_hit / self.weapon.bullets_drawn * 100 if self.weapon.bullets_drawn != 0 else 0
+        return {'total_damage': self.total_damage, 'kills': len(self.kills), 'assists': len(self.assists), 'accuracy': precision}
 
     @profile
     def update(self):
+        # if self.env.tick == 10:
+        #     self.dead()
         if not self.alive: return
         self.mouse['x'] = (self.env.viewArea['x'] + self.env.fen.winfo_pointerx() - self.env.fen.winfo_rootx()) / self.env.scale
         self.mouse['y'] = (self.env.viewArea['y'] + self.env.fen.winfo_pointery() - self.env.fen.winfo_rooty()) / self.env.scale
         deltaX = self.mouse['x'] - self.x if (self.x != self.mouse['x']) else 1
         deltaY = self.mouse['y'] - self.y
-        self.dir = math.atan2(deltaY, deltaX)
+        if self.aimbot:
+            closer_player = self.detect_closer_player()
+            self.dir = math.atan2(closer_player.y - self.y, closer_player.x - self.x)
+        else:
+            self.dir = math.atan2(deltaY, deltaX)
         self.speed = self.theorical_speed * 60 / self.env.framerate
         self.total_damage = sum(self.hit_player.values())
         if self.dash_preview:
@@ -372,18 +398,9 @@ class Target(Player):
         self.vy = random_sign()
         self.move_interval = random.randint(20, 60)
         self.shoot_interval = random.randint(11-self.level, 200-self.level*2)
-        self.closer_player = None
         self.can_shoot = self.level >= 3
         self.can_move = self.level >= 2
         self.shoot_dispersion = math.pi/(4 + random.randint(self.level, self.level*2))
-
-    def detect_closer_player(self):
-        for player in self.env.players:
-            if self.closer_player and player != self and player.alive:
-                if self.dist(player) < self.dist(self.closer_player):
-                    self.closer_player = player
-            elif player != self and player.alive:
-                self.closer_player = player
 
     def shoot(self):
         self.weapon.shoot()
@@ -391,8 +408,8 @@ class Target(Player):
     def update(self):
         if self.alive and len(self.env.players_alive) > 1:
             super().update()
-            self.detect_closer_player()
-            self.dir = math.atan2(self.closer_player.y - self.y, self.closer_player.x - self.x)
+            closer_player = self.detect_closer_player()
+            self.dir = math.atan2(closer_player.y - self.y, closer_player.x - self.x)
             if self.tick % self.move_interval == 0:
                 self.vy *= random_sign()
                 self.vx *= random_sign()

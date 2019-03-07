@@ -11,12 +11,16 @@ class Weapon:
     def __init__(self, player):
         self.player = player
         self.name = 'Anonymous Weapon'
+        self.bullets_drawn = 0
+        self.bullets_hit = 0
         self.max_ammo = 20
         self.damage = 20
         self.shoot_speed = 22
         self.munition_size = 12
         self.shoot_cooldown = .2
         self.reload_cooldown = 1
+        self.nb_shoot = 1
+        self.dispersion = 0
         self.damage_decrease = {'range': math.inf, 'factor': 1}
         self.range = math.inf
         self.can_shoot = True
@@ -43,10 +47,20 @@ class Weapon:
         self.pre_shoot()
         x = self.player.x + math.cos(self.player.dir) * 20
         y = self.player.y + math.sin(self.player.dir) * 20
-        tir = Tir(x, y, self.player.dir, self)
+        # tir = Tir(x, y, self.player.dir, self)
+        # self.ammo -= 1
+        # self.bullets_drawn += 1
+        # self.can_shoot = False
+        # Timer(self.shoot_cooldown, self.allow_shoot).start()
+
+        for i in range(self.nb_shoot):
+            dispersion = ((-1)**i)*self.dispersion*i/10
+            tir = Tir(x, y, self.player.dir + dispersion, self)
         self.ammo -= 1
+        self.bullets_drawn += self.nb_shoot
         self.can_shoot = False
         Timer(self.shoot_cooldown, self.allow_shoot).start()
+
 
     def allow_shoot(self):
         self.can_shoot = True
@@ -94,15 +108,6 @@ class Shotgun(Weapon):
         self.damage_decrease = {'range': self.range / 2, 'factor': 0.67}
         self.dispersion = math.pi/13
         self.ammo = self.max_ammo
-
-    def shoot(self):
-        if not self.can_shoot: return
-        for i in range(self.nb_shoot):
-            dispersion = ((-1)**i)*self.dispersion*i/10
-            tir = Tir(self.player.x, self.player.y, self.player.dir + dispersion, self)
-        self.ammo -= 1
-        self.can_shoot = False
-        Timer(self.shoot_cooldown, self.allow_shoot).start()
 
 
 class AR(Weapon):

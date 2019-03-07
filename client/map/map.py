@@ -39,7 +39,7 @@ class Map:
                     self.grid['x'] = int(line[2])
                     self.grid['y'] = int(line[3])
                 if line[1] == 'multiplier':
-                    self.multiplier = line[2]
+                    self.multiplier = int(line[2])
             elif line[0] == 'rect':
                 self.objects.append(Rect(len(self.objects) + 1, line[1], line[2], line[3], line[4], self, self.multiplier))
             elif line[0] == 'circle':

@@ -22,7 +22,7 @@ config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressour
 ROLES = [('Assault', 'A'), ('Shotgun', 'SG'), ('Sniper', 'S'), ('SMG', 'SMG')]
 
 FULLSCREEN = False
-MAP = 'map_optimize.compile.map'
+MAP = 'full_map_3.compile.map'
 
 class App:
     def __init__(self, player_name, role):
@@ -128,7 +128,7 @@ class SplashScreen:
         role_label = tk.Label(self.fen, text='Role : ', font=regular_font)
         role_list = []
         selected_role = tk.StringVar()
-        selected_role.set('SMG')
+        selected_role.set('SG')
         for (role, value) in ROLES:
             check_box = tk.Radiobutton(self.fen, text=role, value=value, variable=selected_role,
                                         indicatoron=0, padx=22, pady=5, selectcolor='blue', relief=tk.SUNKEN)

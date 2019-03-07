@@ -6,6 +6,7 @@ import tkinter as tk
 import keyboard
 import math
 import time
+import sys
 
 from object.color import Color
 from render import RenderedObject
@@ -18,6 +19,7 @@ class Interface:
         self.env = env
         self.env.interface = self
         self.player.interface = self
+        self.menu = Menu(self)
         self.margin_x = 8
         self.margin_y = 20
         self.x = self.env.viewArea['x']
@@ -87,6 +89,8 @@ class Interface:
             self.parse(position, x, y, anchor)
         for msg in self.messages:
             msg.render()
+        if self.menu:
+            self.menu.render()
 
 class ChatInfo:
     def __init__(self, env):
@@ -124,6 +128,7 @@ class ChatInfo:
                     self.env.players = [player for player in self.env.players if player.own]
                 else:
                     player = self.select_player(args[0], args[1])
+                    player.dead()
                     self.env.players.remove(player)
             else:
                 self.env.players = []
@@ -207,3 +212,44 @@ class DamageMessage(TempMessage):
         self.y = self.player.y - 20
         self.delta_y = -1
         self.speed = .75
+
+class Menu:
+    def __init__(self, interface):
+        self.interface = interface
+        self.env = self.interface.env
+        self.player = self.interface.player
+        self.interface.menu = self
+        self.stats = {}
+        self.x = self.env.viewArea['width'] / 2
+        self.y = self.env.viewArea['height'] / 2
+        self.is_active = False
+        self.font = tkFont.Font(family='Avenir Next', size=28, weight='normal')
+        self.padding = 30
+
+    def toggle(self, state=None):
+        if state:
+            if state == 'on':
+                self.is_active = True
+            if state == 'off':
+                self.is_active = False
+        else:
+            self.is_active = not self.is_active
+
+    def display_stats(self, animation=False):
+        stats = self.player.stats()
+        bgcolor = Color.blend(Color((20, 20, 20)), BG_COLOR, 0.8).to_hex() #(self.env.tick % 100) / 100
+        stat_label = {'total_damage': 'Dommage Infligés', 'kills': 'Eliminiations', 'assists': 'Assistance', 'accuracy': 'Précision'}
+        stat_suffixe = {'total_damage': '', 'kills': '', 'assists': '', 'accuracy': '%'}
+
+        stat_text = ''
+        for index, stat in enumerate(stats):
+            stat_text += f'{stat_label[stat]} : {int(stats[stat])}{stat_suffixe[stat]}\n'
+            deltaX =  self.env.viewArea['x'] + 0
+            deltaY =  self.env.viewArea['y'] - (len(stats) / 2) * (self.padding)
+        rect_width, rect_height = 400, 200
+        self.env.rendering_stack.append(RenderedObject('text', self.x + deltaX, self.y + deltaY + index*self.padding, text=stat_text, color='#222', font=self.font, zIndex=10, anchor='center'))
+        self.env.rendering_stack.append(RenderedObject('rect', self.x + self.env.viewArea['x'] - rect_width/2, self.y + self.env.viewArea['y'] - rect_height/2, width=rect_width, height=rect_height, color=bgcolor, zIndex=9))
+
+    def render(self):
+        if not self.is_active: return
+        self.display_stats()
