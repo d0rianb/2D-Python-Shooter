@@ -104,6 +104,8 @@ class Env:
         if obj.persistent: return True
         if obj.type == 'rect':
             return Rect.intersect(viewBox, obj)
+        elif obj.type == 'circle':
+            pass
         elif obj.type == 'line':
             return obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x2 <= viewBox.x2 and obj.y2 <= viewBox.y2
         else:

@@ -5,4 +5,4 @@ __pycache__/*
 *.pyc
 */*.pyc
 ./ressources/config/config.json
-./map/files/temp_map.txt
+./map/files/*
