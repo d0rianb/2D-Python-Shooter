@@ -65,10 +65,8 @@ class Client:
 
     def receive(self):
         try:
-            data = self.connection.recv(4096)
+            data = self.connection.recv(256)
             message = json.loads(data.decode('utf-8'))
-
-            print(message)
             self.ping = self.time() - message['infos']['timestamp']
 
             if message['title'] == 'players_array':

@@ -344,7 +344,8 @@ class Player:
         deltaY = self.mouse['y'] - self.y
         if self.aimbot:
             closer_player = self.detect_closer_player()
-            self.dir = math.atan2(closer_player.y - self.y, closer_player.x - self.x)
+            if closer_player:
+                self.dir = math.atan2(closer_player.y - self.y, closer_player.x - self.x)
         else:
             self.dir = math.atan2(deltaY, deltaX)
         self.speed = self.theorical_speed * 60 / self.env.framerate

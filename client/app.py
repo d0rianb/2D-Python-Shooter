@@ -22,7 +22,7 @@ config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressour
 ROLES = [('Assault', 'A'), ('Shotgun', 'SG'), ('Sniper', 'S'), ('SMG', 'SMG')]
 
 FULLSCREEN = False
-MAP = 'full_map_3.compile.map'
+MAP = 'temp_map.compile.map'
 
 class App:
     def __init__(self, player_name, role):
@@ -167,7 +167,7 @@ class SplashScreen:
             if mode == 'PvE':
                 self.offline_callback(name_var.get(), difficulty_var.get(), selected_role.get())
             elif mode == 'PvP':
-                self.online_callback(name_var.get(), server_ip_var.get(), int(server_port_var.get()), selected_role.get())
+                self.online_callback(name_var.get(), self.config['server_ip'], int(self.config['server_port']), selected_role.get())
 
     def start(self):
         self.fen.mainloop()

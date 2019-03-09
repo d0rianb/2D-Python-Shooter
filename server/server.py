@@ -10,12 +10,14 @@ import keyboard
 import logging
 import time
 import multiprocessing
+import concurrent.futures
 
 from client import Client
 
+SERVER_FREQ = 60 # Hz
 
 class Server(threading.Thread):
-    def __init__(self,ip, port):
+    def __init__(self, ip, port):
         threading.Thread.__init__(self)
         self.ip = ip
         self.port = port
@@ -23,9 +25,7 @@ class Server(threading.Thread):
         self.clients = []
         self.max_tickrate = 144
         self.tick = 0
-        self.tickrate = 0
         self.is_running = True
-        self.pool = multiprocessing.Pool(processes=1)
 
         ## Logging system
         logger = logging.getLogger()
@@ -37,40 +37,44 @@ class Server(threading.Thread):
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
 
-        keyboard.on_press_key('k', self.end)
+        keyboard.on_press_key('s', lambda *e: self.send_players_pos())
+
 
     def time(self):
-        # return datetime.datetime.utcnow().timestamp() * 1000
         return time.time()
 
     def run(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.ip, self.port))
         self.socket.setblocking(0)
-
         logging.info('Server is running on port {}'.format(self.port))
+        self.start_time = self.time()
+        self.update()
 
-        delta_tick = 0
-        while self.is_running:
-            self.tick += 1
-            self.tickrate = int(1 / (self.time() - delta_tick))
-            delta_tick = self.time()
-            try:
-                data, addr = self.socket.recvfrom(1024)
-                message = json.loads(data)
-                if message['title'] == 'connect_infos':
-                    self.new_connection(message, addr)
+    def update(self):
+        if not self.is_running: return
+        start_time = self.time()
+        self.tick += 1
+        try:
+            data, addr = self.socket.recvfrom(1024)
+            message = json.loads(data)
+            if message['title'] == 'connect_infos':
+                self.new_connection(message, addr)
 
-                elif message['title'] == 'update_position':
-                    self.update_position(message)
-            except BlockingIOError:
-                pass
+            elif message['title'] == 'update_position':
+                self.update_position(message)
+        except BlockingIOError:
+            pass
 
-            ## Send players position
-            for client in self.clients:
-                players_array = [client.player.toJSON() for client in self.clients]
-                self.pool.apply_async(self.send_message, ['players_array', players_array, client.ip, client.port])
-                #self.send_message('players_array', players_array, client.ip, client.port)
+        ## Send players position
+        self.send_players_pos()
+
+        # if self.tick % 60 == 0:
+        #     logging.info((self.time() - self.start_time) * 60 / self.tick)
+        delta_time = self.time() - start_time
+        delta_time = 1/SERVER_FREQ - delta_time
+
+        threading.Timer(delta_time, self.update).start()
 
     def new_connection(self, message, addr):
         reconnect = False
@@ -90,6 +94,11 @@ class Server(threading.Thread):
         for client in self.clients:
             if client.id == message['from']:
                 client.update_player(message)
+
+    def send_players_pos(self):
+        for client in self.clients:
+            players_array = [client.player.toJSON() for client in self.clients]
+            self.send_message('players_array', players_array, client.ip, client.port)
 
     def send_message(self, title, content, ip, port):
         message = {
