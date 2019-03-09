@@ -6,7 +6,7 @@ from collections import namedtuple
 Box = namedtuple('Box', 'x y x2 y2')
 
 class Rect:
-    def __init__(self, _id, x, y, width, height, map, multiplier=1):
+    def __init__(self, _id, x, y, width, height, map, multiplier=1, viewBox_init=True):
         self.id = int(_id)
         self.multiplier = multiplier
         self.rel_x = float(x) * float(self.multiplier)
@@ -17,13 +17,11 @@ class Rect:
         self.rel_x2 = self.rel_x + self.rel_width
         self.rel_y2 = self.rel_y + self.rel_height
         self.map = map
-        real_ratio = abs(self.map.env.viewArea['width'] / self.map.env.viewArea['height'] - 16 / 9)
-        self.gridX = self.map.env.width / self.map.grid['x']
-        self.gridY = self.map.env.height / (self.map.grid['y'] + real_ratio)
 
         self.color = '#757575'
 
-        self.computed_values()
+        if viewBox_init:
+            self.computed_values()
 
     def __repr__(self):
         return 'Rect x:{rel_x} y:{rel_y} width:{rel_width} height:{rel_height} at {python_id}'.format(**self.__dict__)
@@ -32,6 +30,9 @@ class Rect:
         return self.rel_x == other.rel_x and self.rel_y == other.rel_y and self.rel_width == other.rel_width and self.rel_height == other.rel_height
 
     def computed_values(self):
+        real_ratio = abs(self.map.env.viewArea['width'] / self.map.env.viewArea['height'] - 16 / 9)
+        self.gridX = self.map.width / self.map.grid['x']
+        self.gridY = self.map.height / (self.map.grid['y'] + real_ratio)
         self.x = self.rel_x * self.gridX
         self.y = self.rel_y * self.gridY
         self.width = self.rel_width * self.gridX

@@ -15,7 +15,8 @@ class Map:
         self.env.map = self
         self.name = name
         self.dir = dir
-        # self.file = 'name'
+        self.width = self.env.width
+        self.height = self.env.height
         self.grid = { 'x': 128, 'y': 72 }
         self.multiplier = 1
 
@@ -46,6 +47,7 @@ class Map:
         rects = self.env.objects.copy()
         text = ''
         with open(os.path.join(dir, self.name + extension), 'w+') as map_file:
+            text += f'define dimension {self.width} {self.height}\n'
             text += 'define grid {x} {y}\n\n'.format(**self.grid)
             for obj in rects:
                 if isinstance(obj, Rect):

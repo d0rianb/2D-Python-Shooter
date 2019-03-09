@@ -1,3 +1,4 @@
+define dimension 4096 2304
 define grid 128 72
 
 rect 2 2 4 1

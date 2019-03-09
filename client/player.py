@@ -53,7 +53,7 @@ class Player:
         self.dir = 0  # angle
         self.mouse = {'x': 0, 'y': 0}
         self.color = '#0c6af7'
-        self.theorical_speed = 3.55
+        self.theorical_speed = 4.0
         self.speed = self.theorical_speed * 60 / self.env.framerate  # computed value
         self.dash_speed = 4.0
         self.dash_length = 38  # cycle
@@ -74,6 +74,7 @@ class Player:
         self.alive = True
         self.aimbot = False
         self.collide_box = Box(self.x - 100, self.y - 100, self.x + 100, self.y + 100)
+        self.rects_in_collide_box = []
         self.key = key or default_keys
 
         self.texture_dic = {}
@@ -159,12 +160,11 @@ class Player:
         else:
             x, y = self.x, self.y
 
-        self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
+
         collide_x, collide_y = False, False
         delta = {'x': 0, 'y': 0}
-        rects = [obj for obj in self.env.map.objects if isinstance(obj, Rect) and Rect.intersect(obj, self.collide_box)]
         # circle = [obj for obj in self.env.map.objects if isinstance(obj, Oval) and Oval.intersect(obj, self.collide_box)]
-        for obj in rects:
+        for obj in self.rects_in_collide_box:
             rect = obj
             delta_x, delta_y = 0, 0
             if y + self.size > rect.y and y - self.size < rect.y2 and x + self.size > rect.x and x - self.size < rect.x2:
@@ -224,6 +224,9 @@ class Player:
             self.y = self.size
         elif self.y + self.size >= self.env.height:
             self.y = self.env.height - self.size
+
+        if self.own: self.update_viewBox()
+        self.update_collide_box()
 
     def simul_move(self, x, y):
         self.simul_dash['x'] += x * self.speed
@@ -295,6 +298,10 @@ class Player:
         else:
             viewBox['y'] = 0 if self.y <= viewBox['height'] / 2 else self.env.height - viewBox['height']
 
+    def update_collide_box(self):
+        self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
+        self.rects_in_collide_box = [obj for obj in self.env.map.objects if isinstance(obj, Rect) and Rect.intersect(obj, self.collide_box)]
+
     def dist(self, other):
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
@@ -314,7 +321,6 @@ class Player:
         self.alive = False
         if self.own:
             Timer(.5, lambda: self.interface.menu.toggle('on')).start()
-
 
     def message(self, type, text, duration=.8, victim=None):
         if not self.own: return
@@ -350,7 +356,6 @@ class Player:
             self.assists = [player for player in self.hit_player.keys() if not self.env.find_by('id', player).alive]
         if self.own:
             self.detect_keypress()
-            self.update_viewBox()
         if self.client:
             self.client.send_position()
             self.client.receive()
@@ -373,7 +378,6 @@ class Player:
                 self.env.rendering_stack.append(RenderedObject('oval', self.simul_dash['x'] - preview_size, self.simul_dash['y'] - preview_size, x2=self.simul_dash['x'] + preview_size, y2=self.simul_dash['y'] + preview_size, color='#ccc'))
 
         if self.env.tick <= self.dash_animation_end_tick:
-            self.update_viewBox()
             self.env.rendering_stack = [el for el in self.env.rendering_stack if el.role != 'dash_animation']
             for coord in self.dash_animation:
                 size = self.size/len(self.dash_animation) * self.dash_animation.index(coord) / 1.25

@@ -34,10 +34,10 @@ class App:
 
     def init(self):
         self.get_config()
-        self.width, self.height = 4096, 2304
-        self.canvas = Canvas(self.fen, self.width, self.height)
-        self.env = Env(self.fen, self.width, self.height, self.canvas, max_framerate=self.config['max_framerate'])
-        self.map = Map(self.env, MAP, 'MAP 2')
+        # self.width, self.height = 4096, 2304
+        self.map = Map(MAP, 'map')
+        self.canvas = Canvas(self.fen, self.map.width, self.map.height)
+        self.env = Env(self.fen, self.map, self.canvas, max_framerate=self.config['max_framerate'])
         self.player = Player(0, 50, 50, self.env, self.name, role=self.role, own=True, key=self.config['key_binding'])
         self.interface = Interface(self.player, self.env)
         self.chat = ChatInfo(self.env)
@@ -72,7 +72,7 @@ class LocalGame(App):
             Target(1, 400, 250, self.env, level=1)
         else:
             for i in range(self.difficulty):
-                Target(i, random.randint(150, self.width - 150), random.randint(150, self.height - 150), self.env, level=self.difficulty)
+                Target(i, random.randint(150, self.map.width - 150), random.randint(150, self.map.height - 150), self.env, level=self.difficulty)
 
 
 class OnlineGame(App):

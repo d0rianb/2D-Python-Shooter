@@ -16,13 +16,15 @@ from object.rect import Rect, Box
 from render import RenderedObject
 
 class Env:
-    def __init__(self, fen, width, height, canvas, max_framerate=144):
+    def __init__(self, fen, map, canvas, max_framerate=144):
         self.fen = fen
         self.canvas = canvas
-        self.width = width
-        self.height = height
+        self.map = map
+        self.map.env = self
+        self.width = self.map.width
+        self.height = self.map.height
         self.scale = 1
-        self.ratio = width / height
+        self.ratio = self.width / self.height
         self.max_framerate = max_framerate
         self.framerate = self.max_framerate
         self.last_frame_timestamp = 0
@@ -30,7 +32,6 @@ class Env:
         self.players_alive = []
         self.shoots = []
         self.tick = 0
-        self.map = None
         self.interface = None
         self.debug = False
         self.rendering_stack = []
@@ -46,6 +47,9 @@ class Env:
             'width': self.fen.winfo_screenwidth(),
             'height': self.fen.winfo_screenheight()
         }
+        for obj in self.map.objects:
+            if isinstance(obj, Rect):
+                obj.computed_values()
         self.fen.protocol("WM_DELETE_WINDOW", self.exit)
         self.fen.bind("<MouseWheel>", self.change_scale)
 

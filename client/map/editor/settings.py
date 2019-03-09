@@ -34,6 +34,8 @@ class EditorSettings:
         #name_entry = tk.Entry(self.fen, textvariable=name_var, width=20)
 
         name = '_'
+        width = '-'
+        height = '-'
         grid_width = 'X'
         grid_height = 'X'
         multiplier = 'X'
