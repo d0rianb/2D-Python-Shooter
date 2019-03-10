@@ -63,8 +63,9 @@ class Server(threading.Thread):
 
         players_array = [client.player.toJSON() for client in self.clients if client.player]
         # logging.info(players_array)
-        for client in self.clients:
-            client.send('players_array', players_array)
+        if len(players_array) > 0:
+            for client in self.clients:
+                client.send('players_array', players_array)
 
 
         # if self.tick % 60 == 0:

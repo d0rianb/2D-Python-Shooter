@@ -81,6 +81,7 @@ class Client(threading.Thread):
 
         if message['title'] == 'players_array':
             players_array = [json.loads(player) for player in message['content']]
+            print(players_array)
             for new_player in players_array:
                 player_is_new = True
                 for player in self.player.env.players:

@@ -9,7 +9,7 @@ import logging
 from player import Player
 from message import Message
 
-SERVER_FREQ = 60 # Hz
+SERVER_FREQ = 240 # Hz
 
 class Client(threading.Thread):
     def __init__(self, id, socket, addr, server):
@@ -41,9 +41,8 @@ class Client(threading.Thread):
         try:
             data, addr = self.socket.recvfrom(1024)
             message = json.loads(data)
-
             if message['title'] == 'update_position':
-                self.update_position(message)
+                self.update_player(message)
             elif message['title'] == 'connect_infos':
                 self.set_player_infos(message)
 
@@ -66,3 +65,6 @@ class Client(threading.Thread):
         content = message['content']
         self.name = content['name']
         self.player = Player(self.id, content['x'], content['y'], content['dir'], content['size'], content['health'], self.name)
+
+    def end_connection(self):
+        self.socket.close()

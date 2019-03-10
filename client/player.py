@@ -346,7 +346,7 @@ class Player:
             closer_player = self.detect_closer_player()
             if closer_player:
                 self.dir = math.atan2(closer_player.y - self.y, closer_player.x - self.x)
-        else:
+        elif self.own:
             self.dir = math.atan2(deltaY, deltaX)
         self.speed = self.theorical_speed * 60 / self.env.framerate
         self.total_damage = sum(self.hit_player.values())
