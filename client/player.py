@@ -322,12 +322,12 @@ class Player:
         if self.own:
             Timer(.5, lambda: self.interface.menu.toggle('on')).start()
 
-    def message(self, type, text, duration=.8, victim=None, center=False):
+    def message(self, type, text, duration=.8, victim=None):
         if not self.own: return
         if type == 'hit':
             DamageMessage(victim, text, self.interface)
         else:
-            TempMessage(type, text, self.interface, duration, center)
+            TempMessage(type, text, self.interface, duration)
 
     def stats(self):
         precision = self.weapon.bullets_hit / self.weapon.bullets_drawn * 100 if self.weapon.bullets_drawn != 0 else 0
