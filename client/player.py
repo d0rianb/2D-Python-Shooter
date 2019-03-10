@@ -357,9 +357,6 @@ class Player:
             self.assists = [player for player in self.hit_player.keys() if not self.env.find_by('id', player).alive]
         if self.own:
             self.detect_keypress()
-        if self.client:
-            self.client.send_position()
-            # self.client.receive()
 
     def render(self, dash=False):
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, math.ceil(self.health))

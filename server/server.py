@@ -39,9 +39,13 @@ class Server(threading.Thread):
         return time.time()
 
     def run(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind((self.ip, self.port))
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.setblocking(0)
+        self.socket.bind((self.ip, self.port))
+        self.socket.listen(5)
+
         logging.info('Server is running on port {}'.format(self.port))
         self.start_time = self.time()
         self.update()
@@ -50,21 +54,17 @@ class Server(threading.Thread):
         if not self.is_running: return
         start_time = self.time()
         self.tick += 1
-        try:
-            data, addr = self.socket.recvfrom(1024)
-            message = json.loads(data)
-            if message['title'] == 'connect_infos':
-                self.new_connection(message, addr)
 
-            elif message['title'] == 'update_position':
-                self.update_position(message)
-        except BlockingIOError:
+        try:
+            client_sock, address = self.socket.accept()
+            self.new_connection(client_sock, address)
+        except Exception as e:
             pass
 
-        ## Send players position
+        players_array = [client.player.toJSON() for client in self.clients if client.player]
+        # logging.info(players_array)
         for client in self.clients:
-            players_array = [client.player.toJSON() for client in self.clients]
-            self.send_message('players_array', players_array, client.ip, client.port)
+            client.send('players_array', players_array)
 
 
         # if self.tick % 60 == 0:
@@ -74,7 +74,7 @@ class Server(threading.Thread):
 
         threading.Timer(delta_time, self.update).start()
 
-    def new_connection(self, message, addr):
+    def new_connection(self, client_socket, addr):
         reconnect = False
         for client in self.clients:
             if client.ip == addr[0]:
@@ -85,22 +85,8 @@ class Server(threading.Thread):
             logging.info('{} is reconnecting'.format(addr[0]))
 
         client_id = len(self.clients) + 1
-        Client(client_id, message, addr, self)
-        self.send_message('response_id', {'id': client_id}, addr[0], addr[1])
-
-    def update_position(self, message):
-        for client in self.clients:
-            if client.id == message['from']:
-                client.update_player(message)
-
-    def send_message(self, title, content, ip, port):
-        message = {
-            'title': title,
-            'content': content,
-            'infos': { 'timestamp': self.time() }
-        }
-        encoded = json.dumps(message).encode('utf-8')
-        self.socket.sendto(encoded, (ip, port))
+        client = Client(client_id, client_socket, addr, self)
+        client.start()
 
     def end(self, *event):
         self.is_running = False
