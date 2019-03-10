@@ -9,8 +9,6 @@ import datetime
 import keyboard
 import logging
 import time
-import multiprocessing
-import concurrent.futures
 
 from client import Client
 
@@ -36,9 +34,6 @@ class Server(threading.Thread):
         stream_handler.setLevel(logging.DEBUG)
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
-
-        keyboard.on_press_key('s', lambda *e: self.send_players_pos())
-
 
     def time(self):
         return time.time()
@@ -67,7 +62,10 @@ class Server(threading.Thread):
             pass
 
         ## Send players position
-        self.send_players_pos()
+        for client in self.clients:
+            players_array = [client.player.toJSON() for client in self.clients]
+            self.send_message('players_array', players_array, client.ip, client.port)
+
 
         # if self.tick % 60 == 0:
         #     logging.info((self.time() - self.start_time) * 60 / self.tick)
@@ -95,11 +93,6 @@ class Server(threading.Thread):
             if client.id == message['from']:
                 client.update_player(message)
 
-    def send_players_pos(self):
-        for client in self.clients:
-            players_array = [client.player.toJSON() for client in self.clients]
-            self.send_message('players_array', players_array, client.ip, client.port)
-
     def send_message(self, title, content, ip, port):
         message = {
             'title': title,
@@ -108,7 +101,6 @@ class Server(threading.Thread):
         }
         encoded = json.dumps(message).encode('utf-8')
         self.socket.sendto(encoded, (ip, port))
-
 
     def end(self, *event):
         self.is_running = False

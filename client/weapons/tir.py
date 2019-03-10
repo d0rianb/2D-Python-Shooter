@@ -67,4 +67,4 @@ class Tir:
         }
 
     def render(self):
-        self.env.rendering_stack.append(RenderedObject('line', self.x, self.y, x2=self.head['x'], y2=self.head['y']))
+        self.env.rendering_stack.append(RenderedObject('line', self.x, self.y, x2=self.head['x'], y2=self.head['y'], zIndex=2))

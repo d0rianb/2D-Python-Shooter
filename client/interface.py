@@ -164,13 +164,17 @@ class TempMessage:
         self.duration = duration  # s
         self.tick = 0
 
+
         self.x = self.interface.player.x
         self.y = self.interface.player.y + 20
-
         self.delta_y = 1
         self.speed = 1
 
-        if self.type == 'info':
+        if self.type == 'global_info':
+            self.x = self.interface.width / 2
+            self.y = self.interface.height / 4
+            self.initial_color = Color((96, 125, 139))
+        elif self.type == 'info':
             self.initial_color = Color((96, 125, 139))
         elif self.type == 'warning':
             self.initial_color = Color((251, 140, 0))

@@ -65,7 +65,7 @@ class Client:
 
     def receive(self):
         try:
-            data = self.connection.recv(256)
+            data = self.connection.recv(4096)
             message = json.loads(data.decode('utf-8'))
             self.ping = self.time() - message['infos']['timestamp']
 
@@ -87,6 +87,7 @@ class Client:
             if message['title'] == 'response_id':
                 self.player.id = message['content']['id']
                 self.connected = True
+                self.player.message('global_info', 'Connected to {}:{}'.format(self.ip, self.port), duration=1.5)
                 print('Connected to {}:{}'.format(self.ip, self.port))
         except BlockingIOError:
             pass
