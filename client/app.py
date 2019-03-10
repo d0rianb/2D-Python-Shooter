@@ -86,6 +86,7 @@ class OnlineGame(App):
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.client = Client(self.connection, self.player, ip, port)
         self.client.send_connection_info()
+        self.client.start()
 
 
 class SplashScreen:

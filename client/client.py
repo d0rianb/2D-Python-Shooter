@@ -1,16 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import socket
-import json
-import datetime
-import time
 import math
+import time
+import datetime
+import socket
+import threading
+import json
 
 from player import Player
 
-class Client:
+SERVER_FREQ = 60 # Hz
+
+class Client(threading.Thread):
     def __init__(self, connection,  player, ip, port):
+        threading.Thread.__init__(self)
         self.id = 0
         self.connection = connection
         self.player = player
@@ -63,7 +67,11 @@ class Client:
         }
         self.send_message('connect_infos', content)
 
+    def run(self):
+        self.receive()
+
     def receive(self):
+        start_time = self.time()
         try:
             data = self.connection.recv(4096)
             message = json.loads(data.decode('utf-8'))
@@ -91,6 +99,10 @@ class Client:
                 print('Connected to {}:{}'.format(self.ip, self.port))
         except BlockingIOError:
             pass
+
+        delta_time = self.time() - start_time
+        delta_time = 1/(2*SERVER_FREQ) - delta_time
+        threading.Timer(delta_time, self.receive).start()
 
     def disconnect(self):
         self.connection.close()
