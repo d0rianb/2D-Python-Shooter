@@ -15,6 +15,15 @@ import json
 from test import profile
 from app import LocalGame, OnlineGame, SplashScreen, Settings
 
+__author__     = "Dorian Beauchesne"
+__copyright__  = "Copyright 2019, 2PQSTD "
+__credits__    = ["Dorian Beauchesne", "Louis de Bussac"]
+__license__    = "MIT"
+__version__    = "1.0.1"
+__maintainer__ = "Dorian Beauchesne"
+__email__      = "dorian.beauchesne@icloud.com"
+__status__     = "Development"
+
 MODE = 'debug' # 'normal / profile / debug'
 
 def start_local_game(name, difficulty, role):

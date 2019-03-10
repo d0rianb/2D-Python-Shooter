@@ -22,7 +22,7 @@ config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressour
 ROLES = [('Assault', 'A'), ('Shotgun', 'SG'), ('Sniper', 'S'), ('SMG', 'SMG')]
 
 FULLSCREEN = False
-MAP = 'temp_map.compile.map'
+MAP = 'full_map_3.compile.map'
 
 class App:
     def __init__(self, player_name, role):
