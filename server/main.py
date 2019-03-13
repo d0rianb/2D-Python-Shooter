@@ -3,8 +3,8 @@
 
 from server import Server
 
-SERVER_IP = '192.168.1.142'
-SERVER_PORT = 12800
+SERVER_IP = 'localhost' #'192.168.1.142'
+SERVER_PORT = 12801
 
 server = Server(SERVER_IP, SERVER_PORT)
 server.start()

@@ -3,7 +3,7 @@
 
 import os
 
-from PIL import Image, ImageTk
+# from PIL import Image, ImageTk
 from object.rect import Rect
 from object.circle import Circle
 from render import RenderedObject

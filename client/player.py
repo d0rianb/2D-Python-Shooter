@@ -8,7 +8,7 @@ import keyboard
 import time
 import threading
 
-from PIL import Image, ImageTk
+# from PIL import Image, ImageTk
 from threading import Timer
 from render import RenderedObject
 from interface import TempMessage, DamageMessage
@@ -164,7 +164,9 @@ class Player:
         collide_x, collide_y = False, False
         delta = {'x': 0, 'y': 0}
         # circle = [obj for obj in self.env.map.objects if isinstance(obj, Oval) and Oval.intersect(obj, self.collide_box)]
-        for obj in self.rects_in_collide_box:
+        rect_array = self.rects_in_collide_box if not simulation else self.env.map.objects
+
+        for obj in rect_array:
             rect = obj
             delta_x, delta_y = 0, 0
             if y + self.size > rect.y and y - self.size < rect.y2 and x + self.size > rect.x and x - self.size < rect.x2:
@@ -225,7 +227,8 @@ class Player:
         elif self.y + self.size >= self.env.height:
             self.y = self.env.height - self.size
 
-        if self.own: self.update_viewBox()
+        if self.own:
+            self.update_viewBox()
         self.update_collide_box()
 
     def simul_move(self, x, y):
@@ -381,6 +384,113 @@ class Player:
                 size = self.size/len(self.dash_animation) * self.dash_animation.index(coord) / 1.25
                 self.env.rendering_stack.append(RenderedObject('oval', coord['x'] - size, coord['y'] - size, x2=coord['x'] + size, y2=coord['y'] + size, color=self.color, zIndex=3, role='dash_animation'))
 
+class OwnPlayer(Player):
+    def __init__(self, id, x, y, env, name="Invité", role='A', own=False, key=None):
+        self.id = id
+        self.x = x
+        self.y = y
+        self.env = env
+        self.name = name
+        self.own = own  # if the  instance is the player
+        if role == 'A': self.weapon = AR(self)
+        elif role == 'SG': self.weapon = Shotgun(self)
+        elif role == 'S': self.weapon = Sniper(self)
+        elif role == 'SMG': self.weapon = SMG(self)
+        self.client = None
+        self.interface = None
+        self.size = 10  # Radius
+        self.dir = 0  # angle
+        self.mouse = {'x': 0, 'y': 0}
+        self.color = '#0c6af7'
+        self.theorical_speed = 4.0
+        self.speed = self.theorical_speed * 60 / self.env.framerate  # computed value
+        self.dash_speed = 4.0
+        self.dash_length = 38  # cycle
+        self.dash_preview = False
+        self.simul_dash = {'x': 0, 'y': 0}
+        self.number_dash = 3
+        self.dash_left = self.number_dash
+        self.dash_animation = []
+        self.dash_animation_duration = 3  # tick
+        self.dash_animation_end_tick = 0
+        self.dash_cooldown = 3  # secondes
+        self.health = 100
+        self.hit_player = {}
+        self.hit_by_player = {}
+        self.total_damage = 0
+        self.kills = []
+        self.assists = []
+        self.alive = True
+        self.aimbot = False
+        self.collide_box = Box(self.x - 100, self.y - 100, self.x + 100, self.y + 100)
+        self.rects_in_collide_box = []
+        self.key = key or default_keys
+
+        self.texture_dic = {}
+        self.texture_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressources/texture/')
+        texture_file = 'player.png' if self.own else 'enemy.png'
+        self.texture = Image.open(os.path.join(self.texture_path, texture_file), mode='r')
+        texture_width, texture_height = self.texture.size
+        scale_factor = min(texture_width/(2*self.size), texture_height/(2*self.size))
+        self.texture_image = self.texture.crop((0, 0, self.size*2*scale_factor, self.size*2*scale_factor)).resize((self.size*2, self.size*2))
+        # self.tk_texture = ImageTk.PhotoImage(image=texture_image)
+        self.bind_keys()
+
+    def bind_keys(self):
+        self.env.fen.bind('<Button-1>', self.shoot)
+        self.env.fen.bind('<ButtonRelease-1>', self.weapon.stop_fire)
+        keyboard.on_press_key(self.key['reload'], self.reload)
+        # keyboard.on_press_key(self.key['panic'], self.env.panic)
+        keyboard.on_press_key(self.key['dash_preview'], self.toggle_dash_preview)
+        keyboard.on_press_key(self.key['dash'], self.dash)
+        keyboard.on_press_key('&', lambda *e: self.env.change_scale(value=1))
+        keyboard.on_press_key('é', lambda *e: self.env.change_scale(value=self.env.viewArea['width']/self.env.canvas.width))
+        keyboard.on_press_key('à', lambda *e: self.env.toggle_optimization())
+        keyboard.on_press_key('"', lambda *e: self.toggle_aimbot())
+
+    def detect_keypress(self):
+        x, y = 0, 0
+        if keyboard.is_pressed(self.key['up']):
+            y = -1
+        if keyboard.is_pressed(self.key['down']):
+            y = 1
+        if keyboard.is_pressed(self.key['right']):
+            x = 1
+        if keyboard.is_pressed(self.key['left']):
+            x = -1
+        if keyboard.is_pressed(self.key['help']) and self.interface:
+            self.interface.display_help()
+        self.move(x, y)
+
+    def toggle_dash_preview(self, *event):
+        self.dash_preview = not self.dash_preview
+
+    def update_dash_preview(self):
+        self.simul_dash['x'], self.simul_dash['y'] = self.x, self.y
+        for i in range(self.dash_length):
+            self.simul_move(math.cos(self.dir), math.sin(self.dir))
+
+    def update_viewBox(self):
+        if not self.own: return
+        viewBox = self.env.viewArea
+        if self.x >= viewBox['width'] / 2 and self.x <= self.env.width - viewBox['width'] / 2:
+            viewBox['x'] = self.x - viewBox['width'] / 2
+        else:
+            viewBox['x'] = 0 if self.x <= viewBox['width'] / 2 else self.env.width - viewBox['width']
+        if self.y >= viewBox['height'] / 2 and self.y <= self.env.height - viewBox['height'] / 2:
+            viewBox['y'] = self.y - viewBox['height'] / 2
+        else:
+            viewBox['y'] = 0 if self.y <= viewBox['height'] / 2 else self.env.height - viewBox['height']
+
+    def message(self, type, text, duration=.8, victim=None):
+        if not self.own: return
+        if type == 'hit':
+            DamageMessage(victim, text, self.interface)
+        else:
+            TempMessage(type, text, self.interface, duration)
+
+class OnlinePlayer(Player):
+    pass
 
 class Target(Player):
     def __init__(self, id, x, y, env, level=5):
