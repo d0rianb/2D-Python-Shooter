@@ -1,4 +1,5 @@
-/* grid of 32x18 */
+define grid 32 18
+
 /* x y width height */
 
 object TopLeft

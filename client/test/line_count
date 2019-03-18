@@ -1,0 +1,4 @@
+#!/bin/bash
+cd ../..
+git ls-files | grep '\.py$' | xargs wc -l
+cloc $(git ls-files)

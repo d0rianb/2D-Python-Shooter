@@ -5,18 +5,26 @@ import tkinter as tk
 import sys
 import os
 import platform
+import threading
+import multiprocessing
+import concurrent
 import re
 import time
+import pprint
 
+from object.rect import Rect, Box
 from render import RenderedObject
 
 class Env:
-    def __init__(self, fen, width, height, canvas, max_framerate=144):
+    def __init__(self, fen, map, canvas, max_framerate=144):
         self.fen = fen
         self.canvas = canvas
-        self.width = width
-        self.height = height
-        self.ratio = width / height
+        self.map = map
+        self.map.env = self
+        self.width = self.map.width
+        self.height = self.map.height
+        self.scale = 1
+        self.ratio = self.width / self.height
         self.max_framerate = max_framerate
         self.framerate = self.max_framerate
         self.last_frame_timestamp = 0
@@ -24,32 +32,51 @@ class Env:
         self.players_alive = []
         self.shoots = []
         self.tick = 0
-        self.map = None
         self.interface = None
         self.debug = False
         self.rendering_stack = []
         self.platform = platform.system()
         self.GAME_IS_RUNNING = True
         self.GAME_IS_FOCUS = True
+        self.optimize = True
         self.command_entry_focus = False
+        self.canvas.env = self
         self.viewArea = {
             'x': 0,
             'y': 0,
-            'width': self.width,
-            'height': self.height
+            'width': self.fen.winfo_screenwidth(),
+            'height': self.fen.winfo_screenheight()
         }
+        for obj in self.map.objects:
+            if isinstance(obj, Rect):
+                obj.computed_values()
         self.fen.protocol("WM_DELETE_WINDOW", self.exit)
+        self.fen.bind("<MouseWheel>", self.change_scale)
 
-    def manageShoots(self):
+    def change_scale(self, *event, value=1):
+        if event:
+            event = event[0]
+            if (self.scale >= 0.1 and event.delta > 0) or (self.scale <= 5 and event.delta < 0):
+                self.scale -= event.delta/100
+        else:
+            self.scale = value
+
+    def toggle_optimization(self, value=None):
+        if value:
+            self.optimize = value
+        else:
+            self.optimize = not self.optimize
+
+    def manage_shoots(self):
         for shoot in self.shoots:
             if shoot.x < 0 or shoot.x > self.width or shoot.y < 0 or shoot.y > self.height:
                 self.shoots.remove(shoot)
             else:
                 shoot.update()
 
-    def find_by_name(self, name):
+    def find_by(self, attr, value):
         for player in self.players:
-            if player.name == name:
+            if player.__dict__[attr] == value:
                 return player
 
     def isMac(self):
@@ -73,15 +100,31 @@ class Env:
                 os.system("open -a IDLE ./ressources/TP-Info.py")
             self.exit()
 
+    def background(self):
+        self.rendering_stack.append(RenderedObject('rect', 0, 0, width=self.width, height=self.height, color='#F1E7DC', zIndex=1, persistent=True))
+
+    def in_viewBox(self, obj):
+        viewBox = Box(self.viewArea['x'], self.viewArea['y'], self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'] + self.viewArea['height'])
+        if obj.persistent: return True
+        if obj.type == 'rect':
+            return Rect.intersect(viewBox, obj)
+        elif obj.type == 'circle':
+            pass
+        elif obj.type == 'line':
+            return obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x2 <= viewBox.x2 and obj.y2 <= viewBox.y2
+        else:
+            return True
+
+    @profile
     def update(self):
         if not self.GAME_IS_RUNNING: return
         self.tick += 1
         if len(self.players) > 0:
             for player in self.players_alive:
                 player.update()
-            self.players_alive = [player for player in self.players if player.alive]
+        self.players_alive = [player for player in self.players if player.alive]
 
-        self.manageShoots()
+        self.manage_shoots()
         self.interface.update()
         self.render()
 
@@ -95,13 +138,11 @@ class Env:
             self.framerate = framerate if framerate != 0 and framerate <= self.max_framerate else self.max_framerate
             self.last_frame_timestamp = end_time
 
-
         self.fen.after(1000 // self.max_framerate, self.update)
-
-
 
     def render(self):
         ## Pre-Render
+        self.background()
         self.map.render()
         self.interface.render()
         for player in self.players:
@@ -110,7 +151,13 @@ class Env:
         for shoot in self.shoots:
             shoot.render()
 
+        self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'], width=self.viewArea['width'], height=0, zIndex=2))
+        self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'], width=0, height=self.viewArea['height'], zIndex=2))
+        self.rendering_stack.append(RenderedObject('line', self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'], width=0, height=self.viewArea['height'], zIndex=2))
+        self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'] + self.viewArea['height'], width=self.viewArea['width'], height=0, zIndex=2))
+
         ## Canvas rendering
-        self.rendering_stack = sorted(self.rendering_stack, key=lambda obj: obj.zIndex)
+        rendering_stack = [obj for obj in self.rendering_stack if self.in_viewBox(obj)] if self.optimize else self.rendering_stack
+        self.rendering_stack = sorted(rendering_stack, key=lambda obj: obj.zIndex)
         self.canvas.render(self.rendering_stack)
         self.rendering_stack = []

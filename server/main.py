@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import threading
-import select
-import json
 from server import Server
-from client import Client
 
-SERVER_IP = '192.168.1.142'
-SERVER_PORT = 12800
+SERVER_IP = ''
+SERVER_PORT = 12801
 
 server = Server(SERVER_IP, SERVER_PORT)
 server.start()
