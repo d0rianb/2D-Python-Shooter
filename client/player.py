@@ -77,13 +77,13 @@ class Player:
         self.rects_in_collide_box = []
         self.key = key or default_keys
 
-        self.texture_dic = {}
-        self.texture_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressources/texture/')
-        texture_file = 'player.png' if self.own else 'enemy.png'
-        self.texture = Image.open(os.path.join(self.texture_path, texture_file), mode='r')
-        texture_width, texture_height = self.texture.size
-        scale_factor = min(texture_width/(2*self.size), texture_height/(2*self.size))
-        self.texture_image = self.texture.crop((0, 0, self.size*2*scale_factor, self.size*2*scale_factor)).resize((self.size*2, self.size*2))
+        # self.texture_dic = {}
+        # self.texture_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressources/texture/')
+        # texture_file = 'player.png' if self.own else 'enemy.png'
+        # self.texture = Image.open(os.path.join(self.texture_path, texture_file), mode='r')
+        # texture_width, texture_height = self.texture.size
+        # scale_factor = min(texture_width/(2*self.size), texture_height/(2*self.size))
+        # self.texture_image = self.texture.crop((0, 0, self.size*2*scale_factor, self.size*2*scale_factor)).resize((self.size*2, self.size*2))
         # self.tk_texture = ImageTk.PhotoImage(image=texture_image)
 
         if self.own:

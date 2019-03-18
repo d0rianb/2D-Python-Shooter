@@ -23,9 +23,10 @@ class Client(threading.Thread):
         self.server = server
         self.player = None
         self.ping = 0
+        self.is_connected = True
         self.server.clients.append(self)
         self.send('response_id', {'id': self.id})
-        logging.info('New Connection : {}:{} as {}'.format(self.ip, self.port, self.name))
+        logging.info('New Connection from : {}:{}'.format(self.ip, self.port))
 
     def run(self):
         self.update()
@@ -45,13 +46,19 @@ class Client(threading.Thread):
                 self.update_player(message)
             elif message['title'] == 'connect_infos':
                 self.set_player_infos(message)
+            elif message['title'] == 'close_connection':
+                self.end_connection()
 
         except Exception as e:
             pass
 
     def send(self, title, content):
         msg = Message(title, content)
-        self.socket.send(msg.encode())
+        if self.is_connected:
+            try:
+                self.socket.send(msg.encode())
+            except BrokenPipeError:
+                self.end_connection()
 
     def update_player(self, message):
         content = message['content']
@@ -66,5 +73,8 @@ class Client(threading.Thread):
         self.name = content['name']
         self.player = Player(self.id, content['x'], content['y'], content['dir'], content['size'], content['health'], self.name)
 
-    def end_connection(self):
+    def end_connection(self, *message):
+        self.is_connected = False
         self.socket.close()
+        self.server.clients.remove(self)
+        logging.info(f'{self.name} is disconnected')

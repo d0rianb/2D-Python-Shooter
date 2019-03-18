@@ -24,6 +24,7 @@ class Client(threading.Thread):
         self.connected = False
         self.ping = 0
         self.connection.connect((self.ip, self.port))
+        print(a)
 
     def encode(self, message):
         return json.dumps(message).encode('utf-8')

@@ -38,7 +38,7 @@ def start_online_game(name, ip, port, role):
 
 def toggle_settings(splash_screen):
     splash_screen.fen.attributes('-topmost', False)
-    settings = Settings()
+    settings = Settings(splash_screen)
 
 def parse_args(argv):
     global MODE
