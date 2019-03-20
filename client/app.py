@@ -298,5 +298,5 @@ class Settings:
     def validate(self):
         with open(config_path, 'w') as config:
             config.write(json.dumps(self.new_config))
-            self.parent.get_config()
+        self.parent.get_config()
         self.fen.destroy()

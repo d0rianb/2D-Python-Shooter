@@ -128,8 +128,9 @@ class ChatInfo:
                     self.env.players = [player for player in self.env.players if player.own]
                 else:
                     player = self.select_player(args[0], args[1])
-                    player.dead()
-                    self.env.players.remove(player)
+                    if player:
+                        player.dead()
+                        self.env.players.remove(player)
             else:
                 self.env.players = []
 
