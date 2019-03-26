@@ -4,7 +4,7 @@
 import math
 import random
 
-from weapons.tir import Tir
+from weapons.tir import Tir, Ray
 from threading import Timer
 
 class Weapon:
@@ -47,11 +47,6 @@ class Weapon:
         self.pre_shoot()
         x = self.player.x + math.cos(self.player.dir) * 20
         y = self.player.y + math.sin(self.player.dir) * 20
-        # tir = Tir(x, y, self.player.dir, self)
-        # self.ammo -= 1
-        # self.bullets_drawn += 1
-        # self.can_shoot = False
-        # Timer(self.shoot_cooldown, self.allow_shoot).start()
 
         for i in range(self.nb_shoot):
             dispersion = ((-1)**i)*self.dispersion*i/10
@@ -83,7 +78,7 @@ class Weapon:
 class Sniper(Weapon):
     def __init__(self, player):
         super(Sniper, self).__init__(player)
-        self.name = 'sniper'
+        self.name = 'Sniper'
         self.max_ammo = 5
         self.damage = 55
         self.shoot_speed = 28
@@ -96,24 +91,24 @@ class Sniper(Weapon):
 class Shotgun(Weapon):
     def __init__(self, player):
         super(Shotgun, self).__init__(player)
-        self.name = 'fusil à pompe'
+        self.name = 'Fusil à pompe'
         self.max_ammo = 5
         self.damage = 15
         self.shoot_speed = 20
         self.munition_size = 6
         self.shoot_cooldown = .48
         self.reload_cooldown = 1.42
-        self.nb_shoot = 5
+        self.nb_shoot = 6
         self.range = 335
         self.damage_decrease = {'range': self.range / 2, 'factor': 0.67}
-        self.dispersion = math.pi/13
+        self.dispersion = math.pi/10
         self.ammo = self.max_ammo
 
 
 class AR(Weapon):
     def __init__(self, player):
         super(AR, self).__init__(player)
-        self.name = 'fusil d\'assaut'
+        self.name = 'Fusil d\'assaut'
         self.max_ammo = 20
         self.damage = 20
         self.damage_decrease = {'range': 400, 'factor': 0.88}
@@ -140,3 +135,29 @@ class SMG(Weapon):
 
     def pre_shoot(self):
         self.player.dir += random.random()*self.dispersion
+
+class Beam(Weapon):
+    def __init__(self, player):
+        super().__init__(player)
+        self.name = 'Rayon'
+        self.max_ammo = 100
+        self.damage = 1 # /frame
+        self.shoot_speed = 100
+        self.munition_size = 500
+        self.reload_cooldown = 1.8
+        self.ammo = self.max_ammo
+        self.is_shooting = False
+        self.ray = Ray(self.player.x + math.cos(self.player.dir) * 12, self.player.y + math.sin(self.player.dir) * 12, self.player.dir, self)
+
+    def proceed_shoot(self, *event):
+        if self.ammo > 0 and not self.is_reloading:
+            self.shoot()
+        else:
+            self.reload()
+
+    def shoot(self):
+        if not self.can_shoot: return
+        self.ray.toggle_state('active')
+
+    def stop_fire(self, *event):
+        self.ray.toggle_state('inactive')

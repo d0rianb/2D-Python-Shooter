@@ -70,7 +70,7 @@ class Interface:
             },
             'BottomRight': {
                 'Health': math.ceil(self.player.health),
-                'Ammo': '|' * self.player.weapon.ammo if not self.player.weapon.is_reloading else 'Rechargement',
+                'Ammo': '|' * int(self.player.weapon.ammo) if not self.player.weapon.is_reloading else 'Rechargement',
                 'Dash': self.player.dash_left
             }
         }

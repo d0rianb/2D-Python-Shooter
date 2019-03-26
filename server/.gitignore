@@ -1,5 +1,6 @@
 __pycache__/*
 .DS_Store
+client/build/*
 */.DS_Store
 *.pyc
 */*.pyc

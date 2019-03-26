@@ -8,7 +8,7 @@ import socket
 import threading
 import json
 
-from player import Player
+from player import OnlinePlayer
 
 SERVER_FREQ = 60 # Hz
 
@@ -92,7 +92,7 @@ class Client(threading.Thread):
                         player.dir = new_player['dir']
                         player.health = new_player['health']
                 if player_is_new and new_player['id'] != self.player.id:
-                    Player(new_player['id'], new_player['x'], new_player['y'], self.player.env, new_player['name'])
+                    OnlinePlayer(new_player['id'], new_player['x'], new_player['y'], self.player.env, new_player['name'])
 
 
         if message['title'] == 'response_id':

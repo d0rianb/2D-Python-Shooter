@@ -1,8 +1,13 @@
 __pycache__/*
 */__pycache__
-.DS_Store
-*/.DS_Store
 *.pyc
 */*.pyc
+
+.DS_Store
+*/.DS_Store
+
+./client/build
+./client/dist
+
 ./ressources/config/config.json
 ./map/files/*

@@ -10,7 +10,7 @@ import random
 import keyboard
 import json
 
-from player import Player, Target
+from player import OwnPlayer, OnlinePlayer, Target
 from env import Env
 from interface import Interface, ChatInfo
 from client import Client
@@ -19,7 +19,7 @@ from map.map import Map
 
 GAME_NAME = '2PQSTD'
 config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressources/config/config.json')
-ROLES = [('Assault', 'A'), ('Shotgun', 'SG'), ('Sniper', 'S'), ('SMG', 'SMG')]
+ROLES = [('Assault', 'A'), ('Shotgun', 'SG'), ('Sniper', 'S'), ('SMG', 'SMG'), ('Rayon', 'R')]
 
 FULLSCREEN = False
 MAP = 'full_map_3.compile.map'
@@ -34,11 +34,11 @@ class App:
 
     def init(self):
         self.get_config()
-        # self.width, self.height = 4096, 2304
         self.map = Map(MAP, 'map')
         self.canvas = Canvas(self.fen, self.map.width, self.map.height)
         self.env = Env(self.fen, self.map, self.canvas, max_framerate=self.config['max_framerate'])
-        self.player = Player(0, 50, 50, self.env, self.name, role=self.role, own=True, key=self.config['key_binding'])
+        self.player = OwnPlayer(0, 50, 50, self.env, self.name, self.role)
+        self.player.bind_keys(self.config['key_binding'])
         self.interface = Interface(self.player, self.env)
         self.chat = ChatInfo(self.env)
 
@@ -49,7 +49,7 @@ class App:
     def start(self):
         self.fen.state("zoomed")
         if FULLSCREEN:
-            self.fen.wm_attributes('-fullscreen','true')
+            self.fen.wm_attributes('-fullscreen', 'true')
         self.env.update()
         self.fen.mainloop()
 
@@ -129,7 +129,7 @@ class SplashScreen:
         role_label = tk.Label(self.fen, text='Role : ', font=regular_font)
         role_list = []
         selected_role = tk.StringVar()
-        selected_role.set('SG')
+        selected_role.set('A')
         for (role, value) in ROLES:
             check_box = tk.Radiobutton(self.fen, text=role, value=value, variable=selected_role,
                                         indicatoron=0, padx=22, pady=5, selectcolor='blue', relief=tk.SUNKEN)
@@ -152,8 +152,9 @@ class SplashScreen:
         name_entry.place(relx=0.8, rely=0.42, anchor=tk.E)
 
         role_label.place(relx=0.1, rely=0.52, anchor=tk.W)
+        role_width = 0.9/len(ROLES)
         for (index, role) in enumerate(role_list):
-            role.place(relx=0.15 + index*0.8/len(ROLES), rely=0.60, anchor=tk.W)
+            role.place(relx=0.05 + index*role_width, rely=0.60, anchor=tk.W)
 
         difficulty_label.place(relx=0.1, rely=0.74, anchor=tk.W)
         difficulty_scale.place(relx=0.8, rely=0.71, anchor=tk.E)
