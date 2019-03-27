@@ -96,12 +96,12 @@ class Shotgun(Weapon):
         self.damage = 15
         self.shoot_speed = 20
         self.munition_size = 6
-        self.shoot_cooldown = .48
+        self.shoot_cooldown = .45
         self.reload_cooldown = 1.42
-        self.nb_shoot = 6
+        self.nb_shoot = 5
         self.range = 335
         self.damage_decrease = {'range': self.range / 2, 'factor': 0.67}
-        self.dispersion = math.pi/10
+        self.dispersion = math.pi/15
         self.ammo = self.max_ammo
 
 

@@ -85,7 +85,7 @@ class OnlineGame(App):
     def connect(self, ip, port):
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client = Client(self.connection, self.player, ip, port)
-        # self.client.send_connection_info()
+        self.client.send_connection_info()
         self.client.start()
 
 

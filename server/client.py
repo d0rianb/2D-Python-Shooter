@@ -14,9 +14,8 @@ SERVER_FREQ = 240 # Hz
 class Client(threading.Thread):
     def __init__(self, id, socket, addr, server):
         threading.Thread.__init__(self)
-        # content = message['content']
         self.id = id
-        self.name = ''#content['name']
+        self.name = ''
         self.ip = addr[0]
         self.port = addr[1]
         self.socket = socket
@@ -39,9 +38,11 @@ class Client(threading.Thread):
         threading.Timer(delta_time, self.update).start()
 
     def receive(self):
+        self.server.nb_msg_recv += 1
         try:
             data, addr = self.socket.recvfrom(1024)
             message = json.loads(data)
+            logging.info(f'receive {message} from {self.name}')
             if message['title'] == 'update_position':
                 self.update_player(message)
             elif message['title'] == 'connect_infos':
@@ -50,15 +51,19 @@ class Client(threading.Thread):
                 self.end_connection()
 
         except Exception as e:
-            pass
+            self.server.nb_msg_lost += 1
+
+        # self.server.update_player_position()
 
     def send(self, title, content):
         msg = Message(title, content)
         if self.is_connected:
             try:
+                logging.info(f'sending {title} to {self.name}')
                 self.socket.send(msg.encode())
             except BrokenPipeError:
                 self.end_connection()
+            self.receive()
 
     def update_player(self, message):
         content = message['content']

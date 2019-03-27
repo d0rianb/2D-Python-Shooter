@@ -88,7 +88,7 @@ class Player:
                 real_damage = victim.hit_by(shooter, shoot.damage)
                 shooter.hit(victim, real_damage, victim.health <= 0)
                 self.env.shoots.remove(shoot)
-                return True
+                # return True
 
     def check_ray_collide(self):
         for ray in self.env.rays:
