@@ -25,6 +25,10 @@ class Server(threading.Thread):
         self.tick = 0
         self.is_running = True
 
+        self.nb_msg_send = 0
+        self.nb_msg_recv = 0
+        self.nb_msg_lost = 0
+
         ## Logging system
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
@@ -42,7 +46,7 @@ class Server(threading.Thread):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.setblocking(0)
+        # self.socket.setblocking(0)
         self.socket.bind((self.ip, self.port))
         self.socket.listen(5)
 
@@ -61,14 +65,13 @@ class Server(threading.Thread):
         except Exception as e:
             pass
 
-        players_array = [client.player.toJSON() for client in self.clients if client.player]
-        # logging.info(players_array)
-        if len(players_array) > 0:
-            for client in self.clients:
-                client.send('players_array', players_array)
+        for client in self.clients:
+            client.receive()
 
-
-        # if self.tick % 60 == 0:
+        if self.tick % 60 == 0 and self.nb_msg_send != 0:
+            logging.info(f'nb_msg_send: {self.nb_msg_send}')
+            logging.info(f'nb_msg_recv: {self.nb_msg_recv}')
+            logging.info(f'nb_msg_lost: {self.nb_msg_lost}')
         #     logging.info((self.time() - self.start_time) * 60 / self.tick)
         delta_time = self.time() - start_time
         delta_time = 1/SERVER_FREQ - delta_time
@@ -93,3 +96,11 @@ class Server(threading.Thread):
         self.is_running = False
         if self.socket:
             self.socket.close()
+
+    def update_player_position(self):
+        players_array = [client.player.toJSON() for client in self.clients if client.player]
+
+        if len(players_array) > 0:
+            for client in self.clients:
+                self.nb_msg_send += 1
+                client.send('players_array', players_array)

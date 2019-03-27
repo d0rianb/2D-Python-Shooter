@@ -10,7 +10,7 @@ import random
 import keyboard
 import json
 
-from player import Player, Target
+from player import OwnPlayer, OnlinePlayer, Target
 from env import Env
 from interface import Interface, ChatInfo
 from client import Client
@@ -19,7 +19,7 @@ from map.map import Map
 
 GAME_NAME = '2PQSTD'
 config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressources/config/config.json')
-ROLES = [('Assault', 'A'), ('Shotgun', 'SG'), ('Sniper', 'S'), ('SMG', 'SMG')]
+ROLES = [('Assault', 'A'), ('Shotgun', 'SG'), ('Sniper', 'S'), ('SMG', 'SMG'), ('Rayon', 'R')]
 
 FULLSCREEN = False
 MAP = 'full_map_3.compile.map'
@@ -34,11 +34,11 @@ class App:
 
     def init(self):
         self.get_config()
-        # self.width, self.height = 4096, 2304
         self.map = Map(MAP, 'map')
         self.canvas = Canvas(self.fen, self.map.width, self.map.height)
         self.env = Env(self.fen, self.map, self.canvas, max_framerate=self.config['max_framerate'])
-        self.player = Player(0, 50, 50, self.env, self.name, role=self.role, own=True, key=self.config['key_binding'])
+        self.player = OwnPlayer(0, 50, 50, self.env, self.name, self.role)
+        self.player.bind_keys(self.config['key_binding'])
         self.interface = Interface(self.player, self.env)
         self.chat = ChatInfo(self.env)
 
@@ -49,7 +49,7 @@ class App:
     def start(self):
         self.fen.state("zoomed")
         if FULLSCREEN:
-            self.fen.wm_attributes('-fullscreen','true')
+            self.fen.wm_attributes('-fullscreen', 'true')
         self.env.update()
         self.fen.mainloop()
 
@@ -85,7 +85,7 @@ class OnlineGame(App):
     def connect(self, ip, port):
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client = Client(self.connection, self.player, ip, port)
-        # self.client.send_connection_info()
+        self.client.send_connection_info()
         self.client.start()
 
 
@@ -129,10 +129,10 @@ class SplashScreen:
         role_label = tk.Label(self.fen, text='Role : ', font=regular_font)
         role_list = []
         selected_role = tk.StringVar()
-        selected_role.set('SG')
+        selected_role.set(self.config['default_role'])
         for (role, value) in ROLES:
             check_box = tk.Radiobutton(self.fen, text=role, value=value, variable=selected_role,
-                                        indicatoron=0, padx=22, pady=5, selectcolor='blue', relief=tk.SUNKEN)
+                                        indicatoron=0, width=10, pady=4, selectcolor='blue', relief=tk.SUNKEN)
             role_list.append(check_box)
 
         difficulty_label = tk.Label(self.fen, text='Difficultée : ', font=regular_font)
@@ -152,8 +152,9 @@ class SplashScreen:
         name_entry.place(relx=0.8, rely=0.42, anchor=tk.E)
 
         role_label.place(relx=0.1, rely=0.52, anchor=tk.W)
+        role_width = 0.9/len(ROLES)
         for (index, role) in enumerate(role_list):
-            role.place(relx=0.15 + index*0.8/len(ROLES), rely=0.60, anchor=tk.W)
+            role.place(relx=0.05 + index*role_width, rely=0.60, anchor=tk.W)
 
         difficulty_label.place(relx=0.1, rely=0.74, anchor=tk.W)
         difficulty_scale.place(relx=0.8, rely=0.71, anchor=tk.E)
@@ -192,7 +193,7 @@ class Settings:
     def create_window(self):
         self.fen = tk.Toplevel()
         width, height = self.fen.winfo_screenwidth(), self.fen.winfo_screenheight()
-        L, H = width / 2.8, height / 2
+        L, H = width / 2.5, height / 2
         X, Y = (width - L) / 2, (height - H) / 2
         self.fen.geometry('%dx%d%+d%+d' % (L,H,X,Y))
 
@@ -203,6 +204,7 @@ class Settings:
 
         max_framerate = tk.IntVar(self.fen, value=self.config['max_framerate'])
         default_difficulty = tk.IntVar(self.fen, value=self.config['default_difficulty'])
+        default_role = tk.StringVar(self.fen, value=self.config['default_role'])
         default_ip = tk.StringVar(self.fen, value=self.config['server_ip'])
         default_port = tk.IntVar(self.fen, value=self.config['server_port'])
         default_name = tk.StringVar(self.fen, value=self.config['default_name'])
@@ -210,6 +212,7 @@ class Settings:
         title = tk.Label(self.fen, text='Paramètres', font=title_font)
         max_framerate_label = tk.Label(self.fen, text='Framerate Maximum (fps)')
         default_difficulty_label = tk.Label(self.fen, text='Difficulté par défaut (1-10)')
+        default_role_label = tk.Label(self.fen, text='Role par défaut')
         default_name_label = tk.Label(self.fen, text='Nom')
         default_ip_label = tk.Label(self.fen, text='Adresse IP par défaut')
         default_port_label = tk.Label(self.fen, text='Port par défaut')
@@ -217,11 +220,14 @@ class Settings:
         def validate():
             self.new_config['max_framerate'] = max_framerate.get()
             self.new_config['default_difficulty'] = default_difficulty.get()
+            self.new_config['default_role'] = default_role.get()
             self.new_config['server_ip'] = default_ip.get()
             self.new_config['server_port'] = default_port.get()
             self.new_config['default_name'] = default_name.get()
             with open(config_path, 'w') as config:
                 config.write(json.dumps(self.new_config))
+            self.parent.get_config()
+            self.parent.create_window()
             self.fen.destroy()
 
         max_framerate_entry = tk.Entry(self.fen, textvariable=max_framerate)
@@ -229,31 +235,42 @@ class Settings:
         default_name_entry = tk.Entry(self.fen, textvariable=default_name)
         default_ip_entry = tk.Entry(self.fen, textvariable=default_ip)
         default_port_entry = tk.Entry(self.fen, textvariable=default_port)
-        keybinding = tk.Button(self.fen, text='Key Bind', command=self.setup_keybind)
-        valider = tk.Button(self.fen, text='Valider', command=validate)
+        keybinding = tk.Button(self.fen, text='Key Bind', command=self.setup_keybind, padx=20, pady=5, relief=tk.FLAT)
+        valider = tk.Button(self.fen, text='Valider', command=validate, padx=20, pady=5, relief=tk.FLAT)
+
+        role_list = []
+        for (role, value) in ROLES:
+            check_box = tk.Radiobutton(self.fen, text=role, value=value, variable=default_role,
+                                        indicatoron=0, width=7, pady=2, selectcolor='blue', relief=tk.SUNKEN)
+            role_list.append(check_box)
 
         ## LAYOUT ##
         title.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
         default_name_label.place(relx=0.1, rely=0.3, anchor=tk.W)
         default_difficulty_label.place(relx=0.1, rely=0.4, anchor=tk.W)
-        default_ip_label.place(relx=0.1, rely=0.5, anchor=tk.W)
-        default_port_label.place(relx=0.1, rely=0.6, anchor=tk.W)
-        max_framerate_label.place(relx=0.1, rely=0.7, anchor=tk.W)
+        default_role_label.place(relx=0.1, rely=0.5, anchor=tk.W)
+        default_ip_label.place(relx=0.1, rely=0.6, anchor=tk.W)
+        default_port_label.place(relx=0.1, rely=0.7, anchor=tk.W)
+        max_framerate_label.place(relx=0.1, rely=0.8, anchor=tk.W)
 
         default_name_entry.place(relx=0.9, rely=0.3, anchor=tk.E)
         default_difficulty_entry.place(relx=0.9, rely=0.4, anchor=tk.E)
-        default_ip_entry.place(relx=0.9, rely=0.5, anchor=tk.E)
-        default_port_entry.place(relx=0.9, rely=0.6, anchor=tk.E)
-        max_framerate_entry.place(relx=0.9, rely=0.7, anchor=tk.E)
+        default_ip_entry.place(relx=0.9, rely=0.6, anchor=tk.E)
+        default_port_entry.place(relx=0.9, rely=0.7, anchor=tk.E)
+        max_framerate_entry.place(relx=0.9, rely=0.8, anchor=tk.E)
         keybinding.place(relx=0.6, rely=0.9, anchor=tk.CENTER)
         valider.place(relx=0.4, rely=0.9, anchor=tk.CENTER)
+
+        role_width = 0.6/len(ROLES)
+        for (index, role) in enumerate(role_list):
+            role.place(relx=0.35 + index*role_width, rely=0.5, anchor=tk.W)
 
         self.fen.mainloop()
 
     def setup_keybind(self):
         self.key_fen = tk.Toplevel(self.fen)
         width, height = self.fen.winfo_screenwidth(), self.fen.winfo_screenheight()
-        L, H = width / 2, height / 2
+        L, H = width / 2, height / 1.8
         X, Y = (width - L) / 2, (height - H) / 2
         self.key_fen.geometry('%dx%d%+d%+d' % (L,H,X,Y))
         self.update_key_bind()
@@ -267,15 +284,15 @@ class Settings:
     		'left': 'Gauche',
     		'right': 'Droite',
     		'dash': 'Dash',
-    		'dash_preview': 'Aide au dash',
+    		'melee': 'Coup de mêlée',
     		'reload': 'Recharger',
     		'panic': 'Panique',
     		'help': 'Aide'}
         for id, key in enumerate(self.config['key_binding'].keys()):
             self.create_key_bind(key, labels[key], id)
 
-        tk.Button(self.key_fen, text='Valider', command=self.validate).place(relx=0.4, rely=0.9, anchor=tk.CENTER)
-        tk.Button(self.key_fen, text='Défaut', command=self.default).place(relx=0.6, rely=0.9, anchor=tk.CENTER)
+        tk.Button(self.key_fen, text='Valider', command=self.validate, padx=15, pady=2, relief=tk.FLAT).place(relx=0.4, rely=0.9, anchor=tk.CENTER)
+        tk.Button(self.key_fen, text='Défaut', command=self.default, padx=15, pady=2, relief=tk.FLAT).place(relx=0.6, rely=0.9, anchor=tk.CENTER)
 
     def create_key_bind(self, key, label, id):
         offset_height = 0.65
@@ -284,6 +301,7 @@ class Settings:
         tk.Button(self.key_fen, text=key_text, command=lambda: self.detect_keypress(key), width=10).place(relx=0.9, rely=(id + offset_height)/10, anchor=tk.E)
 
     def detect_keypress(self, key):
+
         new_key = keyboard.read_key()
         if self.platform == 'Darwin' and new_key == 'shift':
             new_key = 56

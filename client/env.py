@@ -31,6 +31,7 @@ class Env:
         self.players = []
         self.players_alive = []
         self.shoots = []
+        self.rays = []
         self.tick = 0
         self.interface = None
         self.debug = False
@@ -88,10 +89,9 @@ class Env:
     def exit(self):
         self.GAME_IS_RUNNING = False
         for player in self.players:
-            if player.client:
+            if player.own and player.client:
                 player.client.disconnect()
         self.fen.destroy()
-        # sys.exit(0)
 
     def panic(self, *event):
         if self.GAME_IS_FOCUS:
@@ -105,15 +105,18 @@ class Env:
 
     def in_viewBox(self, obj):
         viewBox = Box(self.viewArea['x'], self.viewArea['y'], self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'] + self.viewArea['height'])
-        if obj.persistent: return True
-        if obj.type == 'rect':
+        if isinstance(obj, RenderedObject):
+            if obj.persistent: return True
+            if obj.type == 'rect':
+                return Rect.intersect(viewBox, obj)
+            elif obj.type == 'circle':
+                pass
+            elif obj.type == 'line':
+                return obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x2 <= viewBox.x2 and obj.y2 <= viewBox.y2
+            else:
+                return True
+        elif isinstance(obj, Rect):
             return Rect.intersect(viewBox, obj)
-        elif obj.type == 'circle':
-            pass
-        elif obj.type == 'line':
-            return obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x2 <= viewBox.x2 and obj.y2 <= viewBox.y2
-        else:
-            return True
 
     @profile
     def update(self):
@@ -124,6 +127,8 @@ class Env:
                 player.update()
         self.players_alive = [player for player in self.players if player.alive]
 
+        for ray in self.rays:
+            ray.update()
         self.manage_shoots()
         self.interface.update()
         self.render()
@@ -150,6 +155,8 @@ class Env:
                 player.render()
         for shoot in self.shoots:
             shoot.render()
+        for ray in self.rays:
+            ray.render()
 
         self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'], width=self.viewArea['width'], height=0, zIndex=2))
         self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'], width=0, height=self.viewArea['height'], zIndex=2))
@@ -161,3 +168,9 @@ class Env:
         self.rendering_stack = sorted(rendering_stack, key=lambda obj: obj.zIndex)
         self.canvas.render(self.rendering_stack)
         self.rendering_stack = []
+
+
+class Event():
+    def __init__(self, type, content):
+        self.type = type
+        self.content = content
