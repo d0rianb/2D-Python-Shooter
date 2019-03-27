@@ -16,6 +16,7 @@ from env import Event
 from object.rect import Rect, Box
 from object.circle import Circle
 from weapons.weapon import AR, Shotgun, Sniper, SMG, Beam
+from weapons.melee import MeleeAttack
 
 default_keys = {
     'up': 'z',
@@ -68,6 +69,7 @@ class Player:
         self.alive = True
         self.aimbot = False
         self.obj_in_viewbox = []
+        self.melee = MeleeAttack(self)
         if role == 'A': self.weapon = AR(self)
         elif role == 'SG': self.weapon = Shotgun(self)
         elif role == 'S': self.weapon = Sniper(self)
@@ -304,6 +306,7 @@ class OwnPlayer(Player):
         self.key = key_bind or default_keys
         self.env.fen.bind('<Button-1>', self.shoot)
         self.env.fen.bind('<ButtonRelease-1>', self.weapon.stop_fire)
+        keyboard.on_press_key(self.key['melee'], self.melee.attack)
         keyboard.on_press_key(self.key['reload'], self.reload)
         # keyboard.on_press_key(self.key['panic'], self.env.panic)
         keyboard.on_press_key(self.key['dash'], self.dash)
