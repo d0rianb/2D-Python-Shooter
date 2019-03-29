@@ -8,9 +8,13 @@ import sys
 import platform
 import math
 import random
-import keyboard
 import socket
 import json
+
+try:
+    import keyboard
+except ImportError as e:
+    os.system('python3 {}'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'install.py')))
 
 from test import profile
 from app import LocalGame, OnlineGame, SplashScreen, Settings

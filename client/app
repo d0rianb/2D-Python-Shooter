@@ -2,5 +2,9 @@
 
 BASEDIR=$(dirname "$0")
 
-printf "Entrez votre mot de passe administrateur pour lancer le jeu (mot de passe de session)\n"
-sudo -S python3 "$BASEDIR/main.py"
+function launch() {
+    printf "Entrez votre mot de passe administrateur pour lancer le jeu (mot de passe de session)\n";
+    sudo -S python3 "$BASEDIR/main.py"
+}
+
+launch
