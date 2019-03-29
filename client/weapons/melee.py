@@ -12,7 +12,7 @@ class MeleeAttack:
         self.env = self.player.env
         self.name = 'Coup de mêlée'
         self.attack_cooldown = .65
-        self.range = 40
+        self.range = 45
         self.damage = 10
         self.can_attack = True
 

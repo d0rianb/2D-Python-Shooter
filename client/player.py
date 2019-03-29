@@ -311,7 +311,7 @@ class OwnPlayer(Player):
         self.env.fen.bind('<ButtonRelease-1>', self.weapon.stop_fire)
         keyboard.on_press_key(self.key['melee'], self.melee.attack)
         keyboard.on_press_key(self.key['reload'], self.reload)
-        # keyboard.on_press_key(self.key['panic'], self.env.panic)
+        keyboard.on_press_key(self.key['panic'], self.env.panic)
         keyboard.on_press_key(self.key['dash'], self.dash)
         keyboard.on_press_key('&', lambda *e: self.env.change_scale(value=1))
         keyboard.on_press_key('é', lambda *e: self.env.change_scale(value=self.env.viewArea['width']/self.env.canvas.width))
