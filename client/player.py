@@ -61,6 +61,7 @@ class Player:
         self.dash_animation_end_tick = 0
         self.dash_cooldown = 3  # secondes
         self.health = 100
+        self.can_move = True
         self.hit_player = {}
         self.hit_by_player = {}
         self.total_damage = 0
@@ -193,12 +194,14 @@ class Player:
         if self.dash_left > 0:
             self.dash_animation = []
             self.dash_animation_end_tick = self.env.tick + self.dash_animation_duration
+            self.can_move = False
             for i in range(self.dash_length):
                 self.speed = self.dash_speed
                 self.dash_animation.append({'x': self.x, 'y': self.y})
                 self.move(math.cos(self.dir), math.sin(self.dir))
                 self.render(dash=True)
             self.dash_left -= 1
+            self.can_move = True
             cooldown = Timer(self.dash_cooldown, self.new_dash)
             cooldown.start()
 
@@ -316,6 +319,7 @@ class OwnPlayer(Player):
         keyboard.on_press_key('"', lambda *e: self.toggle_aimbot())
 
     def detect_keypress(self):
+        if not self.can_move: return
         x, y = 0, 0
         if keyboard.is_pressed(self.key['up']):
             y = -1
