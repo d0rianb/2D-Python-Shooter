@@ -31,3 +31,6 @@ class MeleeAttack:
 
     def allow_attack(self):
         self.can_attack = True
+
+class MeleeAnimation:
+    pass
