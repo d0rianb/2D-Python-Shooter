@@ -70,6 +70,7 @@ class Player:
         self.alive = True
         self.aimbot = False
         self.obj_in_viewbox = []
+        self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
         self.melee = MeleeAttack(self)
         if role == 'A': self.weapon = AR(self)
         elif role == 'SG': self.weapon = Shotgun(self)
@@ -135,31 +136,34 @@ class Player:
         collide_x, collide_y = False, False
         delta = {'x': 0, 'y': 0}
 
-        rect_array = self.obj_in_viewbox if self.own else self.env.map.objects
+        if self.own:
+            rect_array = self.obj_in_viewbox
+        else:
+             rect_array = [obj for obj in self.env.map.objects if Rect.intersect(obj, self.collide_box)]
 
         for obj in rect_array:
-            rect = obj
             delta_x, delta_y = 0, 0
-            if y + self.size > rect.y and y - self.size < rect.y2 and x + self.size > rect.x and x - self.size < rect.x2:
-                delta_x_left = rect.x - (x + self.size)
-                delta_x_right = (x - self.size) - rect.x2
+            if y + self.size > obj.y and y - self.size < obj.y2 and x + self.size > obj.x and x - self.size < obj.x2:
+                delta_x_left = obj.x - (x + self.size)
+                delta_x_right = (x - self.size) - obj.x2
                 delta_x_left = delta_x_left if delta_x_left < 0 else 0
                 delta_x_right = delta_x_right if delta_x_right < 0 else 0
                 delta_x = max(delta_x_left, delta_x_right)
                 if delta_x == delta_x_right:
                     delta_x *= -1
 
-                delta_y_top = rect.y - (y + self.size)
-                delta_y_bottom = (y - self.size) - rect.y2
+                delta_y_top = obj.y - (y + self.size)
+                delta_y_bottom = (y - self.size) - obj.y2
                 delta_y_top = delta_y_top if delta_y_top < 0 else 0
                 delta_y_bottom = delta_y_bottom if delta_y_bottom < 0 else 0
                 delta_y = max(delta_y_top, delta_y_bottom)
                 if delta_y == delta_y_bottom:
                     delta_y *= -1
 
-            delta_min = min(abs(delta_x), abs(delta_y))
-            delta_x = delta_x if abs(delta_x) == delta_min else 0
-            delta_y = delta_y if abs(delta_y) == delta_min else 0
+            if delta_x != 0 and delta_y != 0:
+                delta_min = min(abs(delta_x), abs(delta_y))
+                delta_x = delta_x if abs(delta_x) == delta_min else 0
+                delta_y = delta_y if abs(delta_y) == delta_min else 0
             ## Add the delta of each rectangle to the total delta (dict)
             if delta_x != 0 and delta['x'] == 0:
                 delta['x'] = delta_x
@@ -266,6 +270,7 @@ class Player:
         deltaY = self.mouse['y'] - self.y
         self.speed = self.theorical_speed * 60 / self.env.framerate
         self.total_damage = sum(self.hit_player.values())
+        self.collide_box = Box(self.x - 100, self.y - 100, self.x + 100, self.y + 100)
         if self.aimbot:
             closer_player = self.detect_closer_player()
             if closer_player:
