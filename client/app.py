@@ -69,7 +69,7 @@ class LocalGame(App):
 
     def generate_target(self):
         if self.difficulty == 1:
-            Target(1, 400, 250, self.env, level=1)
+            Target(1, 400, 40, self.env, level=1)
         else:
             for i in range(self.difficulty):
                 Target(i, random.randint(150, self.map.width - 150), random.randint(150, self.map.height - 150), self.env, level=self.difficulty)

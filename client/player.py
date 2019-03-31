@@ -61,7 +61,7 @@ class Player:
         self.dash_animation_end_tick = 0
         self.dash_cooldown = 3  # secondes
         self.health = 100
-        self.can_move = True
+        self.movement_allowed = True
         self.hit_player = {}
         self.hit_by_player = {}
         self.total_damage = 0
@@ -70,7 +70,7 @@ class Player:
         self.alive = True
         self.aimbot = False
         self.obj_in_viewbox = []
-        self.collide_box = Box(self.x - 50, self.y - 50, self.x + 50, self.y + 50)
+        self.collide_box = Box(self.x - 100, self.y - 100, self.x + 100, self.y + 100)
         self.melee = MeleeAttack(self)
         if role == 'A': self.weapon = AR(self)
         elif role == 'SG': self.weapon = Shotgun(self)
@@ -198,15 +198,16 @@ class Player:
         if self.dash_left > 0:
             self.dash_animation = []
             self.dash_animation_end_tick = self.env.tick + self.dash_animation_duration
-            self.can_move = False
+            self.movement_allowed = False
             for i in range(self.dash_length):
                 self.speed = self.dash_speed
                 self.dash_animation.append({'x': self.x, 'y': self.y})
                 self.move(math.cos(self.dir), math.sin(self.dir))
                 self.render(dash=True)
             self.dash_left -= 1
-            self.can_move = True
+            self.movement_allowed = True
             cooldown = Timer(self.dash_cooldown, self.new_dash)
+            cooldown.daemon=True 
             cooldown.start()
 
     def new_dash(self):
@@ -325,7 +326,7 @@ class OwnPlayer(Player):
         keyboard.on_press_key('"', lambda *e: self.toggle_aimbot())
 
     def detect_keypress(self):
-        if not self.can_move: return
+        if not self.movement_allowed: return
         x, y = 0, 0
         if keyboard.is_pressed(self.key['up']):
             y = -1
@@ -374,11 +375,12 @@ class Target(Player):
         self.theorical_speed = level / 2.75
         self.weapon = AR(self)
         self.color = '#AAA'
-        self.tick = 0
+        self.tick = 1
         self.vx = random_sign()
         self.vy = random_sign()
         self.move_interval = random.randint(20, 60)
-        self.shoot_interval = random.randint(11-self.level, 200-self.level*2)
+        self.shoot_interval = random.randint(10, 200-self.level*2)
+        self.dash_interval = random.randint(100, 300 - 10*self.level)
         self.can_shoot = self.level >= 3
         self.can_move = self.level >= 2
         self.shoot_dispersion = math.pi/(4 + random.randint(self.level, self.level*2))
@@ -398,9 +400,9 @@ class Target(Player):
             if self.tick % self.shoot_interval == 0 and self.can_shoot:
                 self.dir += random_sign()*random.random() * self.shoot_dispersion
                 self.shoot()
+            if self.tick % self.dash_interval == 0:
+                self.dir = random.random() * 2*math.pi
+                super().dash()
             self.tick += 1
             if self.can_move:
                 super().move(self.vx, self.vy)
-
-    def render(self):
-        super().render()
