@@ -23,7 +23,6 @@ class Canvas:
         # self.canvas.config(width=200)
         return object
 
-    @profile
     def render(self, stack):
         self.canvas.delete('all')
         for object in stack:

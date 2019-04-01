@@ -38,10 +38,10 @@ class Interface:
                ' Dash : {dash}\n' +
                ' Recharger : {reload}\n' +
                ' Restart Game: G (only local)\n' +
-               ' Toggle Dash Preview: {dash_preview}\n' +
+               ' Melee: {melee}\n' +
                ' Display Help : {help}\n' +
                ' Panic : {panic} ').format(**{key: str(val).upper() if val != 56 else 'Shift' for key, val in self.player.key.items()})
-        self.env.rendering_stack.append(RenderedObject('text', self.env.width/2, 100, text=text, font=self.font, color=self.color, zIndex=10))
+        self.env.rendering_stack.append(RenderedObject('text', self.env.viewArea['x'] + self.env.viewArea['width']/2, self.env.viewArea['y'] + 100, text=text, font=self.font, color=self.color, zIndex=10))
 
     def parse(self, position, x, y, anchor):
         infos = self.informations[position]
@@ -207,7 +207,7 @@ class TempMessage:
             anchor=tk.CENTER,
             color=self.color.to_hex(),
             font=self.interface.font,
-            zIndex=5))
+            zIndex=8))
 
 class DamageMessage(TempMessage):
     def __init__(self, player, text, interface):

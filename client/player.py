@@ -8,7 +8,6 @@ import keyboard
 import time
 import threading
 
-# from PIL import Image, ImageTk
 from threading import Timer
 from render import RenderedObject
 from interface import TempMessage, DamageMessage
@@ -61,7 +60,7 @@ class Player:
         self.dash_animation_end_tick = 0
         self.dash_cooldown = 3  # secondes
         self.health = 100
-        self.can_move = True
+        self.movement_allowed = True
         self.hit_player = {}
         self.hit_by_player = {}
         self.total_damage = 0
@@ -70,6 +69,7 @@ class Player:
         self.alive = True
         self.aimbot = False
         self.obj_in_viewbox = []
+        self.collide_box = Box(self.x - 100, self.y - 100, self.x + 100, self.y + 100)
         self.melee = MeleeAttack(self)
         if role == 'A': self.weapon = AR(self)
         elif role == 'SG': self.weapon = Shotgun(self)
@@ -89,7 +89,7 @@ class Player:
             victim = self
             if (dist_head <= victim.size + tolerance or dist_tail <= victim.size + tolerance) and shooter != victim:
                 real_damage = victim.hit_by(shooter, shoot.damage)
-                shooter.hit(victim, real_damage, victim.health <= 0)
+                shooter.hit(victim, real_damage)
                 self.env.shoots.remove(shoot)
 
     def check_ray_collide(self):
@@ -100,17 +100,17 @@ class Player:
             dist = abs(ray.a * victim.x + ray.b * victim.y + ray.c) / math.sqrt(ray.a**2 + ray.b**2)
             if victim.size >= dist and shooter != victim:
                 real_damage = victim.hit_by(shooter, ray.damage)
-                shooter.hit(victim, real_damage, victim.health <= 0)
+                shooter.hit(victim, real_damage)
                 self.env.rays.remove(ray)
                 return True
 
-    def hit(self, victim, damage, kill=False):
+    def hit(self, victim, damage):
         self.weapon.bullets_hit += 1
         if victim.id in self.hit_player:
             self.hit_player[victim.id] += damage
         else:
             self.hit_player[victim.id] = damage
-        if kill and not victim in self.kills:
+        if victim.health <= 0 and not victim in self.kills:
             self.message('alert', f'Kill {victim.name}', duration=1.15)
             self.kills.append(victim)
         elif damage > 0:
@@ -135,31 +135,34 @@ class Player:
         collide_x, collide_y = False, False
         delta = {'x': 0, 'y': 0}
 
-        rect_array = self.obj_in_viewbox if self.own else self.env.map.objects
+        if self.own:
+            rect_array = self.obj_in_viewbox
+        else:
+             rect_array = [obj for obj in self.env.map.objects if Rect.intersect(obj, self.collide_box)]
 
         for obj in rect_array:
-            rect = obj
             delta_x, delta_y = 0, 0
-            if y + self.size > rect.y and y - self.size < rect.y2 and x + self.size > rect.x and x - self.size < rect.x2:
-                delta_x_left = rect.x - (x + self.size)
-                delta_x_right = (x - self.size) - rect.x2
+            if y + self.size > obj.y and y - self.size < obj.y2 and x + self.size > obj.x and x - self.size < obj.x2:
+                delta_x_left = obj.x - (x + self.size)
+                delta_x_right = (x - self.size) - obj.x2
                 delta_x_left = delta_x_left if delta_x_left < 0 else 0
                 delta_x_right = delta_x_right if delta_x_right < 0 else 0
                 delta_x = max(delta_x_left, delta_x_right)
                 if delta_x == delta_x_right:
                     delta_x *= -1
 
-                delta_y_top = rect.y - (y + self.size)
-                delta_y_bottom = (y - self.size) - rect.y2
+                delta_y_top = obj.y - (y + self.size)
+                delta_y_bottom = (y - self.size) - obj.y2
                 delta_y_top = delta_y_top if delta_y_top < 0 else 0
                 delta_y_bottom = delta_y_bottom if delta_y_bottom < 0 else 0
                 delta_y = max(delta_y_top, delta_y_bottom)
                 if delta_y == delta_y_bottom:
                     delta_y *= -1
 
-            delta_min = min(abs(delta_x), abs(delta_y))
-            delta_x = delta_x if abs(delta_x) == delta_min else 0
-            delta_y = delta_y if abs(delta_y) == delta_min else 0
+            if delta_x != 0 and delta_y != 0:
+                delta_min = min(abs(delta_x), abs(delta_y))
+                delta_x = delta_x if abs(delta_x) == delta_min else 0
+                delta_y = delta_y if abs(delta_y) == delta_min else 0
             ## Add the delta of each rectangle to the total delta (dict)
             if delta_x != 0 and delta['x'] == 0:
                 delta['x'] = delta_x
@@ -188,21 +191,25 @@ class Player:
 
         if self.own:
             self.update_viewBox()
+        else:
+            self.collide_box = Box(self.x - 100, self.y - 100, self.x + 100, self.y + 100)
+
 
     def dash(self, *event):
         if not self.alive: return
         if self.dash_left > 0:
             self.dash_animation = []
             self.dash_animation_end_tick = self.env.tick + self.dash_animation_duration
-            self.can_move = False
+            self.movement_allowed = False
             for i in range(self.dash_length):
                 self.speed = self.dash_speed
                 self.dash_animation.append({'x': self.x, 'y': self.y})
                 self.move(math.cos(self.dir), math.sin(self.dir))
                 self.render(dash=True)
             self.dash_left -= 1
-            self.can_move = True
+            self.movement_allowed = True
             cooldown = Timer(self.dash_cooldown, self.new_dash)
+            cooldown.daemon=True
             cooldown.start()
 
     def new_dash(self):
@@ -280,6 +287,7 @@ class Player:
             self.detect_keypress()
 
     def render(self, dash=False):
+        head_position = -20 if self.y > 30 else 20
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, math.ceil(self.health))
         self.env.rendering_stack.append(RenderedObject('oval', self.x - self.size, self.y - self.size, x2=self.x + self.size, y2=self.y + self.size, color=self.color, width=0, dash=self.dash))
 
@@ -288,7 +296,7 @@ class Player:
 
         if not dash:
             self.env.rendering_stack.append(RenderedObject('line', self.x + math.cos(self.dir) * 12, self.y + math.sin(self.dir) * 12, x2=self.x + math.cos(self.dir) * 20, y2=self.y + math.sin(self.dir) * 20, zIndex=2))
-            self.env.rendering_stack.append(RenderedObject('text', self.x - len(self.name) / 2, self.y - 20, text=head_text, color='#787878', zIndex=3))
+            self.env.rendering_stack.append(RenderedObject('text', self.x - len(self.name) / 2, self.y + head_position, text=head_text, color='#787878', zIndex=3))
             if self.dash_preview:
                 preview_size = self.size
                 self.env.rendering_stack.append(RenderedObject('oval', self.simul_dash['x'] - preview_size, self.simul_dash['y'] - preview_size, x2=self.simul_dash['x'] + preview_size, y2=self.simul_dash['y'] + preview_size, color='#ccc'))
@@ -311,7 +319,7 @@ class OwnPlayer(Player):
         self.env.fen.bind('<ButtonRelease-1>', self.weapon.stop_fire)
         keyboard.on_press_key(self.key['melee'], self.melee.attack)
         keyboard.on_press_key(self.key['reload'], self.reload)
-        # keyboard.on_press_key(self.key['panic'], self.env.panic)
+        keyboard.on_press_key(self.key['panic'], self.env.panic)
         keyboard.on_press_key(self.key['dash'], self.dash)
         keyboard.on_press_key('&', lambda *e: self.env.change_scale(value=1))
         keyboard.on_press_key('é', lambda *e: self.env.change_scale(value=self.env.viewArea['width']/self.env.canvas.width))
@@ -319,7 +327,7 @@ class OwnPlayer(Player):
         keyboard.on_press_key('"', lambda *e: self.toggle_aimbot())
 
     def detect_keypress(self):
-        if not self.can_move: return
+        if not self.movement_allowed: return
         x, y = 0, 0
         if keyboard.is_pressed(self.key['up']):
             y = -1
@@ -367,12 +375,13 @@ class Target(Player):
         self.own = False
         self.theorical_speed = level / 2.75
         self.weapon = AR(self)
-        self.color = '#AAA'
-        self.tick = 0
+        self.color = random.choice(['#AAA', '#BBB'])
+        self.tick = 1
         self.vx = random_sign()
         self.vy = random_sign()
         self.move_interval = random.randint(20, 60)
-        self.shoot_interval = random.randint(11-self.level, 200-self.level*2)
+        self.shoot_interval = random.randint(10, 200-self.level*2)
+        self.dash_interval = random.randint(100, 300 - 10*self.level)
         self.can_shoot = self.level >= 3
         self.can_move = self.level >= 2
         self.shoot_dispersion = math.pi/(4 + random.randint(self.level, self.level*2))
@@ -392,9 +401,9 @@ class Target(Player):
             if self.tick % self.shoot_interval == 0 and self.can_shoot:
                 self.dir += random_sign()*random.random() * self.shoot_dispersion
                 self.shoot()
+            if self.tick % self.dash_interval == 0 and self.can_move:
+                self.dir = random.random() * 2 * math.pi
+                super().dash()
             self.tick += 1
             if self.can_move:
                 super().move(self.vx, self.vy)
-
-    def render(self):
-        super().render()

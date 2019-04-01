@@ -8,9 +8,16 @@ import sys
 import platform
 import math
 import random
-import keyboard
 import socket
 import json
+
+PATH = os.path.dirname(os.path.realpath(__file__))
+MODE = 'debug' # 'normal / profile / debug'
+
+try:
+    import keyboard
+except ImportError as e:
+    os.system('python3 {}'.format(os.path.join(PATH, 'install.py')))
 
 from test import profile
 from app import LocalGame, OnlineGame, SplashScreen, Settings
@@ -24,7 +31,6 @@ __maintainer__ = "Dorian Beauchesne"
 __email__      = "dorian.beauchesne@icloud.com"
 __status__     = "Development"
 
-MODE = 'debug' # 'normal / profile / debug'
 
 def start_local_game(name, difficulty, role):
     app = LocalGame(name, difficulty, role)
