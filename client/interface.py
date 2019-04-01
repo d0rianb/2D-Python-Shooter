@@ -207,7 +207,7 @@ class TempMessage:
             anchor=tk.CENTER,
             color=self.color.to_hex(),
             font=self.interface.font,
-            zIndex=5))
+            zIndex=8))
 
 class DamageMessage(TempMessage):
     def __init__(self, player, text, interface):

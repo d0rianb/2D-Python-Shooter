@@ -8,7 +8,6 @@ import keyboard
 import time
 import threading
 
-# from PIL import Image, ImageTk
 from threading import Timer
 from render import RenderedObject
 from interface import TempMessage, DamageMessage
@@ -90,7 +89,7 @@ class Player:
             victim = self
             if (dist_head <= victim.size + tolerance or dist_tail <= victim.size + tolerance) and shooter != victim:
                 real_damage = victim.hit_by(shooter, shoot.damage)
-                shooter.hit(victim, real_damage, victim.health <= 0)
+                shooter.hit(victim, real_damage)
                 self.env.shoots.remove(shoot)
 
     def check_ray_collide(self):
@@ -101,17 +100,17 @@ class Player:
             dist = abs(ray.a * victim.x + ray.b * victim.y + ray.c) / math.sqrt(ray.a**2 + ray.b**2)
             if victim.size >= dist and shooter != victim:
                 real_damage = victim.hit_by(shooter, ray.damage)
-                shooter.hit(victim, real_damage, victim.health <= 0)
+                shooter.hit(victim, real_damage)
                 self.env.rays.remove(ray)
                 return True
 
-    def hit(self, victim, damage, kill=False):
+    def hit(self, victim, damage):
         self.weapon.bullets_hit += 1
         if victim.id in self.hit_player:
             self.hit_player[victim.id] += damage
         else:
             self.hit_player[victim.id] = damage
-        if kill and not victim in self.kills:
+        if victim.health <= 0 and not victim in self.kills:
             self.message('alert', f'Kill {victim.name}', duration=1.15)
             self.kills.append(victim)
         elif damage > 0:
@@ -192,6 +191,9 @@ class Player:
 
         if self.own:
             self.update_viewBox()
+        else:
+            self.collide_box = Box(self.x - 100, self.y - 100, self.x + 100, self.y + 100)
+
 
     def dash(self, *event):
         if not self.alive: return
@@ -207,7 +209,7 @@ class Player:
             self.dash_left -= 1
             self.movement_allowed = True
             cooldown = Timer(self.dash_cooldown, self.new_dash)
-            cooldown.daemon=True 
+            cooldown.daemon=True
             cooldown.start()
 
     def new_dash(self):
@@ -271,7 +273,6 @@ class Player:
         deltaY = self.mouse['y'] - self.y
         self.speed = self.theorical_speed * 60 / self.env.framerate
         self.total_damage = sum(self.hit_player.values())
-        self.collide_box = Box(self.x - 100, self.y - 100, self.x + 100, self.y + 100)
         if self.aimbot:
             closer_player = self.detect_closer_player()
             if closer_player:
@@ -374,7 +375,7 @@ class Target(Player):
         self.own = False
         self.theorical_speed = level / 2.75
         self.weapon = AR(self)
-        self.color = '#AAA'
+        self.color = random.choice(['#AAA', '#BBB'])
         self.tick = 1
         self.vx = random_sign()
         self.vy = random_sign()
@@ -400,8 +401,8 @@ class Target(Player):
             if self.tick % self.shoot_interval == 0 and self.can_shoot:
                 self.dir += random_sign()*random.random() * self.shoot_dispersion
                 self.shoot()
-            if self.tick % self.dash_interval == 0:
-                self.dir = random.random() * 2*math.pi
+            if self.tick % self.dash_interval == 0 and self.can_move:
+                self.dir = random.random() * 2 * math.pi
                 super().dash()
             self.tick += 1
             if self.can_move:
