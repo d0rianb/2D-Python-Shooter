@@ -5,6 +5,8 @@ import json
 import time
 import logging
 
+ENDING_CHAR = '#'
+
 class Message:
     def __init__(self, title, content):
         self.title = title
@@ -14,4 +16,4 @@ class Message:
         }
 
     def encode(self):
-        return json.dumps(self.__dict__).encode('utf-8')
+        return (json.dumps(self.__dict__) + ENDING_CHAR).encode('utf-8')
