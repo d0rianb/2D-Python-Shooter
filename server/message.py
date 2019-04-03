@@ -5,7 +5,7 @@ import json
 import time
 import logging
 
-ENDING_CHAR = '#'
+ENDING_CHAR = '!#'
 
 class Message:
     def __init__(self, title, content):
