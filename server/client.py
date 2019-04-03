@@ -33,6 +33,7 @@ class Client(threading.Thread):
     def update(self):
         start_time = time.time()
         self.receive()
+        self.send_player_array()
         delta_time = time.time() - start_time
         delta_time = 1/(SERVER_FREQ) - delta_time
         threading.Timer(delta_time, self.update).start()
@@ -42,7 +43,6 @@ class Client(threading.Thread):
         try:
             data, addr = self.socket.recvfrom(1024)
             message = json.loads(data)
-            logging.info(f'receive {message} from {self.name}')
             if message['title'] == 'update_position':
                 self.update_player(message)
             elif message['title'] == 'connect_infos':
@@ -53,17 +53,18 @@ class Client(threading.Thread):
         except Exception as e:
             self.server.nb_msg_lost += 1
 
-        # self.server.update_player_position()
-
     def send(self, title, content):
         msg = Message(title, content)
         if self.is_connected:
             try:
-                logging.info(f'sending {title} to {self.name}')
                 self.socket.send(msg.encode())
             except BrokenPipeError:
                 self.end_connection()
             self.receive()
+
+    def send_player_array(self):
+        players_array = [client.player.toJSON() for client in self.server.clients if client.player]
+        self.send('players_array', players_array)
 
     def update_player(self, message):
         content = message['content']

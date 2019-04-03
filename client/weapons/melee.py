@@ -20,7 +20,6 @@ class MeleeAttack:
         if not self.can_attack: return
         closer_player = self.player.detect_closer_player()
         if closer_player and self.player.dist(closer_player) <= self.range:
-            self.player.hit(closer_player, self.damage)
             closer_player.hit_by(self.player, self.damage)
             self.env.rendering_stack.append(RenderedObject('oval', self.player.x - self.range, self.player.y - self.range, x2=self.player.x + self.range, y2=self.player.y + self.range, color='lightgrey', zIndex=5))
             self.end_attack()

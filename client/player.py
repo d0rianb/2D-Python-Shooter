@@ -88,8 +88,8 @@ class Player:
             shooter = shoot.from_player
             victim = self
             if (dist_head <= victim.size + tolerance or dist_tail <= victim.size + tolerance) and shooter != victim:
-                real_damage = victim.hit_by(shooter, shoot.damage)
-                shooter.hit(victim, real_damage)
+                victim.hit_by(shooter, shoot.damage)
+                # shooter.hit(victim, real_damage)
                 self.env.shoots.remove(shoot)
 
     def check_ray_collide(self):
@@ -99,8 +99,8 @@ class Player:
             victim = self
             dist = abs(ray.a * victim.x + ray.b * victim.y + ray.c) / math.sqrt(ray.a**2 + ray.b**2)
             if victim.size >= dist and shooter != victim:
-                real_damage = victim.hit_by(shooter, ray.damage)
-                shooter.hit(victim, real_damage)
+                victim.hit_by(shooter, ray.damage)
+                # shooter.hit(victim, real_damage)
                 self.env.rays.remove(ray)
                 return True
 
@@ -127,7 +127,7 @@ class Player:
         if self.health <= 0:
             self.dead()
             self.health = 0
-        return real_damage
+        player.hit(self, real_damage)
 
     @profile
     def collide_wall(self):

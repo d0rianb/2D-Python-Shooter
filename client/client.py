@@ -11,6 +11,7 @@ import json
 from player import OnlinePlayer
 
 SERVER_FREQ = 60 # Hz
+ENDING_CHAR = '#'
 
 class Client(threading.Thread):
     def __init__(self, connection, player, ip, port):
@@ -27,6 +28,7 @@ class Client(threading.Thread):
         self.nb_msg_recv = 0
         self.nb_msg_lost = 0
         self.connection.connect((self.ip, self.port))
+        self.connection.setblocking(0)
 
     def encode(self, message):
         return json.dumps(message).encode('utf-8')
@@ -74,40 +76,44 @@ class Client(threading.Thread):
         self.update()
 
     def receive(self):
-        data = self.connection.recv(4096)
-        data = data.decode('utf-8')
-        decode_error = False
+        try:
+            data = self.connection.recv(4096)
+            data = data.decode('utf-8')
+            for msg_data in data.split(ENDING_CHAR):
+                self.parse_msg(msg_data)
+        except BlockingIOError:
+            pass
+
+    def parse_msg(self, data):
         try:
             message = json.loads(data)
-            print(f'receive {message}')
             self.nb_msg_recv += 1
             self.ping = self.time() - message['infos']['timestamp']
         except json.decoder.JSONDecodeError as e:
             self.nb_msg_lost += 1
-            decode_error = True
-        if not decode_error:
-            if message['title'] == 'players_array':
-                players_array = [json.loads(player) for player in message['content']]
-                # print(players_array)
-                for new_player in players_array:
-                    player_is_new = True
-                    for player in self.player.env.players:
-                        if player.id == new_player['id'] and not player.own:
-                            player_is_new = False
-                            player.x = new_player['x']
-                            player.y = new_player['y']
-                            player.dir = new_player['dir']
-                            player.health = new_player['health']
-                    if player_is_new and new_player['id'] != self.player.id:
-                        OnlinePlayer(new_player['id'], new_player['x'], new_player['y'], self.player.env, new_player['name'])
+            return
+
+        if message['title'] == 'players_array':
+            players_array = [json.loads(player) for player in message['content']]
+            for new_player in players_array:
+                player_is_new = True
+                for player in self.player.env.players:
+                    if player.id == new_player['id'] and not player.own:
+                        player_is_new = False
+                        player.x = new_player['x']
+                        player.y = new_player['y']
+                        player.dir = new_player['dir']
+                        player.health = new_player['health']
+                if player_is_new and new_player['id'] != self.player.id:
+                    OnlinePlayer(new_player['id'], new_player['x'], new_player['y'], self.player.env, new_player['name'])
 
 
-            if message['title'] == 'response_id':
-                self.player.id = message['content']['id']
-                self.connected = True
-                self.player.message('global_info', 'Connected to {}:{}'.format(self.ip, self.port), duration=1.5)
-                print('Connected to {}:{}'.format(self.ip, self.port))
-                self.send_connection_info()
+        if message['title'] == 'response_id':
+            self.player.id = message['content']['id']
+            self.connected = True
+            self.player.message('global_info', 'Connected to {}:{}'.format(self.ip, self.port), duration=1.5)
+            print('Connected to {}:{}'.format(self.ip, self.port))
+            self.send_connection_info()
 
     def update(self):
         start_time = self.time()

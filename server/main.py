@@ -4,7 +4,7 @@
 from server import Server
 
 SERVER_IP = ''
-SERVER_PORT = 12801
+SERVER_PORT = 12802
 
 server = Server(SERVER_IP, SERVER_PORT)
 server.start()

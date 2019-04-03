@@ -46,7 +46,7 @@ class Server(threading.Thread):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # self.socket.setblocking(0)
+        self.socket.setblocking(0)
         self.socket.bind((self.ip, self.port))
         self.socket.listen(5)
 
@@ -65,13 +65,13 @@ class Server(threading.Thread):
         except Exception as e:
             pass
 
-        for client in self.clients:
-            client.receive()
+        # for client in self.clients:
+            # client.receive()
 
-        if self.tick % 60 == 0 and self.nb_msg_send != 0:
-            logging.info(f'nb_msg_send: {self.nb_msg_send}')
-            logging.info(f'nb_msg_recv: {self.nb_msg_recv}')
-            logging.info(f'nb_msg_lost: {self.nb_msg_lost}')
+        # if self.tick % 60 == 0 and self.nb_msg_send != 0:
+        #     logging.info(f'nb_msg_send: {self.nb_msg_send}')
+        #     logging.info(f'nb_msg_recv: {self.nb_msg_recv}')
+        #     logging.info(f'nb_msg_lost: {self.nb_msg_lost}')
         #     logging.info((self.time() - self.start_time) * 60 / self.tick)
         delta_time = self.time() - start_time
         delta_time = 1/SERVER_FREQ - delta_time
