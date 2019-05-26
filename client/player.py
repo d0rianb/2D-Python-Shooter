@@ -7,11 +7,12 @@ import math
 import keyboard
 import time
 import threading
+import pygame.mixer as mixer
 
 from threading import Timer
 from render import RenderedObject
 from interface import TempMessage, DamageMessage
-from env import Event
+from event import Event
 from object.rect import Rect, Box
 from object.circle import Circle
 from weapons.weapon import AR, Shotgun, Sniper, SMG, Beam
@@ -27,7 +28,8 @@ default_keys = {
     'reload': 'r',
     'panic': 'p'
 }
-
+SOUND_PATH = 'ressources/sound/'
+target_name = ['Goebbels', 'Charlotte', 'Lénine', 'Klechkovski', 'Kevin', 'Pol Pot', 'Al Kartraz', 'Ben Laden', 'Jbzz', 'Fukushima', 'Karamazov', 'Jésus', 'Bill', 'Shoshana']
 display_pointer = False
 
 def random_sign():
@@ -59,6 +61,7 @@ class Player:
         self.dash_animation_duration = 3  # tick
         self.dash_animation_end_tick = 0
         self.dash_cooldown = 3  # secondes
+        self.dash_sound = mixer.Sound(SOUND_PATH + 'dash2.wav')
         self.health = 100
         self.movement_allowed = True
         self.hit_player = {}
@@ -111,10 +114,11 @@ class Player:
         else:
             self.hit_player[victim.id] = damage
         if victim.health <= 0 and not victim in self.kills:
+            self.message('hit', f'{int(damage)}', duration=.95, victim=victim)
             self.message('alert', f'Kill {victim.name}', duration=1.15)
             self.kills.append(victim)
         elif damage > 0:
-            self.message('hit', f'{int(damage)}', duration=.95, victim=victim)
+            self.message('hit', f'{int(damage)}', duration=1.05, victim=victim)
 
     def hit_by(self, player, damage):
         self.health -= damage
@@ -194,13 +198,13 @@ class Player:
         else:
             self.collide_box = Box(self.x - 100, self.y - 100, self.x + 100, self.y + 100)
 
-
     def dash(self, *event):
         if not self.alive: return
         if self.dash_left > 0:
             self.dash_animation = []
             self.dash_animation_end_tick = self.env.tick + self.dash_animation_duration
             self.movement_allowed = False
+            self.play_sound(self.dash_sound)
             for i in range(self.dash_length):
                 self.speed = self.dash_speed
                 self.dash_animation.append({'x': self.x, 'y': self.y})
@@ -252,6 +256,10 @@ class Player:
 
     def submit_event(self, type, content):
         self.env.events.push(Event(type, content))
+
+    def play_sound(self, sound):
+        if sound and self.env.in_viewBox(self):
+            sound.play()
 
     def dead(self):
         if not self.alive: return
@@ -371,7 +379,8 @@ class Target(Player):
         self.y = y
         self.env = env
         self.level = level
-        self.name = 'Target {}'.format(self.id)
+        self.name = random.choice(target_name)
+        target_name.remove(self.name)
         self.own = False
         self.theorical_speed = level / 2.75
         self.weapon = AR(self)

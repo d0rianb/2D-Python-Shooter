@@ -72,6 +72,12 @@ class Client(threading.Thread):
         }
         self.send('connect_infos', content)
 
+    def send_shoot(self):
+        content = {
+            'weapon': self.player.weapon.name
+        }
+        self.send('shoot', content)
+
     def stats(self):
         time_elapsed = time.time() - self.start_time
         print(f'''

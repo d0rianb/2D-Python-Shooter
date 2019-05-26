@@ -117,6 +117,8 @@ class Env:
                 return True
         elif isinstance(obj, Rect):
             return Rect.intersect(viewBox, obj)
+        elif obj.x and obj.y:
+            return obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x <= viewBox.x2 and obj.y <= viewBox.y2
 
     @profile
     def update(self):
@@ -169,9 +171,3 @@ class Env:
         self.rendering_stack = sorted(rendering_stack, key=lambda obj: obj.zIndex)
         self.canvas.render(self.rendering_stack)
         self.rendering_stack = []
-
-
-class Event():
-    def __init__(self, type, content):
-        self.type = type
-        self.content = content

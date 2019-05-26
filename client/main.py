@@ -19,6 +19,8 @@ try:
 except ImportError as e:
     os.system('python3 {}'.format(os.path.join(PATH, 'install.py')))
 
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
+
 from test import profile
 from app import LocalGame, OnlineGame, SplashScreen, Settings
 
