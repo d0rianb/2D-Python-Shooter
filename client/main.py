@@ -27,8 +27,9 @@ from app import LocalGame, OnlineGame, SplashScreen, Settings
 __author__     = "Dorian Beauchesne"
 __copyright__  = "Copyright 2019, 2PQSTD "
 __credits__    = ["Dorian Beauchesne", "Louis de Bussac"]
-__license__    = "MIT"
-__version__    = "0.8.1"
+__sounds__     = ["Théo Bonneval", "Charles Lessueur"]
+__license__    = "MPSI2 - MIT"
+__version__    = "0.8.2"
 __maintainer__ = "Dorian Beauchesne"
 __email__      = "dorian.beauchesne@icloud.com"
 __status__     = "Development"

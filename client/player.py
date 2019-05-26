@@ -13,6 +13,7 @@ from threading import Timer
 from render import RenderedObject
 from interface import TempMessage, DamageMessage
 from event import Event
+from sound import Sound
 from object.rect import Rect, Box
 from object.circle import Circle
 from weapons.weapon import AR, Shotgun, Sniper, SMG, Beam
@@ -61,7 +62,7 @@ class Player:
         self.dash_animation_duration = 3  # tick
         self.dash_animation_end_tick = 0
         self.dash_cooldown = 3  # secondes
-        self.dash_sound = mixer.Sound(SOUND_PATH + 'dash2.wav')
+        self.dash_sound = 'dash2.wav'
         self.health = 100
         self.movement_allowed = True
         self.hit_player = {}
@@ -204,7 +205,7 @@ class Player:
             self.dash_animation = []
             self.dash_animation_end_tick = self.env.tick + self.dash_animation_duration
             self.movement_allowed = False
-            self.play_sound(self.dash_sound)
+            self.env.sounds.append(Sound(self.dash_sound, self))
             for i in range(self.dash_length):
                 self.speed = self.dash_speed
                 self.dash_animation.append({'x': self.x, 'y': self.y})
@@ -256,10 +257,6 @@ class Player:
 
     def submit_event(self, type, content):
         self.env.events.push(Event(type, content))
-
-    def play_sound(self, sound):
-        if sound and self.env.in_viewBox(self):
-            sound.play()
 
     def dead(self):
         if not self.alive: return
@@ -320,6 +317,7 @@ class OwnPlayer(Player):
         super().__init__(id, x, y, env, name, role, own=True)
         self.interface = None
         self.client = None
+        self.env.own_player = self
 
     def bind_keys(self, key_bind):
         self.key = key_bind or default_keys

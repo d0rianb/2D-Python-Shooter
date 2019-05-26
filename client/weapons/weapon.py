@@ -6,6 +6,7 @@ import random
 import pygame.mixer as mixer
 
 from weapons.tir import Tir, Ray
+from sound import Sound
 from threading import Timer
 
 mixer.init()
@@ -15,7 +16,8 @@ SOUND_PATH = 'ressources/sound/'
 class Weapon:
     def __init__(self, player):
         self.player = player
-        self.name = 'Anonymous Weapon'
+        self.env = self.player.env
+        self.name = 'Unknown Weapon'
         self.shot_sound = None
         self.reload_sound = None
         self.bullets_drawn = 0
@@ -58,7 +60,8 @@ class Weapon:
         for i in range(self.nb_shoot):
             dispersion = ((-1)**i)*self.dispersion*i/10
             tir = Tir(x, y, self.player.dir + dispersion, self)
-            self.player.play_sound(self.shot_sound)
+            if self.shot_sound:
+                self.env.sounds.append(Sound(self.shot_sound, self.player))
         self.ammo -= 1
         self.bullets_drawn += self.nb_shoot
         self.can_shoot = False
@@ -74,7 +77,8 @@ class Weapon:
         if self.ammo < self.max_ammo and not self.is_reloading:
             self.player.message('info', 'Reloading')
             self.is_reloading = True
-            self.player.play_sound(self.reload_sound)
+            if self.reload_sound:
+                self.env.sounds.append(Sound(self.reload_sound, self.player))
             Timer(self.reload_cooldown, self.has_reload).start()
 
     def has_reload(self):
@@ -116,8 +120,8 @@ class AR(Weapon):
     def __init__(self, player):
         super(AR, self).__init__(player)
         self.name = 'Fusil d\'assaut'
-        self.shot_sound = mixer.Sound(SOUND_PATH + f'piou{random.randint(1, 3)}.wav')
-        self.reload_sound = mixer.Sound(SOUND_PATH + 'reload.wav')
+        self.shot_sound = f'piou{random.randint(1, 3)}.wav'
+        self.reload_sound = 'reload.wav'
         self.max_ammo = 20
         self.damage = 20
         self.damage_decrease = {'range': 400, 'factor': 0.88}
