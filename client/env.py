@@ -28,10 +28,12 @@ class Env:
         self.max_framerate = max_framerate
         self.framerate = self.max_framerate
         self.last_frame_timestamp = 0
+        self.own_player = None
         self.players = []
         self.players_alive = []
         self.shoots = []
         self.rays = []
+        self.sounds = []
         self.tick = 0
         self.interface = None
         self.debug = False
@@ -75,6 +77,15 @@ class Env:
             else:
                 shoot.update()
 
+    def manage_sounds(self):
+        for sound in self.sounds:
+            if self.in_viewBox(sound.player) and self.own_player:
+                dist = self.own_player.dist(sound.player)
+                volume = abs(1 - (dist/(self.viewArea['width']/1.5)))
+                sound.set_volume(volume)
+                sound.play()
+        self.sounds = []
+
     def find_by(self, attr, value):
         for player in self.players:
             if player.__dict__[attr] == value:
@@ -117,6 +128,8 @@ class Env:
                 return True
         elif isinstance(obj, Rect):
             return Rect.intersect(viewBox, obj)
+        elif obj.x and obj.y:
+            return obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x <= viewBox.x2 and obj.y <= viewBox.y2
 
     @profile
     def update(self):
@@ -130,10 +143,12 @@ class Env:
         for ray in self.rays:
             ray.update()
         self.manage_shoots()
+        self.manage_sounds()
         self.interface.update()
         self.render()
 
         if self.tick % 10 == 0:
+
             self.GAME_IS_FOCUS = True if self.fen.focus_get() != None else False
             # Update viewArea
             self.viewArea['width'], self.viewArea['height'], *offset = map(lambda val: int(val), re.split(r'[+x]', self.fen.geometry()))
@@ -169,9 +184,3 @@ class Env:
         self.rendering_stack = sorted(rendering_stack, key=lambda obj: obj.zIndex)
         self.canvas.render(self.rendering_stack)
         self.rendering_stack = []
-
-
-class Event():
-    def __init__(self, type, content):
-        self.type = type
-        self.content = content

@@ -45,6 +45,8 @@ class Client(threading.Thread):
             message = json.loads(data)
             if message['title'] == 'update_position':
                 self.update_player(message)
+            elif message['title'] == 'shoot':
+                self.shoot(message)
             elif message['title'] == 'connect_infos':
                 self.set_player_infos(message)
             elif message['title'] == 'close_connection':
@@ -78,6 +80,10 @@ class Client(threading.Thread):
         content = message['content']
         self.name = content['name']
         self.player = Player(self.id, content['x'], content['y'], content['dir'], content['size'], content['health'], self.name)
+
+    def shoot(self, message):
+        content = message['content']
+        self.server.game.add_shoot(Tir(self.player, content['weapon']))
 
     def end_connection(self, *message):
         self.is_connected = False

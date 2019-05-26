@@ -11,6 +11,7 @@ import logging
 import time
 
 from client import Client
+from game import Game
 
 SERVER_FREQ = 60 # Hz
 
@@ -21,19 +22,15 @@ class Server(threading.Thread):
         self.port = port
         self.socket = None
         self.clients = []
+        self.game = Game(self)
         self.max_tickrate = 144
         self.tick = 0
         self.is_running = True
-
-        self.nb_msg_send = 0
-        self.nb_msg_recv = 0
-        self.nb_msg_lost = 0
 
         ## Logging system
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s.%(msecs)03d | [%(levelname)s] : %(message)s', datefmt='%X')
-        # formatter = logging.Formatter('%(message)s', datefmt='%X')
         stream_handler = logging.StreamHandler(sys.stdout)
         stream_handler.setLevel(logging.DEBUG)
         stream_handler.setFormatter(formatter)
@@ -59,23 +56,16 @@ class Server(threading.Thread):
         start_time = self.time()
         self.tick += 1
 
+
         try:
             client_sock, address = self.socket.accept()
             self.new_connection(client_sock, address)
         except Exception as e:
             pass
 
-        # for client in self.clients:
-            # client.receive()
-
-        # if self.tick % 60 == 0 and self.nb_msg_send != 0:
-        #     logging.info(f'nb_msg_send: {self.nb_msg_send}')
-        #     logging.info(f'nb_msg_recv: {self.nb_msg_recv}')
-        #     logging.info(f'nb_msg_lost: {self.nb_msg_lost}')
-        #     logging.info((self.time() - self.start_time) * 60 / self.tick)
+        self.game.update()
         delta_time = self.time() - start_time
         delta_time = 1/SERVER_FREQ - delta_time
-
         threading.Timer(delta_time, self.update).start()
 
     def new_connection(self, client_socket, addr):
