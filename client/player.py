@@ -125,6 +125,7 @@ class Player:
         self.health -= damage
         real_damage = damage if self.health >= 0 else damage - abs(self.health)
         self.message('warning', f'Hit by {player.name}')
+        self.env.sounds.append(Sound(f'aie{random.randint(1, 3)}.wav', self))
         if player.id in self.hit_by_player:
             self.hit_by_player[player.id] += damage
         else:

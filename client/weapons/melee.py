@@ -5,15 +5,17 @@ import math
 import threading
 
 from render import RenderedObject
+from sound import Sound
 
 class MeleeAttack:
     def __init__(self, player):
         self.player = player
         self.env = self.player.env
         self.name = 'Coup de mêlée'
+        self.melee_sound = 'cac1.wav'
         self.attack_cooldown = .65
         self.range = 45
-        self.damage = 25
+        self.damage = 15
         self.can_attack = True
 
     def attack(self, *event):
@@ -21,6 +23,7 @@ class MeleeAttack:
         closer_player = self.player.detect_closer_player()
         if closer_player and self.player.dist(closer_player) <= self.range:
             closer_player.hit_by(self.player, self.damage)
+            self.env.sounds.append(Sound(self.melee_sound, self.player))
             self.env.rendering_stack.append(RenderedObject('oval', self.player.x - self.range, self.player.y - self.range, x2=self.player.x + self.range, y2=self.player.y + self.range, color='lightgrey', zIndex=5))
             self.end_attack()
 
