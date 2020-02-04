@@ -3,10 +3,9 @@
 import os
 import pygame.mixer as mixer
 
-
-SOUND_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ressources', 'sound/')
-
 mixer.init()
+
+SOUND_PATH = 'ressources/sound/'
 
 class Sound:
     def __init__(self, file, from_player=None):

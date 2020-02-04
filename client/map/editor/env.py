@@ -8,7 +8,6 @@ import platform
 import re
 import time
 import keyboard
-import cv2
 
 from threading import Timer
 from render import RenderedObject
