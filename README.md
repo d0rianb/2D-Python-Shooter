@@ -1,26 +1,28 @@
-# 2D Python Shooter
+# 2D Python Shooter - 2PQSTD
 
-## Instalation
+![screenshot](docs/images/screenshot-02-20-1.png)
 
+Other screenshot are available [here](docs/images)
 
+### Installation
 - Mac :
-	 - `sudo python3 main.py` (dans le dossier du jeu)
+	 - `sudo python3 main.py` (in the `client` repository)
 - Windows :
-    - Exécuter `main.py`
+    - Execute `main.py` with `python 3`
 
-## Commandes
-- **Se déplacer**  : Z, Q, S, D (ou flèches directionnelles)
-- **Tirer** : Clic Gauche
-- **Dash** : Majuscule gauche
-- **Recharger** : R
-- **Help** : H
-- **Dash Preview** : H
+### Commandes
+Keybing can be edit in the game preferences.
+Default keybinding is :
+- __Se déplacer__  : Z, Q, S, D (or directionnal arrrows)
+- __Tirer__ : Left Clic
+- __Dash__ : Left Shift
+- __Recharger__ : R
+- __Help__ : H
+- __Melee__ : E
 
-## To-Do
+### To-Do
 - Health regain
 - Add textures
-- Collision detection
-- Map
-- Camera movement
 - Server
 - Chat In-Game
+- Executable file
