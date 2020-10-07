@@ -108,6 +108,13 @@ class Player:
                 self.env.rays.remove(ray)
                 return True
 
+    def check_collectible_collide(self):
+        for c in self.env.collectible:
+            c_center = {'x': c.x + c.size/2, 'y':c.y + c.size/2}
+            if math.sqrt((self.x - c_center['x'])**2 + (self.y - c_center['y'])**2) < c.size:
+                c.on_collect(self)
+
+
     def hit(self, victim, damage):
         self.weapon.bullets_hit += 1
         if victim.id in self.hit_player:
@@ -285,6 +292,7 @@ class Player:
         elif self.own:
             self.dir = math.atan2(deltaY, deltaX)
         if self.alive:
+            self.check_collectible_collide()
             self.check_shoot_collide()
             self.check_ray_collide()
             self.assists = [player for player in self.hit_player.keys() if not self.env.find_by('id', player).alive]

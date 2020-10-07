@@ -11,9 +11,13 @@ import concurrent
 import re
 import time
 import pprint
+import random
 
 from object.rect import Rect, Box
 from render import RenderedObject
+from collectible import Heal
+
+HEAL_NUMBER = 15
 
 class Env:
     def __init__(self, fen, map, canvas, max_framerate=144):
@@ -29,6 +33,7 @@ class Env:
         self.framerate = self.max_framerate
         self.last_frame_timestamp = 0
         self.own_player = None
+        self.collectible = []
         self.players = []
         self.players_alive = []
         self.shoots = []
@@ -53,6 +58,8 @@ class Env:
         for obj in self.map.objects:
             if isinstance(obj, Rect):
                 obj.computed_values()
+        for i in range(HEAL_NUMBER):
+            self.collectible.append(Heal(i, random.randint(0, self.width), random.randint(0, self.height), self))
         self.fen.protocol("WM_DELETE_WINDOW", self.exit)
         self.fen.bind("<MouseWheel>", self.change_scale)
 
@@ -168,6 +175,8 @@ class Env:
         for player in self.players:
             if player.alive:
                 player.render()
+        for collectible in self.collectible:
+            collectible.render()
         for shoot in self.shoots:
             shoot.render()
         for ray in self.rays:
