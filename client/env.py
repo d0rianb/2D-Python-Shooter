@@ -15,9 +15,10 @@ import random
 
 from object.rect import Rect, Box
 from render import RenderedObject
-from collectible import Heal
+from collectible import Heal, LandMine
 
 HEAL_NUMBER = 15
+MINE_NUMBER = 20
 
 class Env:
     def __init__(self, fen, map, canvas, max_framerate=144):
@@ -60,6 +61,9 @@ class Env:
                 obj.computed_values()
         for i in range(HEAL_NUMBER):
             self.collectible.append(Heal(i, random.randint(0, self.width), random.randint(0, self.height), self))
+        for i in range(MINE_NUMBER):
+            self.collectible.append(LandMine(i, random.randint(0, self.width), random.randint(0, self.height), self))
+
         self.fen.protocol("WM_DELETE_WINDOW", self.exit)
         self.fen.bind("<MouseWheel>", self.change_scale)
 
