@@ -5,6 +5,7 @@ from collections import namedtuple
 
 Box = namedtuple('Box', 'x y x2 y2')
 
+# TODO : extend from class object
 class Rect:
     def __init__(self, _id, x, y, width, height, map, multiplier=1, viewBox_init=True):
         self.id = int(_id)
@@ -16,6 +17,7 @@ class Rect:
         self.rel_height = float(height) * float(self.multiplier)
         self.rel_x2 = self.rel_x + self.rel_width
         self.rel_y2 = self.rel_y + self.rel_height
+        self.in_viewBox = 'undefined' # 'in' | 'out' | 'undefined'
         self.map = map
 
         self.color = '#757575'
@@ -60,4 +62,4 @@ class Rect:
     def intersect(rect1, rect2):
         dx = min(rect1.x2, rect2.x2) - max(rect1.x, rect2.x)
         dy = min(rect1.y2, rect2.y2) - max(rect1.y, rect2.y)
-        return dx >= 0 and dy >= 0
+        return dx > 0 and dy > 0

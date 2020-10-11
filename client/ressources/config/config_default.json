@@ -5,6 +5,7 @@
 		"left": "q",
 		"right": "d",
 		"dash": 56,
+		"dash_preview": "a",
 		"melee": "e",
 		"reload": "r",
 		"panic": "p",

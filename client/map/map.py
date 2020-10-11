@@ -61,9 +61,10 @@ class Map:
         if self.width == 0 or self.height == 0:
             raise MapError('IllegalDimensions')
 
+    @profile
     def render(self):
         for object in self.objects:
-            if isinstance(object, Rect):
+            if isinstance(object, Rect) and (not self.env.optimize or self.env.in_viewBox(object)):
                 rect = object
                 if MAP_TEXTURE:
                     self.env.rendering_stack.append(RenderedObject('image', rect.x, rect.y, image=self.rects_texture[rect.id]))

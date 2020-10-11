@@ -114,7 +114,6 @@ class Player:
             if math.sqrt((self.x - c_center['x'])**2 + (self.y - c_center['y'])**2) < c.size:
                 c.on_collect(self)
 
-
     def hit(self, victim, damage):
         self.weapon.bullets_hit += 1
         if victim.id in self.hit_player:
@@ -141,7 +140,6 @@ class Player:
             self.health = 0
         player.hit(self, real_damage)
 
-    @profile
     def collide_wall(self):
         x, y = self.x, self.y
         collide_x, collide_y = False, False
@@ -217,11 +215,13 @@ class Player:
                 self.speed = self.dash_speed
                 self.dash_animation.append({'x': self.x, 'y': self.y})
                 self.move(math.cos(self.dir), math.sin(self.dir))
+                # self.check_shoot_collide()
+                # self.check_collectible_collide()
                 self.render(dash=True)
             self.dash_left -= 1
             self.movement_allowed = True
             cooldown = Timer(self.dash_cooldown, self.new_dash)
-            cooldown.daemon=True
+            cooldown.daemon = True
             cooldown.start()
 
     def new_dash(self):
@@ -335,10 +335,14 @@ class OwnPlayer(Player):
         keyboard.on_press_key(self.key['reload'], self.reload)
         keyboard.on_press_key(self.key['panic'], self.env.panic)
         keyboard.on_press_key(self.key['dash'], self.dash)
+        # keyboard.on_press_key(self.key['dash_preview'], self.toggle_dash_preview)
         keyboard.on_press_key('&', lambda *e: self.env.change_scale(value=1))
         keyboard.on_press_key('é', lambda *e: self.env.change_scale(value=self.env.viewArea['width']/self.env.canvas.width))
         keyboard.on_press_key('à', lambda *e: self.env.toggle_optimization())
         keyboard.on_press_key('"', lambda *e: self.toggle_aimbot())
+
+    def toggle_dash_preview(self, *event):
+        self.dash_preview = not self.dash_preview
 
     def detect_keypress(self):
         if not self.movement_allowed: return

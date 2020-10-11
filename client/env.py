@@ -20,6 +20,8 @@ from collectible import Heal, LandMine
 HEAL_NUMBER = 15
 MINE_NUMBER = 20
 
+SOUND_ALLOWS = True
+
 class Env:
     def __init__(self, fen, map, canvas, max_framerate=144):
         self.fen = fen
@@ -89,6 +91,8 @@ class Env:
                 shoot.update()
 
     def manage_sounds(self):
+        if not SOUND_ALLOWS:
+            return
         for sound in self.sounds:
             if self.in_viewBox(sound.player) and self.own_player:
                 dist = self.own_player.dist(sound.player)
@@ -126,7 +130,10 @@ class Env:
         self.rendering_stack.append(RenderedObject('rect', 0, 0, width=self.width, height=self.height, color='#F1E7DC', zIndex=1, persistent=True))
 
     def in_viewBox(self, obj):
+        if obj.in_viewBox and not obj.in_viewBox == 'undefined':
+            return True if obj.in_viewBox == 'in' else False
         viewBox = Box(self.viewArea['x'], self.viewArea['y'], self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'] + self.viewArea['height'])
+        in_vb = False
         if isinstance(obj, RenderedObject):
             if obj.persistent: return True
             if obj.type == 'rect':
@@ -134,13 +141,15 @@ class Env:
             elif obj.type == 'circle':
                 pass
             elif obj.type == 'line':
-                return obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x2 <= viewBox.x2 and obj.y2 <= viewBox.y2
+                in_vb = obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x2 <= viewBox.x2 and obj.y2 <= viewBox.y2
             else:
-                return True
+                in_vb = True
         elif isinstance(obj, Rect):
-            return Rect.intersect(viewBox, obj)
+            in_vb = Rect.intersect(viewBox, obj)
         elif obj.x and obj.y:
-            return obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x <= viewBox.x2 and obj.y <= viewBox.y2
+            in_vb = obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x <= viewBox.x2 and obj.y <= viewBox.y2
+        obj.in_viewBox = 'in' if in_vb else 'out'
+        return in_vb
 
     @profile
     def update(self):
@@ -171,6 +180,7 @@ class Env:
 
         self.fen.after(1000 // self.max_framerate, self.update)
 
+    @profile
     def render(self):
         ## Pre-Render
         self.background()
@@ -193,7 +203,11 @@ class Env:
             self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'] + self.viewArea['height'], width=self.viewArea['width'], height=0, zIndex=2))
 
         ## Canvas rendering
-        rendering_stack = [obj for obj in self.rendering_stack if self.in_viewBox(obj)] if self.optimize else self.rendering_stack
+        rendering_stack = self.rendering_stack #[obj for obj in self.rendering_stack if self.in_viewBox(obj)] if self.optimize else self.rendering_stack
         self.rendering_stack = sorted(rendering_stack, key=lambda obj: obj.zIndex)
         self.canvas.render(self.rendering_stack)
+
+        ## Reset
         self.rendering_stack = []
+        for obj in self.map.objects:
+            obj.in_viewBox = 'undefined'

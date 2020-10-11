@@ -11,13 +11,15 @@ class Sound:
     def __init__(self, file, from_player=None):
         self.file = file
         self.player = from_player
-        self.audio = mixer.Sound(os.path.join(SOUND_PATH, self.file))
+        self.audio = None # mixer.Sound(os.path.join(SOUND_PATH, self.file))
 
     def __repr__(self):
         return f'Sound of {self.file} at <{id(self)}>'
 
     def set_volume(self, volume):
+        return
         self.audio.set_volume(volume)
 
     def play(self):
+        return
         self.audio.play()

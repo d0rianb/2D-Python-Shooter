@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# TODO : extend from class object
 class Circle:
     def __init__(self, id, x, y, radius, map, multiplier=1):
         self.id = int(id)
@@ -19,6 +20,9 @@ class Circle:
         self.y1 = self.y - self.radius
         self.x2 = self.x + self.radius
         self.y2 = self.y + self.radius
+
+        self.in_viewBox = 'undefined' # 'in' | 'out' | 'undefined'
+
 
         self.color = '#757575'
 
