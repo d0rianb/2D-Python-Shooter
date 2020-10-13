@@ -21,7 +21,7 @@ except ImportError as e:
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
 
-from test import profile
+from scripts import profile
 from app import LocalGame, OnlineGame, SplashScreen, Settings
 
 __author__     = "Dorian Beauchesne"
@@ -58,6 +58,7 @@ def parse_args(argv):
                 MODE = val
         elif '-' in arg:
             pass
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1: parse_args(sys.argv)

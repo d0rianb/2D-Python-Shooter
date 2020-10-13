@@ -12,6 +12,7 @@ import json
 
 from player import OwnPlayer, OnlinePlayer, Target
 from env import Env
+from config import Config
 from interface import Interface, ChatInfo
 from client import Client
 from render import Canvas
@@ -29,22 +30,14 @@ class App:
         self.name = player_name
         self.role = role
         self.fen = tk.Tk()
-        self.config = {}
-        self.init()
-
-    def init(self):
-        self.get_config()
+        self.config = Config(config_path)
         self.map = Map(MAP, 'map')
         self.canvas = Canvas(self.fen, self.map.width, self.map.height)
-        self.env = Env(self.fen, self.map, self.canvas, max_framerate=self.config['max_framerate'])
+        self.env = Env(self.fen, self.map, self.canvas, max_framerate=self.config.get('max_framerate'))
         self.player = OwnPlayer(0, 50, 50, self.env, self.name, self.role)
-        self.player.bind_keys(self.config['key_binding'])
+        self.player.bind_keys(self.config.get('key_binding'))
         self.interface = Interface(self.player, self.env)
         self.chat = ChatInfo(self.env)
-
-    def get_config(self):
-        with open(config_path, 'r') as settings_file:
-            self.config = json.load(settings_file)
 
     def start(self):
         self.fen.state("zoomed")
@@ -92,19 +85,14 @@ class OnlineGame(App):
 class SplashScreen:
     def __init__(self, online_callback, offline_callback, settings_callback):
         self.fen = tk.Tk()
-        self.config = {}
+        self.config = Config(config_path)
         self.online_callback = online_callback
         self.offline_callback = offline_callback
         self.settings_callback = settings_callback
         self.path = os.path.dirname(os.path.realpath(__file__))
-        self.get_config()
-
-    def get_config(self):
-        with open(config_path, 'r') as settings_file:
-            self.config = json.load(settings_file)
 
     def create_window(self):
-        self.fen.title('Bievenue dans ' + GAME_NAME)
+        self.fen.title('Bienvenue dans ' + GAME_NAME)
         self.fen.attributes('-topmost', True)
         self.width, self.height = self.fen.winfo_screenwidth(), self.fen.winfo_screenheight()
         L, H = self.width / 3, self.height / 2
@@ -117,11 +105,11 @@ class SplashScreen:
         subtitle_font = tkFont.Font(family='Avenir Next', size=22, weight='normal')
         regular_font = tkFont.Font(family='Avenir Next', size=15, weight='normal')
 
-        title = tk.Label(self.fen, text='Bievenue dans ' + GAME_NAME, font=title_font)
+        title = tk.Label(self.fen, text='Bienvenue dans ' + GAME_NAME, font=title_font)
         subtitle = tk.Label(self.fen, text='Sélectionnez le mode de jeu : ', font=subtitle_font)
 
-        name_var = tk.StringVar(self.fen, value=self.config['default_name'])
-        difficulty_var = tk.IntVar(self.fen, value=self.config['default_difficulty'])
+        name_var = tk.StringVar(self.fen, value=self.config.get('default_name'))
+        difficulty_var = tk.IntVar(self.fen, value=self.config.get('default_difficulty'))
 
         name_label = tk.Label(self.fen, text='Nom : ', font=regular_font)
         name_entry = tk.Entry(self.fen, textvariable=name_var, width=20)
@@ -129,7 +117,7 @@ class SplashScreen:
         role_label = tk.Label(self.fen, text='Role : ', font=regular_font)
         role_list = []
         selected_role = tk.StringVar()
-        selected_role.set(self.config['default_role'])
+        selected_role.set(self.config.get('default_role'))
         for (role, value) in ROLES:
             check_box = tk.Radiobutton(self.fen, text=role, value=value, variable=selected_role,
                                         indicatoron=0, width=10, pady=4, selectcolor='blue', relief=tk.SUNKEN)
@@ -169,7 +157,7 @@ class SplashScreen:
             if mode == 'PvE':
                 self.offline_callback(name_var.get(), difficulty_var.get(), selected_role.get())
             elif mode == 'PvP':
-                self.online_callback(name_var.get(), self.config['server_ip'], int(self.config['server_port']), selected_role.get())
+                self.online_callback(name_var.get(), self.config.get('server_ip'), int(self.config.get('server_port')), selected_role.get())
 
     def start(self):
         self.fen.mainloop()
@@ -178,17 +166,11 @@ class SplashScreen:
 class Settings:
     def __init__(self, parent):
         self.parent = parent
-        self.config = {}
+        self.config = Config(config_path)
         self.new_config = {}
         self.platform = platform.system()
         self.path = os.path.dirname(os.path.realpath(__file__))
-        self.get_config()
         self.create_window()
-
-    def get_config(self):
-        with open(config_path, 'r') as file:
-            self.config = json.load(file)
-            self.new_config = self.config.copy()
 
     def create_window(self):
         self.fen = tk.Toplevel()
@@ -202,12 +184,12 @@ class Settings:
         subtitle_font = tkFont.Font(family='Avenir Next', size=20, weight='normal')
         regular_font = tkFont.Font(family='Avenir Next', size=15, weight='normal')
 
-        max_framerate = tk.IntVar(self.fen, value=self.config['max_framerate'])
-        default_difficulty = tk.IntVar(self.fen, value=self.config['default_difficulty'])
-        default_role = tk.StringVar(self.fen, value=self.config['default_role'])
-        default_ip = tk.StringVar(self.fen, value=self.config['server_ip'])
-        default_port = tk.IntVar(self.fen, value=self.config['server_port'])
-        default_name = tk.StringVar(self.fen, value=self.config['default_name'])
+        max_framerate = tk.IntVar(self.fen, value=self.config.get('max_framerate'))
+        default_difficulty = tk.IntVar(self.fen, value=self.config.get('default_difficulty'))
+        default_role = tk.StringVar(self.fen, value=self.config.get('default_role'))
+        default_ip = tk.StringVar(self.fen, value=self.config.get('server_ip'))
+        default_port = tk.IntVar(self.fen, value=self.config.get('server_port'))
+        default_name = tk.StringVar(self.fen, value=self.config.get('default_name'))
 
         title = tk.Label(self.fen, text='Paramètres', font=title_font)
         max_framerate_label = tk.Label(self.fen, text='Framerate Maximum (fps)')
@@ -218,15 +200,13 @@ class Settings:
         default_port_label = tk.Label(self.fen, text='Port par défaut')
 
         def validate():
-            self.new_config['max_framerate'] = max_framerate.get()
-            self.new_config['default_difficulty'] = default_difficulty.get()
-            self.new_config['default_role'] = default_role.get()
-            self.new_config['server_ip'] = default_ip.get()
-            self.new_config['server_port'] = default_port.get()
-            self.new_config['default_name'] = default_name.get()
-            with open(config_path, 'w') as config:
-                config.write(json.dumps(self.new_config))
-            self.parent.get_config()
+            self.config.set('max_framerate', max_framerate.get())
+            self.config.set('default_difficulty', default_difficulty.get())
+            self.config.set('default_role', default_role.get())
+            self.config.set('server_ip', default_ip.get())
+            self.config.set('server_port', default_port.get())
+            self.config.set('default_name', default_name.get())
+            self.config.save()
             self.parent.create_window()
             self.fen.destroy()
 
@@ -287,8 +267,9 @@ class Settings:
     		'melee': 'Coup de mêlée',
     		'reload': 'Recharger',
     		'panic': 'Panique',
-    		'help': 'Aide'}
-        for id, key in enumerate(self.config['key_binding'].keys()):
+    		'help': 'Aide'
+        }
+        for id, key in enumerate(self.config.get('key_binding').keys()):
             self.create_key_bind(key, labels[key], id)
 
         tk.Button(self.key_fen, text='Valider', command=self.validate, padx=15, pady=2, relief=tk.FLAT).place(relx=0.4, rely=0.9, anchor=tk.CENTER)

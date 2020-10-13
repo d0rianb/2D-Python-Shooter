@@ -5,7 +5,6 @@ from object.color import Color
 
 BG_COLOR = Color((241, 231, 220))
 
-
 class Collectible:
     def __init__(self, id, x, y, type, env):
         self.id = id
