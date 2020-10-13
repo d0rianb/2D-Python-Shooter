@@ -23,7 +23,7 @@ MINE_NUMBER = 20
 SOUND_ALLOWS = True
 
 class Env:
-    def __init__(self, fen, map, canvas, max_framerate=144):
+    def __init__(self, fen, map, canvas, max_framerate=60):
         self.fen = fen
         self.canvas = canvas
         self.map = map
@@ -130,8 +130,9 @@ class Env:
         self.rendering_stack.append(RenderedObject('rect', 0, 0, width=self.width, height=self.height, color='#F1E7DC', zIndex=1, persistent=True))
 
     def in_viewBox(self, obj):
-        if obj.in_viewBox and not obj.in_viewBox == 'undefined':
-            return True if obj.in_viewBox == 'in' else False
+        if hasattr(obj, 'in_viewBox'):
+                if not obj.in_viewBox == 'undefined':
+                    return True if obj.in_viewBox == 'in' else False
         viewBox = Box(self.viewArea['x'], self.viewArea['y'], self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'] + self.viewArea['height'])
         in_vb = False
         if isinstance(obj, RenderedObject):

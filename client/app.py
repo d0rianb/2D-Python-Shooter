@@ -36,6 +36,8 @@ class App:
         self.env = Env(self.fen, self.map, self.canvas, max_framerate=self.config.get('max_framerate'))
         self.player = OwnPlayer(0, 50, 50, self.env, self.name, self.role)
         self.player.bind_keys(self.config.get('key_binding'))
+        print('key_binding')
+        print(self.config.get('key_binding'))
         self.interface = Interface(self.player, self.env)
         self.chat = ChatInfo(self.env)
 
@@ -252,7 +254,7 @@ class Settings:
         width, height = self.fen.winfo_screenwidth(), self.fen.winfo_screenheight()
         L, H = width / 2, height / 1.8
         X, Y = (width - L) / 2, (height - H) / 2
-        self.key_fen.geometry('%dx%d%+d%+d' % (L,H,X,Y))
+        self.key_fen.geometry('%dx%d%+d%+d' % (L, H, X, Y))
         self.update_key_bind()
 
     def update_key_bind(self):
@@ -267,26 +269,27 @@ class Settings:
     		'melee': 'Coup de mêlée',
     		'reload': 'Recharger',
     		'panic': 'Panique',
+            'dash_preview': 'Dash Preview',
     		'help': 'Aide'
         }
-        for id, key in enumerate(self.config.get('key_binding').keys()):
-            self.create_key_bind(key, labels[key], id)
+        for id, key in enumerate(self.config.get('key_binding', True).keys()):
+            if key in labels.keys():
+                self.create_key_bind(key, labels[key], id)
 
         tk.Button(self.key_fen, text='Valider', command=self.validate, padx=15, pady=2, relief=tk.FLAT).place(relx=0.4, rely=0.9, anchor=tk.CENTER)
         tk.Button(self.key_fen, text='Défaut', command=self.default, padx=15, pady=2, relief=tk.FLAT).place(relx=0.6, rely=0.9, anchor=tk.CENTER)
 
     def create_key_bind(self, key, label, id):
         offset_height = 0.65
-        key_text = 'Shift' if self.new_config['key_binding'][key] == 56 else str(self.new_config['key_binding'][key]).capitalize()
+        key_text = 'Shift' if self.config.get('key_binding', True)[key] == 56 else str(self.config.get('key_binding', True)[key]).capitalize()
         tk.Label(self.key_fen, text=label).place(relx=0.1, rely=(id + offset_height)/10, anchor=tk.W)
         tk.Button(self.key_fen, text=key_text, command=lambda: self.detect_keypress(key), width=10).place(relx=0.9, rely=(id + offset_height)/10, anchor=tk.E)
 
     def detect_keypress(self, key):
-
         new_key = keyboard.read_key()
         if self.platform == 'Darwin' and new_key == 'shift':
             new_key = 56
-        self.new_config['key_binding'][key] = new_key
+        self.config.set(f'key_binding.{key}', new_key)
         self.update_key_bind()
 
     def default(self):
@@ -295,7 +298,5 @@ class Settings:
         self.update_key_bind()
 
     def validate(self):
-        with open(config_path, 'w') as config:
-            config.write(json.dumps(self.new_config))
-        self.parent.get_config()
+        self.config.save()
         self.fen.destroy()

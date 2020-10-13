@@ -27,7 +27,9 @@ default_keys = {
     'dash': 56,
     'dash_preview': 'a',
     'reload': 'r',
-    'panic': 'p'
+    'panic': 'p',
+    'melee': 'e',
+    'help': 'h'
 }
 SOUND_PATH = 'ressources/sound/'
 target_name = ['Goebbels', 'Charlotte', 'Lénine', 'Klechkovski', 'Kevin', 'Pol Pot', 'Al Kartraz', 'Ben Laden', 'Jbzz', 'Fukushima', 'Karamazov', 'Jésus', 'Bill', 'Shoshana']
