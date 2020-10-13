@@ -54,7 +54,7 @@ class Player:
         self.mouse = {'x': 0, 'y': 0}
         self.color = '#0c6af7'
         self.theorical_speed = 4.0
-        self.speed = self.theorical_speed * 60 / self.env.framerate  # computed value
+        self.speed = self.theorical_speed * 60 / self.env.stats.framerate  # computed value
         self.dash_speed = 4.0
         self.dash_length = 38  # cycle
         self.dash_preview = False
@@ -285,7 +285,7 @@ class Player:
         self.mouse['y'] = (self.env.viewArea['y'] + self.env.fen.winfo_pointery() - self.env.fen.winfo_rooty()) / self.env.scale
         deltaX = self.mouse['x'] - self.x if (self.x != self.mouse['x']) else 1
         deltaY = self.mouse['y'] - self.y
-        self.speed = self.theorical_speed * 60 / self.env.framerate
+        self.speed = self.theorical_speed * 60 / self.env.stats.framerate
         self.total_damage = sum(self.hit_player.values())
         if self.aimbot:
             closer_player = self.detect_closer_player()

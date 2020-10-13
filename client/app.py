@@ -36,8 +36,6 @@ class App:
         self.env = Env(self.fen, self.map, self.canvas, max_framerate=self.config.get('max_framerate'))
         self.player = OwnPlayer(0, 50, 50, self.env, self.name, self.role)
         self.player.bind_keys(self.config.get('key_binding'))
-        print('key_binding')
-        print(self.config.get('key_binding'))
         self.interface = Interface(self.player, self.env)
         self.chat = ChatInfo(self.env)
 

@@ -16,6 +16,7 @@ import random
 from object.rect import Rect, Box
 from render import RenderedObject
 from collectible import Heal, LandMine
+from stats import Stats
 
 HEAL_NUMBER = 15
 MINE_NUMBER = 20
@@ -33,8 +34,7 @@ class Env:
         self.scale = 1
         self.ratio = self.width / self.height
         self.max_framerate = max_framerate
-        self.framerate = self.max_framerate
-        self.last_frame_timestamp = 0
+        self.stats = Stats(self)
         self.own_player = None
         self.collectible = []
         self.players = []
@@ -148,7 +148,7 @@ class Env:
         elif isinstance(obj, Rect):
             in_vb = Rect.intersect(viewBox, obj)
         elif obj.x and obj.y:
-            in_vb = obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x <= viewBox.x2 and obj.y <= viewBox.y2
+            in_vb = viewBox.x <= obj.x <= viewBox.x2 and viewBox.y <= obj.y <= viewBox.y2
         obj.in_viewBox = 'in' if in_vb else 'out'
         return in_vb
 
@@ -169,16 +169,9 @@ class Env:
         self.render()
 
         if self.tick % 10 == 0:
-
-            self.GAME_IS_FOCUS = True if self.fen.focus_get() != None else False
-            # Update viewArea
+            self.GAME_IS_FOCUS = True if self.fen.focus_get() is not None else False
             self.viewArea['width'], self.viewArea['height'], *offset = map(lambda val: int(val), re.split(r'[+x]', self.fen.geometry()))
-            # Manage Framerate
-            end_time = time.time()
-            framerate = int(10 / (end_time - self.last_frame_timestamp))
-            self.framerate = framerate if framerate != 0 and framerate <= self.max_framerate else self.max_framerate
-            self.last_frame_timestamp = end_time
-
+            self.stats.calculate(10)
         self.fen.after(1000 // self.max_framerate, self.update)
 
     @profile

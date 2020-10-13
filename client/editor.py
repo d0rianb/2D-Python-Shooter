@@ -4,7 +4,7 @@
 import tkinter as tk
 import os, platform, sys
 
-from test import profile
+from scripts import profile
 from render import Canvas
 from map.editor.env import Env
 from map.editor.map import Map

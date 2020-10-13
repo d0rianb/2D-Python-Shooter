@@ -21,6 +21,10 @@ Default keybindings is :
 - __Melee__ : E
 
 ### To-Do
+- Renderer accepts Color Object not hex
+- Dash class fro Player
+- Stat class fro Env
+- Reorganize project
 - Refactor code with types
 - Add textures
 - Server

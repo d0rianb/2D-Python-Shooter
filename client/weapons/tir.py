@@ -21,7 +21,7 @@ class Tir:
         self.range = self.weapon.range
         self.from_player = self.weapon.player
         self.theorical_speed = self.weapon.shoot_speed
-        self.speed = self.theorical_speed * 60 / self.from_player.env.framerate
+        self.speed = self.theorical_speed * 60 / self.from_player.env.stats.framerate
         self.size = self.weapon.munition_size
         self.head = {'x': x, 'y': y}
         self.env = self.from_player.env
@@ -73,7 +73,7 @@ class Tir:
             self.damage *= self.damage_decrease['factor']
             self.has_decreased_damage = True
 
-        self.speed = self.theorical_speed * 60 / self.env.framerate
+        self.speed = self.theorical_speed * 60 / self.env.stats.framerate
         self.x += math.cos(self.dir) * self.speed
         self.y += math.sin(self.dir) * self.speed
         self.head = {
@@ -125,7 +125,7 @@ class Ray(Tir):
             self.weapon.reload()
 
         self.head_position(self.env.map)
-        self.speed = self.theorical_speed * 60 / self.env.framerate
+        self.speed = self.theorical_speed * 60 / self.env.stats.framerate
         self.x = self.from_player.x + math.cos(self.from_player.dir) * 12
         self.y = self.from_player.y +  math.sin(self.from_player.dir) * 12
         self.dir = self.from_player.dir

@@ -59,7 +59,8 @@ class Interface:
         self.height = self.env.viewArea['height']
         self.informations = {
             'TopLeft': {
-                'FrameRate': self.env.framerate,
+                'FrameRate': str(self.env.stats.framerate) + ' fps',
+                'TimeFrame': '{0:.3f} ms'.format(self.env.stats.frametime*100),
                 'Ping': '{0:.2g} ms'.format(self.player.client.ping) if self.player.client else 0
             },
             'TopRight': {
