@@ -4,16 +4,18 @@
 import os
 import platform
 import sys
-import pip._internal as pip# import pkg_resources
+import pip._internal as pip  # import pkg_resources
+
 
 ## INSTALLATION SCRIPT
 
-
-def isMac(self):
+def isMac():
     return platform.system() == 'Darwin'
 
-def isWindows(self):
+
+def isWindows():
     return platform.system() == 'Windows'
+
 
 pkgs = ['keyboard', 'pygame']
 

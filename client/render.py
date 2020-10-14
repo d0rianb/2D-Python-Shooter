@@ -20,7 +20,6 @@ class Canvas:
         object.y2 *= scale
         object.width *= scale
         object.height *= scale
-        # self.canvas.config(width=200)
         return object
 
     def render(self, stack):

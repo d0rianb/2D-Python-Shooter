@@ -138,9 +138,9 @@ class Env:
         if isinstance(obj, RenderedObject):
             if obj.persistent: return True
             if obj.type == 'rect':
-                return Rect.intersect(viewBox, obj)
+                in_vb = Rect.intersect(viewBox, obj)
             elif obj.type == 'circle':
-                pass
+                in_vb = Circle.intersect(viewBox, obj)
             elif obj.type == 'line':
                 in_vb = obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x2 <= viewBox.x2 and obj.y2 <= viewBox.y2
             else:
@@ -156,6 +156,8 @@ class Env:
     def update(self):
         if not self.GAME_IS_RUNNING: return
         self.tick += 1
+        run_stats = self.tick % 10 == 0
+        if run_stats: self.stats.frame_start()
         if len(self.players) > 0:
             for player in self.players_alive:
                 player.update()
@@ -168,10 +170,11 @@ class Env:
         self.interface.update()
         self.render()
 
-        if self.tick % 10 == 0:
+        if run_stats:
             self.GAME_IS_FOCUS = True if self.fen.focus_get() is not None else False
             self.viewArea['width'], self.viewArea['height'], *offset = map(lambda val: int(val), re.split(r'[+x]', self.fen.geometry()))
-            self.stats.calculate(10)
+            self.stats.calculate_fps(sample=10)
+            self.stats.frame_end()
         self.fen.after(1000 // self.max_framerate, self.update)
 
     @profile
@@ -197,11 +200,13 @@ class Env:
             self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'] + self.viewArea['height'], width=self.viewArea['width'], height=0, zIndex=2))
 
         ## Canvas rendering
-        rendering_stack = self.rendering_stack #[obj for obj in self.rendering_stack if self.in_viewBox(obj)] if self.optimize else self.rendering_stack
+        rendering_stack = self.rendering_stack
         self.rendering_stack = sorted(rendering_stack, key=lambda obj: obj.zIndex)
         self.canvas.render(self.rendering_stack)
 
         ## Reset
         self.rendering_stack = []
         for obj in self.map.objects:
+            obj.in_viewBox = 'undefined'
+        for obj in self.collectible:
             obj.in_viewBox = 'undefined'

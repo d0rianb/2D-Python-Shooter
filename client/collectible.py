@@ -15,6 +15,9 @@ class Collectible:
         self.env = env
         self.size = 25
         self.is_active = True
+        self.in_viewBox = 'undefined'
+        self.cross_width = 4
+        self.cross_height = 15
 
     def on_collect(self, player):
         print(f'{player.name} collected {self.type}')
@@ -22,9 +25,9 @@ class Collectible:
 
     def render(self):
         if not self.is_active: return
-        self.env.rendering_stack.append(
-            RenderedObject('oval', self.x, self.y, x2=self.x + self.size, y2=self.y + self.size, color=self.color,
-                           zIndex=4))
+        self.env.rendering_stack.append(RenderedObject('rect', self.x + self.size/2 - self.cross_width/2, self.y + self.size/2 - self.cross_height/2, width=self.cross_width, height=self.cross_height, color='#fff',border=0, zIndex=6))
+        self.env.rendering_stack.append(RenderedObject('rect', self.x + self.size/2 - self.cross_height/2, self.y + self.size/2 - self.cross_width/2, width=self.cross_height, height=self.cross_width, color='#fff',border=0, zIndex=6))
+        self.env.rendering_stack.append(RenderedObject('oval', self.x, self.y, x2=self.x + self.size, y2=self.y + self.size, color=self.color, zIndex=4))
 
 
 class Heal(Collectible):

@@ -27,7 +27,7 @@ class Circle:
         self.color = '#757575'
 
         @staticmethod
-        def intersect(rect1, rect2):
-            dx = min(rect1.x2, rect2.x2) - max(rect1.x, rect2.x)
-            dy = min(rect1.y2, rect2.y2) - max(rect1.y, rect2.y)
-            return False#dx >= 0 and dy >= 0
+        def intersect(circle1, circle2):
+            dx = min(circle1.x2, circle2.x2) - max(circle1.x, circle2.x)
+            dy = min(circle1.y2, circle2.y2) - max(circle1.y, circle2.y)
+            return dx > 0 and dy > 0

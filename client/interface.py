@@ -59,8 +59,9 @@ class Interface:
         self.height = self.env.viewArea['height']
         self.informations = {
             'TopLeft': {
-                'FrameRate': str(self.env.stats.framerate) + ' fps',
-                'TimeFrame': '{0:.3f} ms'.format(self.env.stats.frametime*100),
+                'FPS': str(self.env.stats.framerate),
+                'Theorical FPS': str(self.env.stats.theorical_max_fps),
+                'TimeFrame': '{0:.3f} ms'.format(self.env.stats.frametime*1000),
                 'Ping': '{0:.2g} ms'.format(self.player.client.ping) if self.player.client else 0
             },
             'TopRight': {
@@ -254,7 +255,7 @@ class Menu:
             deltaY =  self.env.viewArea['y'] - (len(stats) / 2) * (self.padding)
         rect_width, rect_height = 400, 200
         self.env.rendering_stack.append(RenderedObject('text', self.x + deltaX, self.y + deltaY + index*self.padding, text=stat_text, color='#222', font=self.font, zIndex=10, anchor='center'))
-        self.env.rendering_stack.append(RenderedObject('rect', self.x + self.env.viewArea['x'] - rect_width/2, self.y + self.env.viewArea['y'] - rect_height/2, width=rect_width, height=rect_height, color=bgcolor, zIndex=9))
+        self.env.rendering_stack.append(RenderedObject('rect', self.x + self.env.viewArea['x'] - rect_width/2, self.y + self.env.viewArea['y'] - rect_height/2, width=rect_width, height=rect_height, color=bgcolor, borderwidth=5, zIndex=9))
 
     def render(self):
         if not self.is_active: return

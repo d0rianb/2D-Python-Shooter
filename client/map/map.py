@@ -69,10 +69,10 @@ class Map:
                 if MAP_TEXTURE:
                     self.env.rendering_stack.append(RenderedObject('image', rect.x, rect.y, image=self.rects_texture[rect.id]))
                 else:
-                    self.env.rendering_stack.append(RenderedObject('rect', rect.x, rect.y, width=rect.width, height=rect.height, color=rect.color, zIndex=5))
+                    self.env.rendering_stack.append(RenderedObject('rect', rect.x, rect.y, width=rect.width, height=rect.height, color=rect.color, zIndex=7))
             elif isinstance(object, Circle):
                 circle = object
-                self.env.rendering_stack.append(RenderedObject('oval', circle.x1, circle.y1, x2=circle.x2, y2=circle.y2, color=circle.color, zIndex=5))
+                self.env.rendering_stack.append(RenderedObject('oval', circle.x1, circle.y1, x2=circle.x2, y2=circle.y2, color=circle.color, zIndex=7))
 
 
 class MapError(Exception):
