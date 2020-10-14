@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from collections import namedtuple
+from object.object import Object
 
 Box = namedtuple('Box', 'x y x2 y2')
 
-# TODO : extend from class object
-class Rect:
+class Rect(Object):
     def __init__(self, _id, x, y, width, height, map, multiplier=1, viewBox_init=True):
+        super(Rect, self).__init__(_id, 0, 0)
         self.id = int(_id)
         self.multiplier = multiplier
         self.rel_x = float(x) * float(self.multiplier)
@@ -17,7 +18,6 @@ class Rect:
         self.rel_height = float(height) * float(self.multiplier)
         self.rel_x2 = self.rel_x + self.rel_width
         self.rel_y2 = self.rel_y + self.rel_height
-        self.in_viewBox = 'undefined' # 'in' | 'out' | 'undefined'
         self.map = map
 
         self.color = '#757575'
@@ -58,8 +58,3 @@ class Rect:
         y2 = max(self.rel_y2, rect.rel_y2)
         return Rect(self.id, x, y, x2-x, y2-y, self.map)
 
-    @staticmethod
-    def intersect(rect1, rect2):
-        dx = min(rect1.x2, rect2.x2) - max(rect1.x, rect2.x)
-        dy = min(rect1.y2, rect2.y2) - max(rect1.y, rect2.y)
-        return dx > 0 and dy > 0

@@ -304,23 +304,23 @@ class Player:
     def render(self, dash=False):
         head_position = -20 if self.y > 30 else 20
         head_text = self.name if self.own else '{0}: {1} hp'.format(self.name, math.ceil(self.health))
-        self.env.rendering_stack.append(RenderedObject('oval', self.x - self.size, self.y - self.size, x2=self.x + self.size, y2=self.y + self.size, color=self.color, width=0, dash=self.dash))
+        self.env.add_render_object(RenderedObject('oval', self.x - self.size, self.y - self.size, x2=self.x + self.size, y2=self.y + self.size, color=self.color, width=0, dash=self.dash))
 
         if display_pointer:
-            self.env.rendering_stack.append(RenderedObject('oval', self.mouse['x'] - self.size, self.mouse['y'] - self.size/3, x2=self.mouse['x'] + self.size/3, y2=self.mouse['y'] + self.size, color='red', width=0))
+            self.env.add_render_object(RenderedObject('oval', self.mouse['x'] - self.size, self.mouse['y'] - self.size/3, x2=self.mouse['x'] + self.size/3, y2=self.mouse['y'] + self.size, color='red', width=0))
 
         if not dash:
-            self.env.rendering_stack.append(RenderedObject('line', self.x + math.cos(self.dir) * 12, self.y + math.sin(self.dir) * 12, x2=self.x + math.cos(self.dir) * 20, y2=self.y + math.sin(self.dir) * 20, zIndex=2))
-            self.env.rendering_stack.append(RenderedObject('text', self.x - len(self.name) / 2, self.y + head_position, text=head_text, color='#787878', zIndex=3))
+            self.env.add_render_object(RenderedObject('line', self.x + math.cos(self.dir) * 12, self.y + math.sin(self.dir) * 12, x2=self.x + math.cos(self.dir) * 20, y2=self.y + math.sin(self.dir) * 20, zIndex=2))
+            self.env.add_render_object(RenderedObject('text', self.x - len(self.name) / 2, self.y + head_position, text=head_text, color='#787878', zIndex=3))
             if self.dash_preview:
                 preview_size = self.size
-                self.env.rendering_stack.append(RenderedObject('oval', self.simul_dash['x'] - preview_size, self.simul_dash['y'] - preview_size, x2=self.simul_dash['x'] + preview_size, y2=self.simul_dash['y'] + preview_size, color='#ccc'))
+                self.env.add_render_object(RenderedObject('oval', self.simul_dash['x'] - preview_size, self.simul_dash['y'] - preview_size, x2=self.simul_dash['x'] + preview_size, y2=self.simul_dash['y'] + preview_size, color='#ccc'))
 
         if self.env.tick <= self.dash_animation_end_tick:
             self.env.rendering_stack = [el for el in self.env.rendering_stack if el.role != 'dash_animation']
             for coord in self.dash_animation:
                 size = self.size/len(self.dash_animation) * self.dash_animation.index(coord) / 1.25
-                self.env.rendering_stack.append(RenderedObject('oval', coord['x'] - size, coord['y'] - size, x2=coord['x'] + size, y2=coord['y'] + size, color=self.color, zIndex=3, role='dash_animation'))
+                self.env.add_render_object(RenderedObject('oval', coord['x'] - size, coord['y'] - size, x2=coord['x'] + size, y2=coord['y'] + size, color=self.color, zIndex=3, role='dash_animation'))
 
 class OwnPlayer(Player):
     def __init__(self, id, x, y, env, name, role):

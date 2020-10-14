@@ -2,11 +2,13 @@ import math
 
 from render import RenderedObject
 from object.color import Color
+from object.object import Object
 
 BG_COLOR = Color((241, 231, 220))
 
-class Collectible:
+class Collectible(Object):
     def __init__(self, id, x, y, type, env):
+        super(Collectible, self).__init__(id, x, y)
         self.id = id
         self.x = x
         self.y = y
@@ -25,9 +27,9 @@ class Collectible:
 
     def render(self):
         if not self.is_active: return
-        self.env.rendering_stack.append(RenderedObject('rect', self.x + self.size/2 - self.cross_width/2, self.y + self.size/2 - self.cross_height/2, width=self.cross_width, height=self.cross_height, color='#fff',border=0, zIndex=6))
-        self.env.rendering_stack.append(RenderedObject('rect', self.x + self.size/2 - self.cross_height/2, self.y + self.size/2 - self.cross_width/2, width=self.cross_height, height=self.cross_width, color='#fff',border=0, zIndex=6))
-        self.env.rendering_stack.append(RenderedObject('oval', self.x, self.y, x2=self.x + self.size, y2=self.y + self.size, color=self.color, zIndex=4))
+        self.env.add_render_object(RenderedObject('rect', self.x + self.size/2 - self.cross_width/2, self.y + self.size/2 - self.cross_height/2, width=self.cross_width, height=self.cross_height, color='#fff',border=0, zIndex=6))
+        self.env.add_render_object(RenderedObject('rect', self.x + self.size/2 - self.cross_height/2, self.y + self.size/2 - self.cross_width/2, width=self.cross_height, height=self.cross_width, color='#fff',border=0, zIndex=6))
+        self.env.add_render_object(RenderedObject('oval', self.x, self.y, x2=self.x + self.size, y2=self.y + self.size, color=self.color, zIndex=4))
 
 
 class Heal(Collectible):
@@ -61,6 +63,6 @@ class LandMine(Collectible):
         if not self.is_active: return
         alpha = 1 - 1 / 2 * abs(math.cos(self.env.tick * self.color_speed))
         self.color = Color.blend(self.initial_color, BG_COLOR, alpha).to_hex()
-        self.env.rendering_stack.append(
+        self.env.add_render_object(
             RenderedObject('oval', self.x, self.y, x2=self.x + self.size, y2=self.y + self.size, color=self.color,
                            zIndex=4))

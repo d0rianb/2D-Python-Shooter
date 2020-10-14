@@ -14,6 +14,7 @@ import pprint
 import random
 
 from object.rect import Rect, Box
+from object.object import Object
 from render import RenderedObject
 from collectible import Heal, LandMine
 from stats import Stats
@@ -22,6 +23,7 @@ HEAL_NUMBER = 15
 MINE_NUMBER = 20
 
 SOUND_ALLOWS = True
+
 
 class Env:
     def __init__(self, fen, map, canvas, max_framerate=60):
@@ -73,7 +75,7 @@ class Env:
         if event:
             event = event[0]
             if (self.scale >= 0.1 and event.delta > 0) or (self.scale <= 5 and event.delta < 0):
-                self.scale -= event.delta/100
+                self.scale -= event.delta / 100
         else:
             self.scale = value
 
@@ -96,7 +98,7 @@ class Env:
         for sound in self.sounds:
             if self.in_viewBox(sound.player) and self.own_player:
                 dist = self.own_player.dist(sound.player)
-                volume = abs(1 - (dist/(self.viewArea['width']/1.5)))
+                volume = abs(1 - (dist / (self.viewArea['width'] / 1.5)))
                 sound.set_volume(volume)
                 sound.play()
         self.sounds = []
@@ -127,30 +129,33 @@ class Env:
             self.exit()
 
     def background(self):
-        self.rendering_stack.append(RenderedObject('rect', 0, 0, width=self.width, height=self.height, color='#F1E7DC', zIndex=1, persistent=True))
+        self.rendering_stack.append(
+            RenderedObject('rect', 0, 0, width=self.width, height=self.height, color='#F1E7DC', zIndex=1,
+                           persistent=True))
 
     def in_viewBox(self, obj):
-        if hasattr(obj, 'in_viewBox'):
-                if not obj.in_viewBox == 'undefined':
-                    return True if obj.in_viewBox == 'in' else False
-        viewBox = Box(self.viewArea['x'], self.viewArea['y'], self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'] + self.viewArea['height'])
-        in_vb = False
+        viewBox = Box(self.viewArea['x'], self.viewArea['y'], self.viewArea['x'] + self.viewArea['width'],
+                      self.viewArea['y'] + self.viewArea['height'])
         if isinstance(obj, RenderedObject):
             if obj.persistent: return True
             if obj.type == 'rect':
-                in_vb = Rect.intersect(viewBox, obj)
-            elif obj.type == 'circle':
-                in_vb = Circle.intersect(viewBox, obj)
+                return Object.intersect(viewBox, obj)
+            elif obj.type == 'oval':
+                return Object.intersect(viewBox, obj)
             elif obj.type == 'line':
-                in_vb = obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x2 <= viewBox.x2 and obj.y2 <= viewBox.y2
+                return obj.x >= viewBox.x and obj.y >= viewBox.y and obj.x2 <= viewBox.x2 and obj.y2 <= viewBox.y2
+            elif obj.type == 'text':
+                return True
             else:
-                in_vb = True
-        elif isinstance(obj, Rect):
-            in_vb = Rect.intersect(viewBox, obj)
+                return True
+        elif isinstance(obj, Object):
+            return Object.intersect(viewBox, obj)
         elif obj.x and obj.y:
-            in_vb = viewBox.x <= obj.x <= viewBox.x2 and viewBox.y <= obj.y <= viewBox.y2
-        obj.in_viewBox = 'in' if in_vb else 'out'
-        return in_vb
+            return viewBox.x <= obj.x <= viewBox.x2 and viewBox.y <= obj.y <= viewBox.y2
+
+    def add_render_object(self, render_object):
+        if not self.optimize or self.in_viewBox(render_object):
+            self.rendering_stack.append(render_object)
 
     @profile
     def update(self):
@@ -172,7 +177,8 @@ class Env:
 
         if run_stats:
             self.GAME_IS_FOCUS = True if self.fen.focus_get() is not None else False
-            self.viewArea['width'], self.viewArea['height'], *offset = map(lambda val: int(val), re.split(r'[+x]', self.fen.geometry()))
+            self.viewArea['width'], self.viewArea['height'], *offset = map(lambda val: int(val),
+                                                                           re.split(r'[+x]', self.fen.geometry()))
             self.stats.calculate_fps(sample=10)
             self.stats.frame_end()
         self.fen.after(1000 // self.max_framerate, self.update)
@@ -194,10 +200,18 @@ class Env:
             ray.render()
 
         if self.scale != 1:
-            self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'], width=self.viewArea['width'], height=0, zIndex=2))
-            self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'], width=0, height=self.viewArea['height'], zIndex=2))
-            self.rendering_stack.append(RenderedObject('line', self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'], width=0, height=self.viewArea['height'], zIndex=2))
-            self.rendering_stack.append(RenderedObject('line', self.viewArea['x'], self.viewArea['y'] + self.viewArea['height'], width=self.viewArea['width'], height=0, zIndex=2))
+            self.rendering_stack.append(
+                RenderedObject('line', self.viewArea['x'], self.viewArea['y'], width=self.viewArea['width'], height=0,
+                               zIndex=2))
+            self.rendering_stack.append(
+                RenderedObject('line', self.viewArea['x'], self.viewArea['y'], width=0, height=self.viewArea['height'],
+                               zIndex=2))
+            self.rendering_stack.append(
+                RenderedObject('line', self.viewArea['x'] + self.viewArea['width'], self.viewArea['y'], width=0,
+                               height=self.viewArea['height'], zIndex=2))
+            self.rendering_stack.append(
+                RenderedObject('line', self.viewArea['x'], self.viewArea['y'] + self.viewArea['height'],
+                               width=self.viewArea['width'], height=0, zIndex=2))
 
         ## Canvas rendering
         rendering_stack = self.rendering_stack
@@ -206,7 +220,3 @@ class Env:
 
         ## Reset
         self.rendering_stack = []
-        for obj in self.map.objects:
-            obj.in_viewBox = 'undefined'
-        for obj in self.collectible:
-            obj.in_viewBox = 'undefined'

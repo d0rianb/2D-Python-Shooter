@@ -64,15 +64,15 @@ class Map:
     @profile
     def render(self):
         for object in self.objects:
-            if isinstance(object, Rect) and (not self.env.optimize or self.env.in_viewBox(object)):
+            if isinstance(object, Rect):
                 rect = object
                 if MAP_TEXTURE:
-                    self.env.rendering_stack.append(RenderedObject('image', rect.x, rect.y, image=self.rects_texture[rect.id]))
+                    self.env.add_render_object(RenderedObject('image', rect.x, rect.y, image=self.rects_texture[rect.id]))
                 else:
-                    self.env.rendering_stack.append(RenderedObject('rect', rect.x, rect.y, width=rect.width, height=rect.height, color=rect.color, zIndex=7))
+                    self.env.add_render_object(RenderedObject('rect', rect.x, rect.y, width=rect.width, height=rect.height, color=rect.color, zIndex=7))
             elif isinstance(object, Circle):
                 circle = object
-                self.env.rendering_stack.append(RenderedObject('oval', circle.x1, circle.y1, x2=circle.x2, y2=circle.y2, color=circle.color, zIndex=7))
+                self.env.add_render_object(RenderedObject('oval', circle.x1, circle.y1, x2=circle.x2, y2=circle.y2, color=circle.color, zIndex=7))
 
 
 class MapError(Exception):

@@ -28,7 +28,7 @@ class Interface:
     def parse(self, position, x, y, anchor):
         infos = self.informations[position]
         for (index, info) in enumerate(infos):
-            self.env.rendering_stack.append(RenderedObject('text', x, y + index*self.padding,
+            self.env.add_render_object(RenderedObject('text', x, y + index*self.padding,
                 text='{0}: {1}'.format(info, infos[info]),
                 anchor=anchor,
                 color=self.color,

@@ -82,7 +82,7 @@ class Tir:
         }
 
     def render(self):
-        self.env.rendering_stack.append(RenderedObject('line', self.x, self.y, x2=self.head['x'], y2=self.head['y'], zIndex=2))
+        self.env.add_render_object(RenderedObject('line', self.x, self.y, x2=self.head['x'], y2=self.head['y'], zIndex=2))
 
 class Ray(Tir):
     def __init__(self, x, y, dir, weapon):
@@ -133,4 +133,4 @@ class Ray(Tir):
 
     def render(self):
         if self.is_active():
-            self.env.rendering_stack.append(RenderedObject('line', self.x, self.y, x2=self.head['x'], y2=self.head['y'], zIndex=2))
+            self.env.add_render_object(RenderedObject('line', self.x, self.y, x2=self.head['x'], y2=self.head['y'], zIndex=2))

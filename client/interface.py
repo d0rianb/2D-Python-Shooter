@@ -41,12 +41,12 @@ class Interface:
                ' Melee: {melee}\n' +
                ' Display Help : {help}\n' +
                ' Panic : {panic} ').format(**{key: str(val).upper() if val != 56 else 'Shift' for key, val in self.player.key.items()})
-        self.env.rendering_stack.append(RenderedObject('text', self.env.viewArea['x'] + self.env.viewArea['width']/2, self.env.viewArea['y'] + 100, text=text, font=self.font, color=self.color, zIndex=10))
+        self.env.add_render_object(RenderedObject('text', self.env.viewArea['x'] + self.env.viewArea['width']/2, self.env.viewArea['y'] + 100, text=text, font=self.font, color=self.color, zIndex=10))
 
     def parse(self, position, x, y, anchor):
         infos = self.informations[position]
         for (index, info) in enumerate(infos):
-            self.env.rendering_stack.append(RenderedObject('text', x, y + index*self.padding,
+            self.env.add_render_object(RenderedObject('text', x, y + index*self.padding,
                 text='{0}: {1}'.format(info, infos[info]),
                 anchor=anchor,
                 color=self.color,
@@ -254,8 +254,8 @@ class Menu:
             deltaX =  self.env.viewArea['x'] + 0
             deltaY =  self.env.viewArea['y'] - (len(stats) / 2) * (self.padding)
         rect_width, rect_height = 400, 200
-        self.env.rendering_stack.append(RenderedObject('text', self.x + deltaX, self.y + deltaY + index*self.padding, text=stat_text, color='#222', font=self.font, zIndex=10, anchor='center'))
-        self.env.rendering_stack.append(RenderedObject('rect', self.x + self.env.viewArea['x'] - rect_width/2, self.y + self.env.viewArea['y'] - rect_height/2, width=rect_width, height=rect_height, color=bgcolor, borderwidth=5, zIndex=9))
+        self.env.add_render_object(RenderedObject('text', self.x + deltaX, self.y + deltaY + index*self.padding, text=stat_text, color='#222', font=self.font, zIndex=10, anchor='center'))
+        self.env.add_render_object(RenderedObject('rect', self.x + self.env.viewArea['x'] - rect_width/2, self.y + self.env.viewArea['y'] - rect_height/2, width=rect_width, height=rect_height, color=bgcolor, borderwidth=5, zIndex=9))
 
     def render(self):
         if not self.is_active: return
